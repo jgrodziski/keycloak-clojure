@@ -33,9 +33,10 @@ You'll need an SQL database for the storage, here I choose postgresql. There is 
 I use (nginx proxy)[https://github.com/jwilder/nginx-proxy] with the (Letsencrypt nginx proxy companion)[https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion] for the SSL support (SSL access is for me quite mandatory for keycloak...). It's quite easy to setup (just add some env variables to the docker container and that's it) and it works very well.
 
 Now connect to your keycloak administration console and create:
-- a realm
-- in that realm, a client
-- in that realm, a test user
+- [a realm](http://www.keycloak.org/docs/latest/getting_started/index.html#_create-realm)
+- [in that realm, a client](http://www.keycloak.org/docs/latest/getting_started/index.html#creating-and-registering-the-client)
+- in that realm, [a test user](http://www.keycloak.org/docs/latest/getting_started/index.html#_create-new-user)
+
 The client screen has an "installation" tab that allows to grab the credentials secret for this client that will be part of the needed configuration.
 
 The following schema describes the steps and the interactions between the browser, the keycloak server and the API server:
@@ -218,3 +219,4 @@ The code is in [server.clj](https://github.com/jgrodziski/keycloak-clojure/blob/
   :stop ((:close server)))
 ```
 
+[Jeremie Grodziski](https://www.grodziski.com)
