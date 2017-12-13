@@ -1,0 +1,2 @@
+(ns myapp.front.core)
+

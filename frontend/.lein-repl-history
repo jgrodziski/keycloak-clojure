@@ -1,0 +1,24 @@
+exit
+(require 'myappapp.static-config)
+(in-ns 'myappapp.static-config)
+(get-config)
+(require 'myappapp.static-config)
+exit
+(require 'myappapp.static-config)
+(in-ns 'myappapp.static-config)
+(get-config)
+exit
+(require 'myappapp.static-config)
+exit
+(use 'figwheel-sidecar.repl-api)
+(start-figwheel!)
+(stop-figwheel!)
+(start-figwheel!)
+exit
+(require 'figwheel-sidecar.repl-api)
+(start-figwheel!)
+(figwheel-sidecar.repl-api/start-figwheel!)
+(cljs.repl)
+(cljs-repl
+)
+exit

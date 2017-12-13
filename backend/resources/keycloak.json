@@ -1,0 +1,9 @@
+{
+  "realm": "myrealm",
+  "auth-server-url": "https://keycloak.mydomain.com/auth",
+  "ssl-required": "all",
+  "resource": "myapp",
+  "credentials": {
+    "secret": "93e34684-f889-4021-851a-4dd278138612"
+  }
+}
