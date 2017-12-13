@@ -153,10 +153,10 @@ At that point the user is authenticated with a token and its info is loaded, the
 
 ## Token Storage
 Now that we get a token, we need to store it and be able to send it to the backend later on. We have different options for local storage, but mainly two for sending it to the backend: Cookie or HTTP Header. The Cookie option implies that we store it in the cookie store, with the header option we can do whatever we want.
-Just be aware that the token is quite secured and is nevertheless short-lived, so in case the token is accessed by rogue hands it should not be a major worry, we can also do both. Have a look at the code in "cookie.cljs"
+Just be aware that the token is quite secured and is nevertheless short-lived, so in case the token is accessed by rogue hands it should not be a major worry, we can also do both. Have a look at the code in "[cookie.cljs](https://github.com/jgrodziski/keycloak-clojure/blob/master/frontend/src/cljs/myapp/front/cookie.cljs)"
 
 ## Token Refreshing
-Now the token we get back from the initial authentication process needs to be refreshed regularly. To do that, we setup a "ticker" mechanism that triggers regularly the refresh check and performs it when needed. I won't enter into the details of re-frame event and effect handling, you'll get plenty of top-notch documentation from the re-frame repo for that. Just have a look at the code in "interval.cljs".
+Now the token we get back from the initial authentication process needs to be refreshed regularly. To do that, we setup a "ticker" mechanism that triggers regularly the refresh check and performs it when needed. I won't enter into the details of re-frame event and effect handling, you'll get plenty of top-notch documentation from the re-frame repo for that. Just have a look at the code in "[interval.cljs](https://github.com/jgrodziski/keycloak-clojure/blob/master/frontend/src/cljs/myapp/front/interval.cljs)".
 
 
 # Mobile frontend authentication
