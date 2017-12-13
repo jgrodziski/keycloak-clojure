@@ -3,7 +3,7 @@
  
 # Introduction
 Identify, authenticate and get the user roles are a must-have for every application, and also administrate the user's metadata.
-The typical application architecture is now a web and mobile frontend talking to a server API (in a REST or GraphQL manner). This article explains the integration of keycloak as an authentication server in a clojure ecosystem (Reagent/Re-Frame in a web and React native runtime and a Yada API server). By the way, Keycloak entered the [Thoughtworks TechRadar in november 2017](https://www.thoughtworks.com/radar/platforms/keycloak) in the Trial category.
+The typical application architecture is now a web and mobile frontend talking to a server API (in a REST or GraphQL manner). This article explains the integration of [Keycloak](http://www.keycloak.org) as an authentication server in a [Clojure](https://www.clojure.org) ecosystem (Reagent/Re-Frame in a web and React native runtime and a Yada API server). By the way, Keycloak entered the [Thoughtworks TechRadar in november 2017](https://www.thoughtworks.com/radar/platforms/keycloak) in the Trial category.
 
 ## Warning: Specifics of the choosen Clojure server and ClojureScript client libs
 
@@ -37,6 +37,9 @@ Now connect to your keycloak administration console and create:
 - in that realm, a client
 - in that realm, a test user
 The client screen has an "installation" tab that allows to grab the credentials secret for this client that will be part of the needed configuration.
+
+The following schema describes the steps and the interactions between the browser, the keycloak server and the API server:
+![Schema describing the steps and the interactions between the browser, keycloak server and API server](schema.png)
 
 # Web Frontend SPA authentication
 
