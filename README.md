@@ -1,7 +1,9 @@
 
+![Keycloak plus Clojure](keycloak-plus-clojure.png)
+ 
 # Introduction
-Identify, authenticate and get the user roles are a must-have for every application, and also the administration of the user's metadata.
-The typical application architecture is now a web and mobile frontend talking to a server API (in a REST or GraphQL manner). This article explains the integration of keycloak as an authentication server in a clojure ecosystem (Reagent/Re-Frame in a web and React native runtime and a Yada API server), the choices are encountered frequently out there but should nevertheless be translated to your architecture quite easily.
+Identify, authenticate and get the user roles are a must-have for every application, and also administrate the user's metadata.
+The typical application architecture is now a web and mobile frontend talking to a server API (in a REST or GraphQL manner). This article explains the integration of keycloak as an authentication server in a clojure ecosystem (Reagent/Re-Frame in a web and React native runtime and a Yada API server). By the way, Keycloak entered the [Thoughtworks TechRadar in november 2017](https://www.thoughtworks.com/radar/platforms/keycloak) in the Trial category.
 
 ## Warning: Specifics of the choosen Clojure server and ClojureScript client libs
 
@@ -73,7 +75,7 @@ The frontend needs to performs the following steps to authenticate the user:
   1. If the init is correct and the user is not authenticated, the Keycloak will redirect the browser to the Keycloak server login screen for her to be authenticated and then redirect back here properly authenticated.
   2. Else if the init is correct and at that point the user is authenticated, we provide a lambda that is called back calling the "loadUserInfo" function against the keycloak server 
 
-Here are the code for each of those steps (in security.cljs):
+Here are the code for each of those steps (in [security.cljs](https://github.com/jgrodziski/keycloak-clojure/blob/master/frontend/src/cljs/myapp/front/security.cljs)):
 
 ```
 ;; We use mount equally on the client and server side, we define a security ns with a mount state inside
@@ -165,7 +167,7 @@ The client is correctly configured and is sending either a cookie or a header co
 3. Ensure the client is accessing the restricted part only if the token is correct (Yada specific, for that part go read the excellent [Yada article "Speak friend and Enter!"](https://juxt.pro/blog/posts/yada-authentication.html))
 
 
-The code is in server.cljs calling some functions in keycloak.cljs.
+The code is in [server.clj](https://github.com/jgrodziski/keycloak-clojure/blob/master/backend/src/myapp/backend/server.clj) calling some functions in [keycloak.clj](https://github.com/jgrodziski/keycloak-clojure/blob/master/backend/src/myapp/backend/keycloak.clj).
 ```
 ;;1. Extract the token from the cookie or the header (Yada framework specific)
 (defn authorization-token-cookie [ctx]
