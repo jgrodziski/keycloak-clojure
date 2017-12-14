@@ -232,4 +232,4 @@ The code is in [server.clj](https://github.com/jgrodziski/keycloak-clojure/blob/
   :stop ((:close server)))
 ```
 
-Author: [Jeremie Grodziski](https://www.grodziski.com) - MIT License
+Copyright (c) 2017 [Jeremie Grodziski](https://www.grodziski.com) - MIT License
