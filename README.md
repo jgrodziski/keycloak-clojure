@@ -18,8 +18,8 @@ The impacting client libs are:
 
 # Keycloak Core Concepts
 
-The core concept in Keycloak is a *Realm*. A realm secures and manages security metadata for a set of users, applications and registered oauth clients. 
-Once you're realm is created, you can create a client i.e. a runtime component talking to keycloak: you're web frontend code in a browser, your mobile frontend code in a React Native app, your API server, etc.
+*Realm* is the core concept in Keycloak. A *realm* secures and manages security metadata for a set of users, applications and registered oauth clients. 
+Once your realm is created, you can create a client i.e. a runtime component talking to keycloak: web frontend code in a browser, mobile frontend code in a React Native app, API server, etc.
 
 A *client* is a service that is secured by a realm. You will often use Client for every Application secured by Keycloak. When a user browses an application's web site, the application can redirect the user agent to the Keycloak Server and request a login. Once a user is logged in, they can visit any other client (application) managed by the realm and not have to re-enter credentials. This also hold true for logging out. Roles can also be defined at the client level and assigned to specific users. Depending on the client type, you may also be able to view and manage user sessions from the administration console.
 
