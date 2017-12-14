@@ -49,7 +49,7 @@ The following schema describes the steps and the interactions between the browse
 ## Lib installation
 The keycloak javascript Adapter library is vanilla JS and does not implement the Google Closure contract, so the integration in the Leiningen cljsbuild should be in the form of a [foreign lib ](https://clojurescript.org/reference/packaging-foreign-deps) in your `project.clj`.
 
-```
+```clojure
   :cljsbuild
   {:builds
    [{:id           "dev"
@@ -83,7 +83,7 @@ The frontend needs to performs the following steps to authenticate the user:
 
 Here are the code for each of those steps (in [security.cljs](https://github.com/jgrodziski/keycloak-clojure/blob/master/frontend/src/cljs/myapp/front/security.cljs)):
 
-```
+```clojure
 ;; We use mount equally on the client and server side, we define a security ns with a mount state inside
 
 ;; 1. The keycloak configuration stored in the project.clj file and "load" at compile time
@@ -174,7 +174,8 @@ The client is correctly configured and is sending either a cookie or a header co
 
 
 The code is in [server.clj](https://github.com/jgrodziski/keycloak-clojure/blob/master/backend/src/myapp/backend/server.clj) calling some functions in [keycloak.clj](https://github.com/jgrodziski/keycloak-clojure/blob/master/backend/src/myapp/backend/keycloak.clj).
-```
+
+```clojure
 ;;1. Extract the token from the cookie or the header (Yada framework specific)
 (defn authorization-token-cookie [ctx]
   (let [cookies (parse-cookies (:request ctx))]
