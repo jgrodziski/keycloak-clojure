@@ -2,12 +2,12 @@
 ![Keycloak plus Clojure](keycloak-plus-clojure.png)
  
 # Introduction
-Identify, authenticate and get the user roles are a must-have for every application, and also administrate the user's metadata.
-The typical application architecture is now a web and mobile frontend talking to a server API (in a REST or GraphQL manner). This article explains the integration of [Keycloak](http://www.keycloak.org) as an authentication server in a [Clojure](https://www.clojure.org) ecosystem (Reagent/Re-Frame in a web and React native runtime and a Yada API server). By the way, Keycloak entered the [Thoughtworks TechRadar in november 2017](https://www.thoughtworks.com/radar/platforms/keycloak) in the Trial category.
+This article explains the integration of [Keycloak](http://www.keycloak.org) as an authentication server in a [Clojure](https://www.clojure.org) ecosystem (Reagent/Re-Frame in a web and React native runtime and a Yada API server). Identify, authenticate and get the user roles are a must-have for every application, and also administrate the user's metadata.
+The typical application architecture is now a web and mobile frontend talking to a server API (in a REST or GraphQL manner).  By the way, Keycloak entered the [Thoughtworks TechRadar in november 2017](https://www.thoughtworks.com/radar/platforms/keycloak) in the Trial category.
 
 ## Warning: Specifics of the choosen Clojure server and ClojureScript client libs
 
-I'll try in the next sections to clearly separate the inner details of making Keycloak work and those of the surrounding libraries. You should easily adapt the environment as I'll try to explain the reason behind every mechanisms. 
+I'll try to clearly separate the inner details of making Keycloak work and those of the surrounding libraries. You should easily adapt the environment as I'll try to explain the reason behind every mechanisms. 
 The impacting server libs are: 
 - [Yada](https://github.com/juxt/yada)
 - [Mount](https://github.com/tolitius/mount).
@@ -30,7 +30,7 @@ Adapters are keycloak librairies in different technologies used for client to co
 # Installing and Configuring Keycloak
 You can use the [JBoss Keycloak docker image](https://hub.docker.com/r/jboss/keycloak/) `docker pull  jboss/keycloak-postgres:3.3.0.Final`
 You'll need an SQL database for the storage, here I choose postgresql. There is a lot of documentation out there to configure Keycloak and postgresql, just google it. I put them behind a dockerized nginx proxy that manages quite easily the certificates renewing and proxying of docker container.
-I use (nginx proxy)[https://github.com/jwilder/nginx-proxy] with the (Letsencrypt nginx proxy companion)[https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion] for the SSL support (SSL access is for me quite mandatory for keycloak...). It's quite easy to setup (just add some env variables to the docker container and that's it) and it works very well.
+I use [nginx proxy](https://github.com/jwilder/nginx-proxy) with the [Letsencrypt nginx proxy companion](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion) for the SSL support (SSL access is for me quite mandatory for keycloak...). It's quite easy to setup (just add some env variables to the docker container and that's it) and it works very well.
 
 Now connect to your keycloak administration console and create:
 - [a realm](http://www.keycloak.org/docs/latest/getting_started/index.html#_create-realm)
