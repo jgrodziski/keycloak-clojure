@@ -1,6 +1,18 @@
 
 ![Keycloak plus Clojure](keycloak-plus-clojure.png)
- 
+
+- [Introduction](#introduction)
+  - [Specifics of the choosen Clojure server and ClojureScript client libs](https://github.com/jgrodziski/keycloak-clojure#specifics-of-the-choosen-clojure-server-and-clojurescript-client-libs)
+  - [Principles of User Authentication](https://github.com/jgrodziski/keycloak-clojure#principles-of-user-authentication)
+- [Principles of User Authentication - Keycloak Core Concepts]()
+- [Installing and Configuring Keycloak](https://github.com/jgrodziski/keycloak-clojure#installing-and-configuring-keycloak)
+- [Web Frontend SPA authentication](https://github.com/jgrodziski/keycloak-clojure#web-frontend-spa-authentication)
+  - [Lib Installation](https://github.com/jgrodziski/keycloak-clojure#lib-installation)
+  - [Initial Authentication Steps](https://github.com/jgrodziski/keycloak-clojure#initial-authentication-steps)
+  - [Token Storage](https://github.com/jgrodziski/keycloak-clojure#token-storage)
+  - [Token refreshing](https://github.com/jgrodziski/keycloak-clojure#token-refreshing)
+- [API Server Authentication](https://github.com/jgrodziski/keycloak-clojure#api-server-authentication)
+
 # Introduction
 This article explains the integration of [Keycloak](http://www.keycloak.org) as an authentication server in a [Clojure](https://www.clojure.org) ecosystem ([Reagent](http://reagent-project.github.io/)/[Re-Frame](https://github.com/Day8/re-frame), React native runtime and a [Yada](https://github.com/juxt/yada) API server). Identify, authenticate and get the user roles are a must-have for every application, and also administrate the user's metadata.
 The typical application architecture is now a web and mobile frontend talking to a server API (in a REST or GraphQL manner). By the way, Keycloak entered the [Thoughtworks TechRadar in november 2017](https://www.thoughtworks.com/radar/platforms/keycloak) in the Trial category.
@@ -16,9 +28,7 @@ The impacting server libs are:
 The impacting client libs are:
 - [re-frame](https://github.com/Day8/re-frame)
 
-# Principles of User Authentication
-
-# Keycloak Core Concepts
+# Principles of User Authentication - Keycloak Core Concepts
 
 *Realm* is the core concept in Keycloak. A *realm* secures and manages security metadata for a set of users, applications and registered oauth clients. 
 Once your realm is created, you can create a client i.e. a runtime component talking to keycloak: web frontend code in a browser, mobile frontend code in a React Native app, API server, etc.
