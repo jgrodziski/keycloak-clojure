@@ -2,15 +2,17 @@
 ![Keycloak plus Clojure](keycloak-plus-clojure.png)
  
 # Introduction
-This article explains the integration of [Keycloak](http://www.keycloak.org) as an authentication server in a [Clojure](https://www.clojure.org) ecosystem (Reagent/Re-Frame in a web and React native runtime and a Yada API server). Identify, authenticate and get the user roles are a must-have for every application, and also administrate the user's metadata.
-The typical application architecture is now a web and mobile frontend talking to a server API (in a REST or GraphQL manner).  By the way, Keycloak entered the [Thoughtworks TechRadar in november 2017](https://www.thoughtworks.com/radar/platforms/keycloak) in the Trial category.
+This article explains the integration of [Keycloak](http://www.keycloak.org) as an authentication server in a [Clojure](https://www.clojure.org) ecosystem ([Reagent](http://reagent-project.github.io/)/[Re-Frame](https://github.com/Day8/re-frame), React native runtime and a [Yada](https://github.com/juxt/yada) API server). Identify, authenticate and get the user roles are a must-have for every application, and also administrate the user's metadata.
+The typical application architecture is now a web and mobile frontend talking to a server API (in a REST or GraphQL manner). By the way, Keycloak entered the [Thoughtworks TechRadar in november 2017](https://www.thoughtworks.com/radar/platforms/keycloak) in the Trial category.
 
-## Warning: Specifics of the choosen Clojure server and ClojureScript client libs
+## Specifics of the choosen Clojure server and ClojureScript client libs
 
 I'll try to clearly separate the inner details of making Keycloak work and those of the surrounding libraries. You should easily adapt the environment as I'll try to explain the reason behind every mechanisms. 
+
 The impacting server libs are: 
 - [Yada](https://github.com/juxt/yada)
-- [Mount](https://github.com/tolitius/mount).
+- [Mount](https://github.com/tolitius/mount)
+
 The impacting client libs are:
 - [re-frame](https://github.com/Day8/re-frame)
 
