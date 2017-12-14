@@ -54,8 +54,8 @@ The keycloak javascript Adapter library is vanilla JS and does not implement the
   {:builds
    [{:id           "dev"
      :source-paths ["src/cljs"]
-     :figwheel     {:on-jsload "myappapp.core/mount-root"}
-     :compiler     {:main                 myappapp.core
+     :figwheel     {:on-jsload "myapp.core/mount-root"}
+     :compiler     {:main                 myapp.core
                     :output-to            "resources/public/js/compiled/app.js"
                     :output-dir           "resources/public/js/compiled/out"
                     :asset-path           "js/compiled/out"
@@ -89,11 +89,11 @@ Here are the code for each of those steps (in [security.cljs](https://github.com
 ;; 1. The keycloak configuration stored in the project.clj file and "load" at compile time
 (def config (emit-compile-time-conf))
 (when config/debug?
-  (info "myappapp config loaded" config))
+  (info "myapp config loaded" config))
 
 (defn- start-token-refresher []
   ;; event triggered every 30s to check for the keycloak token to be updated
-  (interval/register-interval-handlers :myappapp.events/token-to-update nil 30000)
+  (interval/register-interval-handlers :myapp.events/token-to-update nil 30000)
   (re-frame/dispatch [:token-to-update/start]))
 
 (defn init-and-authenticate
@@ -118,7 +118,7 @@ Here are the code for each of those steps (in [security.cljs](https://github.com
                                         (info "user-info:" (js->clj user-info)))
                                       ;; if we succeed to load the user info we dispatch a re-frame event to store the user info in DB
                                       ;; and store the token in a "X-Authorization-Token" cookie
-                                      (re-frame/dispatch [:myappapp.events/set-user-info
+                                      (re-frame/dispatch [:myapp.events/set-user-info
                                                           (merge {:token (.-token keycloak-obj)}
                                                                  (js->clj user-info :keywordize-keys true))])))))))
         (.error (fn [] (error "Failed to initialize Keycloak"))))
@@ -146,7 +146,7 @@ Here are the code for each of those steps (in [security.cljs](https://github.com
                   (info "token refreshed?" refreshed)
                   (when refreshed
                     ;;update the token in cookies and local storage
-                    (re-frame/dispatch [:myappapp.events/set-token-updated
+                    (re-frame/dispatch [:myapp.events/set-token-updated
                                         {:token (.-token @keycloak)}]))))
       (.error (fn [] (.logout @keycloak))))
   {:db (:db cofx)}) 
