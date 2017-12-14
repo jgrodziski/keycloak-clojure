@@ -4,7 +4,7 @@
 - [Introduction](#introduction)
   - [Specifics of the choosen Clojure server and ClojureScript client libs](https://github.com/jgrodziski/keycloak-clojure#specifics-of-the-choosen-clojure-server-and-clojurescript-client-libs)
   - [Principles of User Authentication](https://github.com/jgrodziski/keycloak-clojure#principles-of-user-authentication)
-- [Principles of User Authentication - Keycloak Core Concepts]()
+- [Principles of User Authentication - Keycloak Core Concepts](https://github.com/jgrodziski/keycloak-clojure#principles-of-user-authentication---keycloak-core-concepts)
 - [Installing and Configuring Keycloak](https://github.com/jgrodziski/keycloak-clojure#installing-and-configuring-keycloak)
 - [Web Frontend SPA authentication](https://github.com/jgrodziski/keycloak-clojure#web-frontend-spa-authentication)
   - [Lib Installation](https://github.com/jgrodziski/keycloak-clojure#lib-installation)
