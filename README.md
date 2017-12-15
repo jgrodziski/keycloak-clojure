@@ -14,11 +14,14 @@
 - [API Server Authentication](https://github.com/jgrodziski/keycloak-clojure#api-server-authentication)
 
 # Introduction
-This article explains the integration of [Keycloak](http://www.keycloak.org) as an authentication server in a [Clojure](https://www.clojure.org) ecosystem ([Reagent](http://reagent-project.github.io/)/[Re-Frame](https://github.com/Day8/re-frame), React native runtime and a [Yada](https://github.com/juxt/yada) API server). Identify, authenticate and get the user roles are a must-have for every application, and also administrate the user's metadata.
-The typical application architecture is now a web and mobile frontend talking to a server API (in a REST or GraphQL manner). By the way, Keycloak entered the [Thoughtworks TechRadar in november 2017](https://www.thoughtworks.com/radar/platforms/keycloak) in the Trial category.
+
+**This article explains the integration of [Keycloak](http://www.keycloak.org), an Identity and Access Management Server in a [Clojure](https://www.clojure.org) ecosystem.**
+
+Identify, authenticate and get the user roles are a must-have for every application, and also administrate the user's metadata. The typical application architecture is now a web and mobile frontend talking to a server API (in a REST or GraphQL manner). By the way, Keycloak entered the [Thoughtworks TechRadar in november 2017](https://www.thoughtworks.com/radar/platforms/keycloak) in the Trial category.
 
 ## Specifics of the choosen Clojure server and ClojureScript client libs
 
+The main libraries used in the sample app are [Reagent](http://reagent-project.github.io/)/[Re-Frame](https://github.com/Day8/re-frame), React native and [Yada](https://github.com/juxt/yada) for the API backend.
 I'll try to clearly separate the inner details of making Keycloak work and those of the surrounding libraries. You should easily adapt the environment as I'll try to explain the reason behind every mechanisms. 
 
 The impacting server libs are: 
@@ -27,17 +30,17 @@ The impacting server libs are:
 
 The impacting client libs are:
 - [re-frame](https://github.com/Day8/re-frame)
+- [Mount](https://github.com/tolitius/mount) on the client side
 
 # Principles of User Authentication - Keycloak Core Concepts
 
 *Realm* is the core concept in Keycloak. A *realm* secures and manages security metadata for a set of users, applications and registered oauth clients. 
-Once your realm is created, you can create a client i.e. a runtime component talking to keycloak: web frontend code in a browser, mobile frontend code in a React Native app, API server, etc.
 
-A *client* is a service that is secured by a realm. You will often use Client for every Application secured by Keycloak. When a user browses an application's web site, the application can redirect the user agent to the Keycloak Server and request a login. Once a user is logged in, they can visit any other client (application) managed by the realm and not have to re-enter credentials. This also hold true for logging out. Roles can also be defined at the client level and assigned to specific users. Depending on the client type, you may also be able to view and manage user sessions from the administration console.
+A *client* is a service that is secured by a *realm*. Once your *realm* is created, you can create a *client* i.e. a runtime component talking to keycloak: web frontend code in a browser, mobile frontend code in a React Native app, API server, etc. You will often use Client for every Application secured by Keycloak. When a user browses an application's web site, the application can redirect the user agent to the Keycloak Server and request a login. Once a user is logged in, they can visit any other client (application) managed by the realm and not have to re-enter credentials. This also hold true for logging out. *Roles* can also be defined at the *client* level and assigned to specific users. Depending on the *client* type, you may also be able to view and manage *user* *sessions* from the administration console.
+
+*Adapters* are keycloak librairies in different technologies used for *client* to communicate with the keycloak servers. Luckily thanks to Clojure and Clojurescript running on hosted platform, respectively the JVM and the JS engine, we can use the [Keycloak Java Adapter](http://www.keycloak.org/docs/3.2/securing_apps/topics/oidc/java/java-adapters.html) and the [Keycloak Jsvascript Adapter](http://www.keycloak.org/docs/3.2/securing_apps/topics/oidc/javascript-adapter.html).
 
 [OpenId Connect terminology](http://openid.net/specs/openid-connect-core-1_0.html#Terminology) is implemented by keycloak.
-
-Adapters are keycloak librairies in different technologies used for client to communicate with the keycloak servers. Luckily thanks to Clojure and Clojurescript running on hosted platform, respectively the JVM and the JS engine, we can use the [Keycloak Java Adapter]() and the [Keycloak Jsvascript Adapter]().
 
 # Installing and Configuring Keycloak
 You can use the [JBoss Keycloak docker image](https://hub.docker.com/r/jboss/keycloak/) `docker pull  jboss/keycloak-postgres:3.3.0.Final`
