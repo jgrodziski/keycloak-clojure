@@ -25,7 +25,7 @@
  :aliases {
            :repl {:extra-deps {com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
                   :main-opts ["-m" "figwheel.main" "-b" "dev" "-r"]}
-
+           :dev {}
            :test {:extra-paths ["test"]
                   :extra-deps {lambdaisland/kaocha {:mvn/version "0.0-367"}}
                   :main-opts ["-m" "kaocha.runner" "unit-cljs"]}

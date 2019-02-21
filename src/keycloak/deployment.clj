@@ -50,10 +50,6 @@
         public-key (.getPublicKey (.getPublicKeyLocator deployment) kid deployment)]
     (-> verifier (.publicKey public-key) (.verify) (.getToken))))
 
-(defn access-token [deployment keycloak-client username password]
-  (let [access-token-string (-> keycloak-client (.tokenManager) (.getAccessToken) (.getToken))
-        access-token (->> access-token-string (verify deployment) (extract))]
-    (assoc access-token :token access-token-string)))
 
 (defn extract
   "return a map with :user and :roles keys with values extracted from the Keycloak access token along with all the props of the AccessToken bean"
@@ -88,3 +84,7 @@
    :acr                   (.getAcr access-token)
    :state-hash            (.getStateHash access-token)})
 
+(defn access-token [deployment keycloak-client username password]
+  (let [access-token-string (-> keycloak-client (.tokenManager) (.getAccessToken) (.getToken))
+        access-token (->> access-token-string (verify deployment) (extract))]
+    (assoc access-token :token access-token-string)))

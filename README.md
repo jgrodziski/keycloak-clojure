@@ -10,7 +10,13 @@ Before going further be sure to read the [sample's README](sample) to understand
 
 ## Installation
 
-## Usage
+## Keycloak configuration
+
+## Client ##
+
+## Authentication and authorization usage
+
+## Admin Usage (create Realm, Client, Role, User, etc.) 
 
 ## Sample integration with Yada
 
