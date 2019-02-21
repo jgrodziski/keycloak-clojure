@@ -14,7 +14,7 @@
 
 (defn authorization-bearer-cred [ctx]
   (let [header (get-in ctx [:request :headers "authorization"])]
-    (when header 
+    (when header
       (last (re-find #"^Bearer (.*)$" header)))))
 
 ;;1. Extract the token from the cookie or the header (Yada framework specific)

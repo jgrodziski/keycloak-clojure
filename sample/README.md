@@ -15,6 +15,8 @@
 
 # Introduction
 
+This repo was first an explanation of integrating Keycloak with Clojure, now I transform it to offer a library to wrap the Keycloak Java Adapter and provide some utilities facilitating the integration. The initial explanation is now in the README of the `sample` directory.
+
 **This article explains the integration of [Keycloak](http://www.keycloak.org), an Identity and Access Management Server in a [Clojure](https://www.clojure.org) ecosystem.**
 
 Identify, authenticate and get the user roles are a must-have for every application, and also administrate the user's metadata. The typical application architecture is now a web and mobile frontend talking to a server API (in a REST or GraphQL manner). By the way, Keycloak entered the [Thoughtworks TechRadar in november 2017](https://www.thoughtworks.com/radar/platforms/keycloak) in the Trial category.
