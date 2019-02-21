@@ -35,11 +35,11 @@
                                 commons-validator {:mvn/version "1.5.1"}}
                    :main-opts ["-m" "build"]}
 
-           :artifact-name {:extra-deps {metav {:mvn/version "1.1.4"}}
+           :artifact-name {:extra-deps {metav {:mvn/version "1.1.5"}}
                            :main-opts ["-m" "metav.display"]}
-           :release {:extra-deps {metav {:mvn/version "1.1.4"}}
+           :release {:extra-deps {metav {:mvn/version "1.1.5"}}
                      :main-opts ["-m" "metav.release"]}
-           :spit {:extra-deps {metav {:mvn/version "1.1.4"}}
+           :spit {:extra-deps {metav {:mvn/version "1.1.5"}}
                   :main-opts ["-m" "metav.spit"]}
 
 }}
