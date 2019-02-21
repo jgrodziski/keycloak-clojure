@@ -1,5 +1,5 @@
 
-![Keycloak plus Clojure](keycloak-plus-clojure.png)
+![Keycloak plus Clojure](../keycloak-plus-clojure.png)
 
 - [Introduction](#introduction)
   - [Specifics of the choosen Clojure server and ClojureScript client libs](https://github.com/jgrodziski/keycloak-clojure#specifics-of-the-choosen-clojure-server-and-clojurescript-client-libs)
