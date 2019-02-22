@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Injectable} from '@angular/core';
+import {KeycloakLoginOptions} from './keycloak.d';
 
 // If using a local keycloak.js, uncomment this import.  With keycloak.js fetched
 // from the server, you get a compile-time warning on use of the Keycloak()
@@ -23,13 +23,23 @@ import {Injectable} from '@angular/core';
 // 
 import * as Keycloak from './keycloak';
 
-type KeycloakClient = Keycloak.KeycloakInstance;
+export type KeycloakClient = Keycloak.KeycloakInstance;
 type InitOptions = Keycloak.KeycloakInitOptions;
 
-@Injectable()
-export class KeycloakService {
-    static keycloakAuth: KeycloakClient;
+declare const keycloak: KeycloakClient;
 
+export class KeycloakService {
+    private static keycloakAuth: KeycloakClient = keycloak;
+    private static instance: KeycloakService = new KeycloakService();
+
+    private constructor() {
+        
+    }
+    
+    public static get Instance(): KeycloakService  {
+        return this.instance;
+    }
+    
     /**
      * Configure and initialize the Keycloak adapter.
      *
@@ -39,7 +49,7 @@ export class KeycloakService {
      *                       for details.
      * @returns {Promise<T>}
      */
-    static init(configOptions?: string|{}, initOptions?: InitOptions): Promise<any> {
+    static init(configOptions?: string|{}, initOptions: InitOptions = {}): Promise<any> {
         KeycloakService.keycloakAuth = Keycloak(configOptions);
 
         return new Promise((resolve, reject) => {
@@ -52,28 +62,28 @@ export class KeycloakService {
                 });
         });
     }
-
+    
     authenticated(): boolean {
-        return KeycloakService.keycloakAuth.authenticated;
+        return KeycloakService.keycloakAuth.authenticated ? KeycloakService.keycloakAuth.authenticated : false;
     }
 
-    login() {
-        KeycloakService.keycloakAuth.login();
+    login(options?: KeycloakLoginOptions) {
+        KeycloakService.keycloakAuth.login(options);
     }
 
-    logout() {
-        KeycloakService.keycloakAuth.logout();
+    logout(redirectUri?: string) {
+        KeycloakService.keycloakAuth.logout({redirectUri: redirectUri});
     }
 
     account() {
         KeycloakService.keycloakAuth.accountManagement();
     }
     
-    authServerUrl(): string {
+    authServerUrl(): string | undefined {
         return KeycloakService.keycloakAuth.authServerUrl;
     }
     
-    realm(): string {
+    realm(): string | undefined {
         return KeycloakService.keycloakAuth.realm;
     }
 

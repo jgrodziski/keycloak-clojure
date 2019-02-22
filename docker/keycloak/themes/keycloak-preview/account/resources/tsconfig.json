@@ -8,6 +8,8 @@
     "experimentalDecorators": true,
     "lib": [ "es2015", "dom" ],
     "noImplicitAny": true,
+    "strictNullChecks": true,
+    "jsx": "react",
     "suppressImplicitAnyIndexErrors": true
   }
 }

@@ -747,8 +747,6 @@ module.controller('IdentityProviderTabCtrl', function(Dialog, $scope, Current, N
 });
 
 module.controller('RealmIdentityProviderCtrl', function($scope, $filter, $upload, $http, $route, realm, instance, providerFactory, IdentityProvider, serverInfo, authFlows, $location, Notifications, Dialog) {
-    console.log('RealmIdentityProviderCtrl');
-
     $scope.realm = angular.copy(realm);
 
     $scope.initSamlProvider = function() {
@@ -1089,7 +1087,11 @@ module.controller('RealmTokenDetailCtrl', function($scope, Realm, realm, $http, 
     $scope.realm.accessTokenLifespanForImplicitFlow = TimeUnit2.asUnit(realm.accessTokenLifespanForImplicitFlow);
     $scope.realm.ssoSessionIdleTimeout = TimeUnit2.asUnit(realm.ssoSessionIdleTimeout);
     $scope.realm.ssoSessionMaxLifespan = TimeUnit2.asUnit(realm.ssoSessionMaxLifespan);
+    $scope.realm.ssoSessionIdleTimeoutRememberMe = TimeUnit2.asUnit(realm.ssoSessionIdleTimeoutRememberMe);
+    $scope.realm.ssoSessionMaxLifespanRememberMe = TimeUnit2.asUnit(realm.ssoSessionMaxLifespanRememberMe);
     $scope.realm.offlineSessionIdleTimeout = TimeUnit2.asUnit(realm.offlineSessionIdleTimeout);
+    // KEYCLOAK-7688 Offline Session Max for Offline Token
+    $scope.realm.offlineSessionMaxLifespan = TimeUnit2.asUnit(realm.offlineSessionMaxLifespan);
     $scope.realm.accessCodeLifespan = TimeUnit2.asUnit(realm.accessCodeLifespan);
     $scope.realm.accessCodeLifespanLogin = TimeUnit2.asUnit(realm.accessCodeLifespanLogin);
     $scope.realm.accessCodeLifespanUserAction = TimeUnit2.asUnit(realm.accessCodeLifespanUserAction);
@@ -1099,20 +1101,34 @@ module.controller('RealmTokenDetailCtrl', function($scope, Realm, realm, $http, 
 
     var oldCopy = angular.copy($scope.realm);
     $scope.changed = false;
-
+    
     $scope.$watch('realm', function() {
         if (!angular.equals($scope.realm, oldCopy)) {
             $scope.changed = true;
         }
     }, true);
-
+    
     $scope.$watch('actionLifespanId', function () {
+        // changedActionLifespanId signals other watchers that we were merely 
+        // changing the dropdown and we should not enable 'save' button
+        if ($scope.actionTokenAttribute && $scope.actionTokenAttribute.hasOwnProperty('time')) {
+            $scope.changedActionLifespanId = true;
+        }
+        
         $scope.actionTokenAttribute = TimeUnit2.asUnit($scope.realm.attributes['actionTokenGeneratedByUserLifespan.' + $scope.actionLifespanId]);
     }, true);
 
     $scope.$watch('actionTokenAttribute', function () {
-        if ($scope.actionLifespanId != null && $scope.actionTokenAttribute != null) {
+        if ($scope.actionLifespanId === null) return;
+        
+        if ($scope.changedActionLifespanId) {
+            $scope.changedActionLifespanId = false;
+            return;
+        } else {
             $scope.changed = true;
+        }
+        
+        if ($scope.actionTokenAttribute !== null) {
             $scope.realm.attributes['actionTokenGeneratedByUserLifespan.' + $scope.actionLifespanId] = $scope.actionTokenAttribute.toSeconds();
         }
     }, true);
@@ -1126,7 +1142,11 @@ module.controller('RealmTokenDetailCtrl', function($scope, Realm, realm, $http, 
         $scope.realm.accessTokenLifespanForImplicitFlow = $scope.realm.accessTokenLifespanForImplicitFlow.toSeconds();
         $scope.realm.ssoSessionIdleTimeout = $scope.realm.ssoSessionIdleTimeout.toSeconds();
         $scope.realm.ssoSessionMaxLifespan = $scope.realm.ssoSessionMaxLifespan.toSeconds();
+        $scope.realm.ssoSessionIdleTimeoutRememberMe = $scope.realm.ssoSessionIdleTimeoutRememberMe.toSeconds();
+        $scope.realm.ssoSessionMaxLifespanRememberMe = $scope.realm.ssoSessionMaxLifespanRememberMe.toSeconds();
         $scope.realm.offlineSessionIdleTimeout = $scope.realm.offlineSessionIdleTimeout.toSeconds();
+        // KEYCLOAK-7688 Offline Session Max for Offline Token
+        $scope.realm.offlineSessionMaxLifespan = $scope.realm.offlineSessionMaxLifespan.toSeconds();
         $scope.realm.accessCodeLifespan = $scope.realm.accessCodeLifespan.toSeconds();
         $scope.realm.accessCodeLifespanUserAction = $scope.realm.accessCodeLifespanUserAction.toSeconds();
         $scope.realm.accessCodeLifespanLogin = $scope.realm.accessCodeLifespanLogin.toSeconds();
@@ -1449,12 +1469,14 @@ module.controller('RoleDetailCtrl', function($scope, realm, role, roles, clients
     $scope.changed = $scope.create;
 
     $scope.save = function() {
+        convertAttributeValuesToLists();
         console.log('save');
         if ($scope.create) {
             Role.save({
                 realm: realm.realm
             }, $scope.role, function (data, headers) {
                 $scope.changed = false;
+                convertAttributeValuesToString($scope.role);
                 role = angular.copy($scope.role);
 
                 Role.get({ realm: realm.realm, role: role.name }, function(role) {
@@ -1476,7 +1498,35 @@ module.controller('RoleDetailCtrl', function($scope, realm, role, roles, clients
         $location.url("/realms/" + realm.realm + "/roles");
     };
 
+    $scope.addAttribute = function() {
+        $scope.role.attributes[$scope.newAttribute.key] = $scope.newAttribute.value;
+        delete $scope.newAttribute;
+    }
 
+    $scope.removeAttribute = function(key) {
+        delete $scope.role.attributes[key];
+    }
+
+    function convertAttributeValuesToLists() {
+        var attrs = $scope.role.attributes;
+        for (var attribute in attrs) {
+            if (typeof attrs[attribute] === "string") {
+                var attrVals = attrs[attribute].split("##");
+                attrs[attribute] = attrVals;
+            }
+        }
+    }
+
+    function convertAttributeValuesToString(role) {
+        var attrs = role.attributes;
+        for (var attribute in attrs) {
+            if (typeof attrs[attribute] === "object") {
+                var attrVals = attrs[attribute].join("##");
+                attrs[attribute] = attrVals;
+                console.log("attribute" + attrVals)
+            }
+        }
+    }
 
     roleControl($scope, realm, role, roles, clients,
         ClientRole, RoleById, RoleRealmComposites, RoleClientComposites,
@@ -1656,6 +1706,11 @@ module.controller('RealmEventsCtrl', function($scope, RealmEvents, realm, server
         max : 5,
         first : 0
     }
+    
+    $scope.disablePaste = function(e) {
+        e.preventDefault();
+        return false;
+    }
 
     $scope.update = function() {
     	$scope.query.first = 0;
@@ -1730,6 +1785,11 @@ module.controller('RealmAdminEventsCtrl', function($scope, RealmAdminEvents, rea
         'simple_tags': true,
         'tags': serverInfo.enums['resourceType']
     };
+    
+    $scope.disablePaste = function(e) {
+        e.preventDefault();
+        return false;
+    }
     
     $scope.update = function() {
     	$scope.query.first = 0;
@@ -2260,7 +2320,7 @@ module.controller('AuthenticationFlowsCtrl', function($scope, $route, realm, flo
 
 module.controller('RequiredActionsCtrl', function($scope, realm, unregisteredRequiredActions,
                                                   $modal, $route,
-                                                  RegisterRequiredAction, RequiredActions, Notifications) {
+                                                  RegisterRequiredAction, RequiredActions, RequiredActionRaisePriority, RequiredActionLowerPriority, Notifications) {
     console.log('RequiredActionsCtrl');
     $scope.realm = realm;
     $scope.unregisteredRequiredActions = unregisteredRequiredActions;
@@ -2280,6 +2340,20 @@ module.controller('RequiredActionsCtrl', function($scope, realm, unregisteredReq
             Notifications.success("Required action updated");
             setupRequiredActionsForm();
         });
+    }
+
+    $scope.raisePriority = function(action) {
+        RequiredActionRaisePriority.save({realm: realm.realm, alias: action.alias}, function() {
+            Notifications.success("Required action's priority raised");
+            setupRequiredActionsForm();
+        })
+    }
+
+    $scope.lowerPriority = function(action) {
+        RequiredActionLowerPriority.save({realm: realm.realm, alias: action.alias}, function() {
+            Notifications.success("Required action's priority lowered");
+            setupRequiredActionsForm();
+        })
     }
 
     $scope.register = function() {
@@ -2760,7 +2834,7 @@ module.controller('RealmImportCtrl', function($scope, realm, $route,
     }
     
     $scope.nothingToImport = function() {
-        Notifications.error('No resouces specified to import.');
+        Notifications.error('No resources specified to import.');
     }
     
     $scope.$watch('fileContent', function() {
