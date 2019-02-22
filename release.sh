@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 RELEASE_LEVEL=$1
-echo "Release \"keycloak-clojure\" with level $RELEASE_LEVEL"
+echo "Release \"keycloak-clojure\" with level '$RELEASE_LEVEL'"
 tag=$(clj -Arelease $RELEASE_LEVEL)
 
 if [ $? -eq 0 ]; then
@@ -10,6 +10,13 @@ else
     echo "Fail to release \"keycloak-clojure\"!"
     exit 1
 fi
+
+
+####################################################
+#                                                  #
+#     Clojars uploading stuff (easier with Maven)  #
+#                                                  #
+####################################################
 
 if [[ $tag =~ v(.+) ]]; then
     newversion=${BASH_REMATCH[1]}
