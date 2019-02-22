@@ -3,11 +3,7 @@
             [clojure.java.data :refer [from-java]]
             [cheshire.core :as json :refer [encode]]
             [clojure.java.io :as io])
-  (:import [org.keycloak.adapters KeycloakDeployment KeycloakDeploymentBuilder]
-           [org.keycloak.representations AccessToken]
-           [org.keycloak.admin.client Keycloak KeycloakBuilder]
-           [org.keycloak.representations.idm CredentialRepresentation UserRepresentation RealmRepresentation ClientRepresentation RoleRepresentation]
-           [org.keycloak RSATokenVerifier OAuth2Constants]))
+  (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation]))
 
 (defn realm [realm-name login-theme]
   (doto (RealmRepresentation.) (.setEnabled true) (.setRealm realm-name) (.setLoginTheme login-theme)))

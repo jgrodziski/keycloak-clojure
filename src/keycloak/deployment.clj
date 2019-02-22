@@ -5,39 +5,57 @@
             [clojure.java.io :as io :refer [input-stream]]
             [keycloak.admin :refer [get-client-secret]])
   (:import [org.keycloak.adapters KeycloakDeployment KeycloakDeploymentBuilder]
+           [org.keycloak.admin.client KeycloakBuilder]
            [org.keycloak.representations AccessToken]
-           [org.keycloak RSATokenVerifier OAuth2Constants]))
+           [org.keycloak RSATokenVerifier OAuth2Constants]
+           [org.jboss.resteasy.client.jaxrs ResteasyClientBuilder]))
 
-(defn build-deployment
-  "take the keycloak configuration from the :keycloak-app-xxx keys in config.edn found on the classpath or through env vars and return a KeycloakDeployment object"
-  [conf]
-  (info "Build keycloak deployment for realm" (:realm conf) "on server" (:auth-server-url conf) "secret starting with" (subs (get-in conf [:credentials :secret]) 0 8))
+(defn deployment
+  "take a keycloak configuration as EDN and return a KeycloakDeployment object"
+  [client-conf]
+  (info "Build keycloak deployment for realm" (:realm client-conf) "on server" (:auth-server-url client-conf) "secret starting with" (subs (get-in client-conf [:credentials :secret]) 0 8))
   (try
-    (let [keycloak-json-is (io/input-stream (.getBytes (json/encode conf)))]
+    (let [keycloak-json-is (io/input-stream (.getBytes (json/encode client-conf)))]
       (KeycloakDeploymentBuilder/build keycloak-json-is))
     (catch java.lang.Throwable t
       (error "failed to build the keycloak app client" t))))
 
-(defn keycloak-backend-config [keycloak-app-server-url client-name]
-    {:realm nil
-     :auth-server-url keycloak-app-server-url
-     :credentials {:secret nil}
-     :ssl-required "external"
-     :resource client-name
-     :confidential-port 0
-                                        ;:use-resource-role-mappings true
-     :policy-enforcer {}})
+(defn client-conf [realm-name client-name keycloak-app-server-url client-secret]
+  {:realm realm-name
+   :auth-server-url keycloak-app-server-url
+   :credentials {:secret client-secret}
+   :ssl-required "external"
+   :verify-token-audience true
+   :use-resource-role-mappings true
+   :resource client-name
+   :confidential-port 0
+  ; :policy-enforcer {}
+   })
+
+(defn authenticate-client [conf username password]
+  (info "Build keycloak client with config for realm" (:realm conf) "on server" (:auth-server-url conf) "secret starting with" (subs (get-in conf [:credentials :secret]) 0 8) "and username" username)
+  (-> (KeycloakBuilder/builder)
+      (.realm (:realm conf))
+      (.serverUrl (:auth-server-url conf))
+      (.clientId (:resource conf))
+      (.clientSecret (get-in conf [:credentials :secret]))
+      (.grantType OAuth2Constants/CLIENT_CREDENTIALS)
+      (.username username)
+      (.password password)
+      (.grantType OAuth2Constants/PASSWORD)
+      (.resteasyClient (-> (ResteasyClientBuilder.)
+                           (.connectionPoolSize 2)
+                           (.build)))
+      (.build)))
 
 (defn deployment-for-realms
-  "take an array of realm name and return a map with realm-name as key and the keycloak deployment as value build dynamically with the admin client"
+  "Given an keycloak client with admin priv., an array of realm name, retrieve the secrets and build dynamically a map with realm-name as key and the keycloak deployment as value, useful for large number of realms and multi-tenant applications, otherwise define them statically"
   [keycloak-client keycloak-app-server-url client-name realms-name]
   (into {} (map (fn [realm-name]
                   (info "Get client secret for realm" realm-name "and client \"" client-name "\"")
                   (try
                     (let [client-secret (get-client-secret keycloak-client realm-name client-name)]
-                      [realm-name (build-deployment (-> (keycloak-backend-config keycloak-app-server-url client-name)
-                                                        (assoc :realm realm-name)
-                                                        (assoc-in [:credentials :secret] client-secret)))])
+                      [realm-name (deployment (client-conf realm-name client-name keycloak-app-server-url client-secret))])
                     (catch javax.ws.rs.NotFoundException nfe
                       (error (str "The client '"client-name"' was not found in realm '" realm-name "', maybe you should create it at the repl with: (fill! \""realm-name"\")"))
                       nil)))

@@ -3,11 +3,7 @@
             [clojure.java.data :refer [from-java]]
             [clojure.java.io :as io]
             [cheshire.core :as json :refer [encode]])
-  (:import [org.keycloak.adapters KeycloakDeployment KeycloakDeploymentBuilder]
-           [org.keycloak.representations AccessToken]
-           [org.keycloak.admin.client Keycloak KeycloakBuilder]
-           [org.keycloak.representations.idm CredentialRepresentation UserRepresentation RoleRepresentation]
-           [org.keycloak RSATokenVerifier OAuth2Constants]))
+  (:import [org.keycloak.representations.idm CredentialRepresentation UserRepresentation RoleRepresentation]))
 
 (defn user-for-update [{:keys [username first-name last-name email] :as person} roles]
   (doto (UserRepresentation.)
