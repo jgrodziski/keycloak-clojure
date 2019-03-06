@@ -41,7 +41,8 @@ fi
 
 # mvn deploy 2>&1 > /dev/null
 
-mvn org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy-file
+mvn org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy-file \
+    -Durl=https://clojars.org/repo \
     -DrepositoryId=clojars \
     -Dfile=target/$JAR_FILENAME \
     -DpomFile=pom.xml \
