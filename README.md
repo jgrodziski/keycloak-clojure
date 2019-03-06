@@ -6,6 +6,11 @@
 
 This repo was first an explanation of integrating Keycloak with Clojure, now I transform it to offer a library named `keycloak-clojure` to wrap the Keycloak Java Adapter and provide some utilities facilitating the integration. The initial explanation is now in the README of the `sample` directory.
 
+version : "0.1.19"
+```clojure
+keycloak-clojure {:mvn/version "0.1.19"}
+```
+
 Before going further be sure to read the [sample's README](sample) to understand the concepts Keycloak offers and the integration points needed to integrate it with your application backend and frontend. Of course the way Keycloak integrates with your application depends of the stack it uses.
 
 # Keycloak 
@@ -96,7 +101,7 @@ Fire up a REPL, then:
 (create-realm! admin-client "myrealm")
 ```
 
-## Keycloak interaction with a web frontend and an API backend
+# Keycloak interaction with a web frontend and an API backend #
 
 The following schema describes the steps and the interactions between the browser, the keycloak server and the API server:
 
