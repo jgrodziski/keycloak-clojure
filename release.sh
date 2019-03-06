@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-ARTIFACT_NAME=$(clj -A:artifact-name)
-ARTIFACT_ID=$(echo "$ARTIFACT_NAME" | cut -f1)
-ARTIFACT_VERSION=$(echo "$ARTIFACT_NAME" | cut -f2)
-JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
 
 RELEASE_LEVEL=$1
 MODULE_NAME=${PWD##*/}
@@ -40,6 +36,11 @@ else
 fi
 
 # mvn deploy 2>&1 > /dev/null
+
+ARTIFACT_NAME=$(clj -A:artifact-name)
+ARTIFACT_ID=$(echo "$ARTIFACT_NAME" | cut -f1)
+ARTIFACT_VERSION=$(echo "$ARTIFACT_NAME" | cut -f2)
+JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
 
 mvn org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy-file \
     -Durl=https://clojars.org/repo \
