@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+ARTIFACT_NAME=$(clj -A:artifact-name)
+ARTIFACT_ID=$(echo "$ARTIFACT_NAME" | cut -f1)
+ARTIFACT_VERSION=$(echo "$ARTIFACT_NAME" | cut -f2)
+JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
+
 RELEASE_LEVEL=$1
 MODULE_NAME=${PWD##*/}
 echo "Release \"$MODULE_NAME\" with level '$RELEASE_LEVEL'"
@@ -34,7 +39,14 @@ else
     exit 1
 fi
 
-mvn deploy  2>&1 > /dev/null
+# mvn deploy 2>&1 > /dev/null
+
+mvn org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy-file
+    -DrepositoryId=clojars \
+    -Dfile=target/$JAR_FILENAME \
+    -DpomFile=pom.xml \
+    -Dclassifier=jar
+
 if [ $? -eq 0 ]; then
     echo "Successfully deployed \"$MODULE_NAME\" version $newversion to clojars"
 else

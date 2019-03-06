@@ -29,11 +29,9 @@
            :test {:extra-paths ["test"]
                   :extra-deps {lambdaisland/kaocha {:mvn/version "0.0-367"}}
                   :main-opts ["-m" "kaocha.runner" "unit-cljs"]}
-
-           :build {:extra-paths ["scripts"]
-                   :extra-deps {org.clojure/tools.cli {:mvn/version "0.4.1"}
-                                commons-validator {:mvn/version "1.5.1"}}
-                   :main-opts ["-m" "build"]}
+           :build {:extra-deps {luchiniatwork/cambada {:git/url "https://github.com/xfthhxk/cambada.git"
+                                                       :sha     "8fdc7d29a41620ad3e9e6210fd7140f3a4c7936b"}}
+                   :main-opts ["-m" "cambada.jar"]}
 
            :artifact-name {:extra-deps {metav {:mvn/version "1.2.0"}}
                            :main-opts ["-m" "metav.display"]}
