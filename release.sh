@@ -51,7 +51,7 @@ mvn org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy-file \
     -DrepositoryId=clojars \
     -Dfile=target/$JAR_FILENAME \
     -DpomFile=pom.xml \
-    -Dclassifier=jar
+    -Dclassifier=
 
 if [ $? -eq 0 ]; then
     echo "Successfully deployed \"$MODULE_NAME\" version $newversion to clojars"
