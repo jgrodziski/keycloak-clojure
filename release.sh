@@ -2,7 +2,7 @@
 
 RELEASE_LEVEL=$1
 MODULE_NAME=${PWD##*/}
-echo "Release \"keycloak-clojure\" with level '$RELEASE_LEVEL'"
+echo "Release \"$MODULE_NAME\" with level '$RELEASE_LEVEL'"
 tag=$(clj -Arelease $RELEASE_LEVEL)
 
 if [ $? -eq 0 ]; then

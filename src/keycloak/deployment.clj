@@ -20,33 +20,44 @@
     (catch java.lang.Throwable t
       (error "failed to build the keycloak app client" t))))
 
-(defn client-conf [realm-name client-name keycloak-app-server-url client-secret]
-  {:realm realm-name
-   :auth-server-url keycloak-app-server-url
-   :credentials {:secret client-secret}
-   :ssl-required "external"
-   :verify-token-audience true
-   :use-resource-role-mappings true
-   :resource client-name
-   :confidential-port 0
-  ; :policy-enforcer {}
-   })
+(defn client-conf
+  ([realm-name client-name keycloak-app-server-url]
+   (client-conf realm-name client-name keycloak-app-server-url nil))
+  ([realm-name client-name keycloak-app-server-url client-secret]
+   (->> {:realm realm-name
+         :auth-server-url keycloak-app-server-url
+         :credentials {:secret client-secret}
+         :ssl-required "external"
+         :verify-token-audience true
+         :use-resource-role-mappings true
+         :resource client-name
+         :confidential-port 0
+         :policy-enforcer {}}
+        (#(if client-secret (assoc % :credentials {:secret client-secret}) %)))))
 
-(defn authenticate-client [conf username password]
-  (info "Build keycloak client with config for realm" (:realm conf) "on server" (:auth-server-url conf) "secret starting with" (subs (get-in conf [:credentials :secret]) 0 8) "and username" username)
+(defn- base-keycloak-builder [conf]
   (-> (KeycloakBuilder/builder)
       (.realm (:realm conf))
       (.serverUrl (:auth-server-url conf))
       (.clientId (:resource conf))
-      (.clientSecret (get-in conf [:credentials :secret]))
-      (.grantType OAuth2Constants/CLIENT_CREDENTIALS)
-      (.username username)
-      (.password password)
-      (.grantType OAuth2Constants/PASSWORD)
       (.resteasyClient (-> (ResteasyClientBuilder.)
                            (.connectionPoolSize 2)
-                           (.build)))
-      (.build)))
+                           (.build)))))
+
+(defn keycloak-client
+  ([conf secret]
+   (info "Build keycloak client with config for realm" (:realm conf) "on server" (:auth-server-url conf) "with secret starting with" (when-let [secret  (get-in conf [:credentials :secret])] (subs secret 0 8)))
+   (-> (base-keycloak-builder conf)
+       (.clientSecret secret)
+       (.grantType OAuth2Constants/CLIENT_CREDENTIALS)
+       (.build)))
+  ([conf username password]
+   (info "Build keycloak client with config for realm" (:realm conf) "on server" (:auth-server-url conf) "with username" username)
+   (-> (base-keycloak-builder conf)
+       (.username username)
+       (.password password)
+       (.grantType OAuth2Constants/PASSWORD)
+       (.build))))
 
 (defn deployment-for-realms
   "Given an keycloak client with admin priv., an array of realm name, retrieve the secrets and build dynamically a map with realm-name as key and the keycloak deployment as value, useful for large number of realms and multi-tenant applications, otherwise define them statically"

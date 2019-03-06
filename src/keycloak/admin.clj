@@ -5,22 +5,34 @@
             [clojure.java.io :as io])
   (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation]))
 
-(defn realm [realm-name login-theme]
-  (doto (RealmRepresentation.) (.setEnabled true) (.setRealm realm-name) (.setLoginTheme login-theme)))
+(defn realm
+  ([realm-name]
+   (doto (RealmRepresentation.) (.setEnabled true) (.setRealm realm-name)))
+  ([realm-name login-theme]
+   (doto (realm realm-name)
+     (.setLoginTheme login-theme))))
 
 (defn get-realm
   [keycloak-client realm-name]
   (-> keycloak-client (.realms) (.realm realm-name)))
 
 (defn create-realm!
-  [keycloak-client realm-name login-theme]
-  (info "create realm" realm-name)
-  (-> keycloak-client (.realms) (.create (realm realm-name login-theme))))
+  ([keycloak-client realm-name]
+   (info "create realm" realm-name)
+   (-> keycloak-client (.realms) (.create (realm realm-name))))
+  ([keycloak-client realm-name login-theme]
+   (info "create realm" realm-name)
+   (-> keycloak-client (.realms) (.create (realm realm-name login-theme)))))
 
 (defn delete-realm!
   [keycloak-client realm-name]
   (info "delete realm" realm-name)
   (-> keycloak-client (.realms) (.realm realm-name) (.remove)))
+
+(defn list-realms
+  [keycloak-client]
+  (info "list realms")
+  (-> keycloak-client (.realms) (.findAll)))
 
 (defn role "create a RoleRepresentation object" [name]
   (RoleRepresentation. name (str "Role created automatically by admin client") false))
