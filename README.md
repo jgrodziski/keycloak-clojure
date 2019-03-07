@@ -50,18 +50,20 @@ Make sure postgresql starts along the machine booting process:
 pg_ctl -D /usr/local/var/postgres start && brew services start postgresql
 ```
 
-## create the default database user for keycloak
+### create the default database user for keycloak ###
+
 ```
 createuser keycloak --createdb --pwprompt
 ```
 when asked for a password, type `password`
 
-## create the default database for keycloak
+### create the default database for keycloak ###
+
 ```
 createdb keycloak -U keycloak 
 ```
 
-## start Keycloak in a docker container
+### start Keycloak in a docker container ###
 
 ```
 cd docker
@@ -70,13 +72,14 @@ cd docker
 now you can [connect on keycloak](http://localhost:8080) using "admin"/"password" to the "master" realm (the default one that Keycloak is using for connecting the "admin" user)
 
 
-## Create Application Realm
+#### Create Application Realm ####
 
 Now depending on the the usage the realm concept: 
 * Multiple realms: one realm per tenant if you develop a SaaS application
 * Single Realm: just one realm if your application is an internal enterprise application
 
-### Manual Realm Creation
+#### Manual Realm Creation ####
+
 You can create the realm manually. In the keycloak administration console create:
 - [a realm](http://www.keycloak.org/docs/latest/getting_started/index.html#_create-realm)
 - [in that realm, a client](http://www.keycloak.org/docs/latest/getting_started/index.html#creating-and-registering-the-client)
@@ -84,7 +87,7 @@ You can create the realm manually. In the keycloak administration console create
 
 The client screen has an "installation" tab that allows to grab the credentials secret for this client that will be part of the needed configuration.
 
-### Automatic Realm Creation
+##### Automatic Realm Creation #####
 
 Add the `keycloak-clojure` dependency to your Clojure project: `[keycloak-clojure "0.1.5"]` or `keycloak-clojure {:mvn/version "0.1.5"}`.
 Fire up a REPL, then:
