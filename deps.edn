@@ -11,15 +11,15 @@
         org.keycloak/keycloak-authz-client {:mvn/version "4.8.3.Final"}
         org.keycloak/keycloak-adapter-spi {:mvn/version "4.8.3.Final"}
         org.jboss.logging/jboss-logging {:mvn/version "3.3.2.Final"}
-        org.apache.httpcomponents/httpclient {:mvn/version "4.5.7"}
+        org.apache.httpcomponents/httpclient {:mvn/version "4.5.2"}
 
         ;;all the deps below are for the admin client (don't know why the transitive deps didn't work)
         org.keycloak/keycloak-admin-client {:mvn/version "4.8.3.Final"}
-        ;com.fasterxml.jackson.core/jackson-databind {:mvn/version "2.9.5"}
-        ;org.jboss.resteasy/resteasy-jackson2-provider {:mvn/version "3.6.3.Final"}
-        ;org.jboss.resteasy/resteasy-client {:mvn/version "3.6.3.Final"}
-        ;org.jboss.resteasy/resteasy-multipart-provider {:mvn/version "3.6.3.Final"}
-        ;org.jboss.spec.javax.ws.rs/jboss-jaxrs-api_2.0_spec {:mvn/version "1.0.1.Final"}
+        com.fasterxml.jackson.core/jackson-databind {:mvn/version "2.9.5"}
+        org.jboss.resteasy/resteasy-jackson2-provider {:mvn/version "3.6.1.Final"}
+        org.jboss.resteasy/resteasy-client {:mvn/version "3.6.1.Final"}
+        org.jboss.resteasy/resteasy-multipart-provider {:mvn/version "3.6.1.Final"}
+        org.jboss.spec.javax.ws.rs/jboss-jaxrs-api_2.1_spec {:mvn/version "1.0.1.Final"}
         }
 
  :aliases {
