@@ -25,5 +25,4 @@
           id (.getId resp)]
       (.findById resource-client id))))
 
-(defn )
 
