@@ -29,6 +29,22 @@ When a user browses an application's web site, the application can redirect the 
 
 [OpenId Connect terminology](http://openid.net/specs/openid-connect-core-1_0.html#Terminology) is implemented by keycloak.
 
+## Authorization Concepts
+
+### Resource Server
+
+Per OAuth2 terminology, a resource server is the server hosting the protected resources and capable of accepting and responding to protected resource requests.
+
+Resource servers usually rely on some kind of information to decide whether access to a protected resource should be granted. For RESTful-based resource servers, that information is usually carried in a security token, typically sent as a bearer token along with every request to the server.
+
+In Keycloak, any confidential client application can act as a resource server. This client’s resources and their respective scopes are protected and governed by a set of authorization policies.
+
+### Resource
+
+A resource is part of the assets of an application and the organization. It can be a set of one or more endpoints, a classic web resource such as an HTML page, and so on. In authorization policy terminology, a resource is the object being protected.
+
+Every resource has a unique identifier that can represent a single resource or a set of resources. For instance, you can manage a Banking Account Resource that represents and defines a set of authorization policies for all banking accounts. But you can also have a different resource named Alice’s Banking Account, which represents a single resource owned by a single customer, which can have its own set of authorization policies.
+
 ## Installation
 
 You can use the [JBoss Keycloak docker image](https://hub.docker.com/r/jboss/keycloak/) `docker pull jboss/keycloak:4.8.3.Final`

@@ -35,6 +35,12 @@
          :policy-enforcer {}}
         (#(if client-secret (assoc % :credentials {:secret client-secret}) %)))))
 
+(defn client-conf-input-stream
+  ([realm-name client-name keycloak-app-server-url]
+   (client-conf-input-stream realm-name client-name keycloak-app-server-url nil))
+  ([realm-name client-name keycloak-app-server-url client-secret]
+   (io/input-stream (.getBytes (json/encode (client-conf realm-name client-name keycloak-app-server-url client-secret))))))
+
 (defn- base-keycloak-builder [conf]
   (-> (KeycloakBuilder/builder)
       (.realm (:realm conf))
