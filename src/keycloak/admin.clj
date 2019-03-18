@@ -3,7 +3,7 @@
             [clojure.java.data :refer [from-java]]
             [cheshire.core :as json :refer [encode]]
             [clojure.java.io :as io])
-  (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation]))
+  (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation GroupRepresentation]))
 
 (defn realm
   ([realm-name]
@@ -41,6 +41,20 @@
   [keycloak-client realm-name role-name]
   (info "create role"role-name"in realm"realm-name)
   (-> keycloak-client (.realms) (.realm realm-name) (.roles) (.create (role role-name))))
+
+(defn group "create a GroupRepresentation object" [group-name]
+  (doto (GroupRepresentation.)
+    (.setName group-name)
+    (.setId group-name)))
+
+(defn create-group!
+  [keycloak-client realm-name group-name]
+  (info "create group" group-name "in realm" realm-name)
+  (-> keycloak-client (.realms) (.realm realm-name) (.groups) (.add (group group-name))))
+
+(defn get-group
+  [keycloak-client realm-name group-id]
+  (-> keycloak-client (.realm realm-name) (.groups) (.findByGroupId group-id) first))
 
 (defn client [client-name public?]
   (doto (ClientRepresentation.)
