@@ -8,7 +8,7 @@ This repo was first an explanation of integrating Keycloak with Clojure, now I t
 
 version : "0.1.19"
 ```clojure
-keycloak-clojure {:mvn/version "0.1.19"}
+keycloak-clojure {:mvn/version "0.2.0"}
 ```
 
 Before going further be sure to read the [sample's README](sample) to understand the concepts Keycloak offers and the integration points needed to integrate it with your application backend and frontend. Of course the way Keycloak integrates with your application depends of the stack it uses.
