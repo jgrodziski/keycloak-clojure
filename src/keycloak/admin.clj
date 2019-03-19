@@ -43,9 +43,7 @@
   (-> keycloak-client (.realms) (.realm realm-name) (.roles) (.create (role-representation role-name))))
 
 (defn group-representation "create a GroupRepresentation object" [group-name]
-  (doto (GroupRepresentation.)
-    (.setName group-name)
-    (.setId group-name)))
+  (doto (GroupRepresentation.) (.setName group-name)))
 
 (defn create-group!
   [keycloak-client realm-name group-name]
