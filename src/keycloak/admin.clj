@@ -3,13 +3,13 @@
             [clojure.java.data :refer [from-java]]
             [cheshire.core :as json :refer [encode]]
             [clojure.java.io :as io])
-  (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation GroupRepresentation]))
+  (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation GroupRepresentation UserRepresentation]))
 
-(defn realm
+(defn realm-representation
   ([realm-name]
    (doto (RealmRepresentation.) (.setEnabled true) (.setRealm realm-name)))
   ([realm-name login-theme]
-   (doto (realm realm-name)
+   (doto (realm-representation realm-name)
      (.setLoginTheme login-theme))))
 
 (defn get-realm
@@ -19,30 +19,30 @@
 (defn create-realm!
   ([keycloak-client realm-name]
    (info "create realm" realm-name)
-   (-> keycloak-client (.realms) (.create (realm realm-name))))
+   (-> keycloak-client (.realms) (.create (realm-representation realm-name))))
   ([keycloak-client realm-name login-theme]
    (info "create realm" realm-name)
-   (-> keycloak-client (.realms) (.create (realm realm-name login-theme)))))
+   (-> keycloak-client (.realms) (.create (realm-representation realm-name login-theme)))))
 
 (defn delete-realm!
   [keycloak-client realm-name]
   (info "delete realm" realm-name)
   (-> keycloak-client (.realms) (.realm realm-name) (.remove)))
 
-(defn list-realms
+(defn list-realms!
   [keycloak-client]
   (info "list realms")
-  (-> keycloak-client (.realms) (.findAll)))
+  (map #(.getRealm %) (-> keycloak-client (.realms) (.findAll))))
 
-(defn role "create a RoleRepresentation object" [name]
+(defn role-representation "create a RoleRepresentation object" [name]
   (RoleRepresentation. name (str "Role created automatically by admin client") false))
 
 (defn create-role!
   [keycloak-client realm-name role-name]
   (info "create role"role-name"in realm"realm-name)
-  (-> keycloak-client (.realms) (.realm realm-name) (.roles) (.create (role role-name))))
+  (-> keycloak-client (.realms) (.realm realm-name) (.roles) (.create (role-representation role-name))))
 
-(defn group "create a GroupRepresentation object" [group-name]
+(defn group-representation "create a GroupRepresentation object" [group-name]
   (doto (GroupRepresentation.)
     (.setName group-name)
     (.setId group-name)))
@@ -50,11 +50,16 @@
 (defn create-group!
   [keycloak-client realm-name group-name]
   (info "create group" group-name "in realm" realm-name)
-  (-> keycloak-client (.realms) (.realm realm-name) (.groups) (.add (group group-name))))
+  (-> keycloak-client (.realms) (.realm realm-name) (.groups) (.add (group-representation group-name))))
 
 (defn get-group
-  [keycloak-client realm-name group-id]
-  (-> keycloak-client (.realm realm-name) (.groups) (.findByGroupId group-id) first))
+  [keycloak-client realm-name group-name]
+  (-> keycloak-client (.realms) (.realm realm-name) (.groups) (.group group-name)))
+
+(defn list-groups!
+  [keycloak-client realm-name]
+  (info "list groups of realm " realm-name)
+  (-> keycloak-client (.realms) (.realm realm-name) (.groups) (.groups)))
 
 (defn client [client-name public?]
   (doto (ClientRepresentation.)
@@ -67,6 +72,16 @@
     (.setRedirectUris ["http://localhost:3449/*"])
     (.setWebOrigins ["http://localhost:3449"])
     (.setName client-name)))
+
+(defn user-representation
+  [username]
+  (doto (UserRepresentation.)
+    (.setId username)))
+
+(defn create-user!
+  [keycloak-client realm-name group-name username]
+  (info "create user" username "in group" group-name "of realm" realm-name)
+  (-> keycloak-client (.realms) (.realm realm-name) (.groups) (.group group-name) (.members) (.add (user-representation username) )))
 
 (defn create-client!
   [keycloak-client realm-name client-id public?]
