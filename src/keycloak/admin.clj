@@ -63,7 +63,7 @@
 
 (defn get-group
       [keycloak-client realm-name group-name]
-      (-> keycloak-client (.realms) (.realm realm-name) (.groups) (.group (get-group-id keycloak-client realm-name group-name)))
+      (-> keycloak-client (.realms) (.realm realm-name) (.groups) (.group (get-group-id keycloak-client realm-name group-name))))
 
 (defn delete-group!
       [keycloak-client realm-name group-name]
