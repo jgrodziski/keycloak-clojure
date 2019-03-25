@@ -31,8 +31,8 @@
 
 (defn list-realms
       [keycloak-client]
-      (info "list of the names of the realms")
-      (map #(.getRealm %) (-> keycloak-client (.realms) (.findAll))))
+      (info "list the realms")
+      (-> keycloak-client (.realms) (.findAll)))
 
 (defn role-representation "create a RoleRepresentation object" [name]
       (RoleRepresentation. name (str "Role created automatically by admin client") false))
@@ -55,19 +55,14 @@
       [keycloak-client realm-name group-name]
       (-> keycloak-client (.realms) (.realm realm-name) (.groups) (.group group-name)))
 
-(defn get-groups-list
+(defn list-groups
       [keycloak-client realm-name]
       (info "list the groups representation objects of realm" realm-name)
       (-> keycloak-client (.realms) (.realm realm-name) (.groups) (.groups)))
 
-(defn list-groups
-      [keycloak-client realm-name]
-      (info "list the name of the groups of realm" realm-name)
-      (map #(.getName %) (get-groups-list keycloak-client realm-name)))
-
 (defn get-group-id
       [keycloak-client realm-name group-name]
-      (-> (filter #(= group-name (.getName %)) (get-groups-list keycloak-client realm-name)) (first) (.getId)))
+      (-> (filter #(= group-name (.getName %)) (list-groups keycloak-client realm-name)) (first) (.getId)))
 
 (defn client [client-name public?]
       (doto (ClientRepresentation.)
@@ -93,26 +88,21 @@
            (println (.getStatus rep))
            rep))
 
-(defn get-users-list
-      [keycloak-client realm-name]
-      (-> keycloak-client (.realms) (.realm realm-name) (.users) (.list)))
-
 (defn list-users
       [keycloak-client realm-name]
-      (map #(.getUsername %) (get-users-list keycloak-client realm-name)))
+      (-> keycloak-client (.realms) (.realm realm-name) (.users) (.list)))
 
 (defn get-user-id
       [keycloak-client realm-name username]
       (info "get user id by username" username)
-      (-> (filter #(= username (.getUsername %)) (get-users-list keycloak-client realm-name)) (first) (.getId)))
+      (-> (filter #(= username (.getUsername %)) (list-users keycloak-client realm-name)) (first) (.getId)))
 
 (defn add-user-to-group-by-name!
       [keycloak-client realm-name group-name username]
       (info "add user" username "in group" group-name "of realm" realm-name)
       (let [group-id (get-group-id keycloak-client realm-name group-name)
-            user-id (get-user-id keycloak-client realm-name username)
-            rep (-> keycloak-client (.realms) (.realm realm-name) (.users) (.get user-id) (.joinGroup group-id))]
-           true))
+            user-id (get-user-id keycloak-client realm-name username)]
+           (-> keycloak-client (.realms) (.realm realm-name) (.users) (.get user-id) (.joinGroup group-id))))
 
 (defn add-user-to-group-by-id!
       [keycloak-client realm-name group-id user-id]
