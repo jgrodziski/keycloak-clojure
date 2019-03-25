@@ -51,10 +51,6 @@
       (info "create group" group-name "in realm" realm-name)
       (-> keycloak-client (.realms) (.realm realm-name) (.groups) (.add (group-representation group-name))))
 
-(defn get-group
-      [keycloak-client realm-name group-name]
-      (-> keycloak-client (.realms) (.realm realm-name) (.groups) (.group group-name)))
-
 (defn list-groups
       [keycloak-client realm-name]
       (info "list the groups representation objects of realm" realm-name)
@@ -63,6 +59,16 @@
 (defn get-group-id
       [keycloak-client realm-name group-name]
       (-> (filter #(= group-name (.getName %)) (list-groups keycloak-client realm-name)) (first) (.getId)))
+
+
+(defn get-group
+      [keycloak-client realm-name group-name]
+      (-> keycloak-client (.realms) (.realm realm-name) (.groups) (.group (get-group-id keycloak-client realm-name group-name)))
+
+(defn delete-group!
+      [keycloak-client realm-name group-name]
+      (info "delete group" group-name "in realm" realm-name)
+      (-> (get-group keycloak-client realm-name group-name) (.remove)))
 
 (defn client [client-name public?]
       (doto (ClientRepresentation.)

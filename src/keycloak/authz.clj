@@ -25,4 +25,7 @@
           id (.getId resp)]
       (.findById resource-client id))))
 
+(defn delete-resource [authz-client name]
+      (let [resource-client (resource-client authz-client)]))
+
 
