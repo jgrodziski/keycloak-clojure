@@ -25,6 +25,9 @@
           id (.getId resp)]
       (.findById resource-client id))))
 
+(defn delete-resource [authz-client name]
+  (let [resource-client (resource-client authz-client)]))
+
 (defn create-role-policy [keycloak-client realm-name client-id role-name resource-id scopes-id]
   (let [role-policy-representation (doto (RolePolicyRepresentation.)
                                      (.addRole role-name)
