@@ -1,6 +1,6 @@
 (ns keycloak.authz
   (:import [org.keycloak.authorization.client AuthzClient]
-           [org.keycloak.representations.idm.authorization ResourceRepresentation ScopeRepresentation]))
+           [org.keycloak.representations.idm.authorization ResourceRepresentation ScopeRepresentation RolePolicyRepresentation]))
 
 (defn authz-client [^java.io.InputStream client-conf-input-stream]
   (AuthzClient/create ^java.io.InputStream client-conf-input-stream))
@@ -25,4 +25,12 @@
           id (.getId resp)]
       (.findById resource-client id))))
 
-
+(defn create-role-policy [keycloak-client realm-name client-id role-name resource-id scopes-id]
+  (let [role-policy-representation (doto (RolePolicyRepresentation.)
+                                     (.addRole role-name)
+                                     (.addResource resource-id)
+                                     (.addScope (into-array java.lang.String scopes-id)))
+        policies-resource (-> keycloak-client (.realms) (.realm realm-name) (.clients) (.get client-id) (.authorization) (.policies))]
+    (-> policies-resource (.create role-policy-representation))
+    (doseq [policy (.policies policies-resource)]
+      (println policy))))
