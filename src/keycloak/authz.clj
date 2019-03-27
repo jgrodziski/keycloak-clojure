@@ -15,18 +15,36 @@
 
 (defn resource-client [authz-client]
   (-> authz-client (.protection) (.resource)))
- 
-(defn create-resource [authz-client name type-urn scopes-urn]
+
+(defn find-resource-by-id
+      [authz-client id]
+      (let [resource-client (resource-client authz-client)])
+      (.findById resource-client id))
+
+(defn find-resource-by-name
+      [authz-client name]
+      (let [resource-client (resource-client authz-client)]
+           (.findByName resource-client name)))
+
+(defn create-resource!
+  [authz-client name type-urn scopes-urn]
   (let [resource-client (resource-client authz-client)
-        existing (.findByName resource-client name)]
+        existing (find-resource-by-name authz-client name)]
     (when existing
       (.delete resource-client (.getId existing)))
     (let [resp (.create resource-client (resource name type-urn scopes-urn))
           id (.getId resp)]
-      (.findById resource-client id))))
+      (find-resource-by-id authz-client id))))
+
+(defn delete-resource!
+  [authz-client name]
+      (let [resource-client (resource-client authz-client)
+            existing (.findByName resource-client name)]
+           (when existing
+                 (.delete resource-client (.getId existing)))))
 
 (defn delete-resource [authz-client name]
-  (let [resource-client (resource-client authz-client)]))
+      (let [resource-client (resource-client authz-client)]))
 
 (defn create-role-policy [keycloak-client realm-name client-id role-name resource-id scopes-id]
   (let [role-policy-representation (doto (RolePolicyRepresentation.)
