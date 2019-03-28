@@ -60,10 +60,22 @@
       [keycloak-client realm-name group-name]
       (-> (filter #(= group-name (.getName %)) (list-groups keycloak-client realm-name)) (first) (.getId)))
 
-
 (defn get-group
       [keycloak-client realm-name group-name]
       (-> keycloak-client (.realms) (.realm realm-name) (.groups) (.group (get-group-id keycloak-client realm-name group-name))))
+
+(defn list-subgroups
+      [keycloak-client realm-name group-name]
+      (info "List all subgroups of group" group-name "in realm " realm-name)
+       (-> (get-group keycloak-client realm-name group-name) (.toRepresentation) (.getSubGroups) ))
+
+(defn create-subgroup!
+      [keycloak-client realm-name group-name subgroup-name]
+      (info "create subgroup" subgroup-name "in group" group-name "in realm" realm-name)
+      (let [group (get-group keycloak-client realm-name group-name)]
+            (-> group (.subGroup (group-representation subgroup-name)))
+            (list-subgroups keycloak-client realm-name group-name)))
+
 
 (defn delete-group!
       [keycloak-client realm-name group-name]
