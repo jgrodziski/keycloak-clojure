@@ -8,9 +8,11 @@
 (defn realm-representation
       ([realm-name]
             (doto (RealmRepresentation.) (.setEnabled true) (.setRealm realm-name)))
-      ([realm-name login-theme]
+      ([realm-name theme]
             (doto (realm-representation realm-name)
-                  (.setLoginTheme login-theme))))
+                  (.setAccountTheme theme)
+                  (.setEmailTheme theme)
+                  (.setLoginTheme theme))))
 
 (defn get-realm
       [keycloak-client realm-name]
