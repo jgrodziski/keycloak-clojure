@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Deps: com.sun.xml.fastinfoset/FastInfoset:1.2.15">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/sun/xml/fastinfoset/FastInfoset/1.2.15/FastInfoset-1.2.15.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

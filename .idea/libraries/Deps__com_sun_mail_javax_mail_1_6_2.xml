@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Deps: com.sun.mail/javax.mail:1.6.2">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/sun/mail/javax.mail/1.6.2/javax.mail-1.6.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

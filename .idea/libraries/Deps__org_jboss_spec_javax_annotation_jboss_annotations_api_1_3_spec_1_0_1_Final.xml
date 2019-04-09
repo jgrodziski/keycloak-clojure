@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Deps: org.jboss.spec.javax.annotation/jboss-annotations-api_1.3_spec:1.0.1.Final">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/jboss/spec/javax/annotation/jboss-annotations-api_1.3_spec/1.0.1.Final/jboss-annotations-api_1.3_spec-1.0.1.Final.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
