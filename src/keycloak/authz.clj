@@ -14,7 +14,7 @@
   (ScopeRepresentation. [scope-urn]))
 
 (defn get-authorization-resource
-  [keycloak-client]
+  [keycloak-client realm-name client-id]
   (-> keycloak-client (.realms) (.realm realm-name) (.clients) (.get client-id) (.authorization)))
 
 (defn resource-client [authz-client]
@@ -55,9 +55,8 @@
                                      (.addRole role-name)
                                      (.addResource resource-id)
                                      (.addScope (into-array java.lang.String scopes-id)))
-        policies-resource (-> (get-authorization-resource keycloak-client) (.policies))]
+        policies-resource (-> (get-authorization-resource keycloak-client realm-name client-id) (.policies))]
     (-> policies-resource (.create role-policy-representation))
     (doseq [policy (.policies policies-resource)]
       (println policy))))
 
-(defn create-scope)
