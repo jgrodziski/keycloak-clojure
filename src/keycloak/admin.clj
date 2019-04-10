@@ -105,7 +105,7 @@
             (.setUsername username)))
 
 (defn create-user!
-      [keycloak-client realm-name group-name username]
+      [keycloak-client realm-name username]
       (info "create user" username "in realm" realm-name)
       (let [rep (-> keycloak-client (.realms) (.realm realm-name) (.users) (.create (user-representation username )))]
            (println (.getStatus rep))
