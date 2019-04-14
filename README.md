@@ -6,9 +6,10 @@
 
 This repo was first an explanation of integrating Keycloak with Clojure, now I transform it to offer a library named `keycloak-clojure` to wrap the Keycloak Java Adapter and provide some utilities facilitating the integration. The initial explanation is now in the README of the `sample` directory.
 
-version : "0.1.19"
+[![Clojars Project](https://img.shields.io/clojars/v/keycloak-clojure.svg)](https://clojars.org/keycloak-clojure)
+
 ```clojure
-keycloak-clojure {:mvn/version "0.2.0"}
+keycloak-clojure {:mvn/version "0.2.7"}
 ```
 
 Before going further be sure to read the [sample's README](sample) to understand the concepts Keycloak offers and the integration points needed to integrate it with your application backend and frontend. Of course the way Keycloak integrates with your application depends of the stack it uses.
