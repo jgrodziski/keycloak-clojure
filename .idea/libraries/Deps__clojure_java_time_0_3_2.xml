@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="Deps: clojure.java-time:0.3.2">
-    <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/clojure/java-time/clojure.java-time/0.3.2/clojure.java-time-0.3.2.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

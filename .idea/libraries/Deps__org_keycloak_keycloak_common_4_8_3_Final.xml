@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="Deps: org.keycloak/keycloak-common:4.8.3.Final">
-    <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/org/keycloak/keycloak-common/4.8.3.Final/keycloak-common-4.8.3.Final.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

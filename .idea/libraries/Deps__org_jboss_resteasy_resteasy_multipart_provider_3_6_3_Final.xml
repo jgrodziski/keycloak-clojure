@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="Deps: org.jboss.resteasy/resteasy-multipart-provider:3.6.3.Final">
-    <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/org/jboss/resteasy/resteasy-multipart-provider/3.6.3.Final/resteasy-multipart-provider-3.6.3.Final.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="Deps: com.github.fge/msg-simple:1.1">
-    <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/com/github/fge/msg-simple/1.1/msg-simple-1.1.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
