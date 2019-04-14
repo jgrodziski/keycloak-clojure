@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Deps: net.incongru.watchservice/barbary-watchservice:1.0">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/net/incongru/watchservice/barbary-watchservice/1.0/barbary-watchservice-1.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

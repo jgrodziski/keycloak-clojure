@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Deps: com.github.fge/btf:1.2">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/github/fge/btf/1.2/btf-1.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

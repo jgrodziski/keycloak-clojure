@@ -60,7 +60,7 @@
 
 (defn get-group-id
       [keycloak-client realm-name group-name]
-      (-> (filter #(= group-name (.getName %)) (list-groups keycloak-client realm-name)) (first) (.getId)))
+  (-> (filter #(= group-name (.getName %)) (list-groups keycloak-client realm-name)) (first) (.getId)))
 
 (defn get-group
       [keycloak-client realm-name group-name]
@@ -69,14 +69,17 @@
 (defn list-subgroups
       [keycloak-client realm-name group-name]
       (info "List all subgroups of group" group-name "in realm " realm-name)
-       (-> (get-group keycloak-client realm-name group-name) (.toRepresentation) (.getSubGroups) ))
+       (-> (get-group keycloak-client realm-name group-name) (.toRepresentation) (.getSubGroups)))
+
+(defn get-subgroup-id
+      [keycloak-client realm-name group-name subgroup-name]
+      (-> (filter #(= subgroup-name (.getName %)) (list-subgroups keycloak-client realm-name group-name)) (first) (.getId)))
 
 (defn create-subgroup!
       [keycloak-client realm-name group-name subgroup-name]
       (info "create subgroup" subgroup-name "in group" group-name "in realm" realm-name)
       (let [group (get-group keycloak-client realm-name group-name)]
-            (-> group (.subGroup (group-representation subgroup-name)))
-            (list-subgroups keycloak-client realm-name group-name)))
+            (-> group (.subGroup (group-representation subgroup-name)))))
 
 
 (defn delete-group!
@@ -102,7 +105,7 @@
             (.setUsername username)))
 
 (defn create-user!
-      [keycloak-client realm-name group-name username]
+      [keycloak-client realm-name username]
       (info "create user" username "in realm" realm-name)
       (let [rep (-> keycloak-client (.realms) (.realm realm-name) (.users) (.create (user-representation username )))]
            (println (.getStatus rep))
@@ -117,7 +120,7 @@
       (info "get user id by username" username)
       (-> (filter #(= username (.getUsername %)) (list-users keycloak-client realm-name)) (first) (.getId)))
 
-(defn add-user-to-group-by-name!
+(defn add-user-to-group!
       [keycloak-client realm-name group-name username]
       (info "add user" username "in group" group-name "of realm" realm-name)
       (let [group-id (get-group-id keycloak-client realm-name group-name)
@@ -127,6 +130,13 @@
 (defn add-user-to-group-by-id!
       [keycloak-client realm-name group-id user-id]
       (-> keycloak-client (.realms) (.realm) (.users) (.get user-id) (.join group-id)))
+
+(defn add-user-to-subgroup!
+      [keycloak-client realm-name group-name subgroup-name username]
+      (info "add user" username "in subgroup" subgroup-name "of group" group-name "of realm" realm-name)
+      (let [subgroup-id (get-subgroup-id keycloak-client realm-name group-name subgroup-name)
+            user-id (get-user-id keycloak-client realm-name username)]
+            (-> keycloak-client (.realms) (.realm realm-name) (.users) (.get user-id) (.joinGroup subgroup-id))))
 
 (defn delete-user!
       [keycloak-client realm-name username]
