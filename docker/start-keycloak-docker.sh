@@ -11,4 +11,4 @@ docker run -d \
        -p 127.0.0.1:8080:8080 \
        -v "$(pwd)"/keycloak/configuration:/opt/jboss/keycloak/standalone/configuration \
        -v "$(pwd)"/keycloak/themes:/opt/jboss/keycloak/themes \
-       jboss/keycloak:4.8.3.Final
+       jboss/keycloak:6.0.1
