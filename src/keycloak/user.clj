@@ -62,18 +62,30 @@
   (let [user-searched (search-user keycloak-client realm-name username)
         user-id (-> user-searched first (.getId))
         user-resource (-> keycloak-client (.realm realm-name) (.users) (.get user-id))
-        roles-representations (doall (map (fn [role] (-> keycloak-client (.realm realm-name) (.roles) (.get role) (.toRepresentation))) (map name roles)))]
-    (-> user-resource (.roles) (.realmLevel) (.add (java.util.ArrayList. (vec roles-representations))))))
+        roles-representations (doall (map (fn [role]
+                                            (-> keycloak-client
+                                                (.realm realm-name)
+                                                (.roles)
+                                                (.get role)
+                                                (.toRepresentation))) (map name roles)))]
+    (-> user-resource
+        (.roles)
+        (.realmLevel)
+        (.add (java.util.ArrayList. (vec roles-representations))))))
 
 (defn- check-user-properly-created [keycloak-client realm-name username email]
   (let [user-searched (search-user keycloak-client realm-name username)]
     (when (or (nil? user-searched) (empty? user-searched))
-      (throw (ex-info (str "Can't find user " username " due to creation failure. Check the uniqueness and validity of the username and email in Keycloak (email:"email")") {:username username :email email})))))
+      (throw (ex-info (str "Can't find user " username
+                           " due to creation failure. Check the uniqueness and"
+                           " validity of the username and email in Keycloak (email:"email")")
+                      {:username username :email email})))))
 
 (defn delete-and-create-user!
   ([keycloak-client realm-name person]
    (delete-and-create-user! keycloak-client realm-name person nil))
-  ([keycloak-client realm-name {:keys [username first-name last-name email password is-manager] :as person} roles]
+  ([keycloak-client realm-name {:keys [username first-name last-name email password is-manager]
+                                :as person} roles]
    (info "create user" username "in realm" realm-name"with roles"roles". If user already exists, delete it and re-create it.")
    (let [username-exists? (not (nil? (user-id keycloak-client realm-name username)))
          email-exists? (not (nil? (user-id keycloak-client realm-name email)))

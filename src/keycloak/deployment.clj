@@ -6,7 +6,6 @@
             [keycloak.admin :refer [get-client-secret]])
   (:import [org.keycloak.adapters KeycloakDeployment KeycloakDeploymentBuilder]
            [org.keycloak.admin.client KeycloakBuilder]
-           [org.keycloak.representations AccessToken]
            [org.keycloak RSATokenVerifier OAuth2Constants]
            [org.jboss.resteasy.client.jaxrs ResteasyClientBuilder]))
 
@@ -85,39 +84,47 @@
         public-key (.getPublicKey (.getPublicKeyLocator deployment) kid deployment)]
     (-> verifier (.publicKey public-key) (.verify) (.getToken))))
 
+(defrecord AccessToken
+    [username roles nonce auth-time session-state access-token-hash code-hash name given-name family-name middle-name
+     nick-name preferred-username profile picture website email email-verified gender birthdate zoneinfo
+     locale phone-number phone-number-verified address updated-at claims-locales acr state-hash other-claims]
+  Object
+  (toString [access-token] (pr-str access-token)))
 
 (defn extract
   "return a map with :user and :roles keys with values extracted from the Keycloak access token along with all the props of the AccessToken bean"
   [access-token]
-  {:username              (.getPreferredUsername access-token)
-   :roles                 (set (map keyword (.getRoles (.getRealmAccess access-token))))
-   :nonce                 (.getNonce access-token)
-   :auth-time             (.getAuthTime access-token)
-   :session-state         (.getSessionState access-token)
-   :access-token-hash     (.getAccessTokenHash access-token)
-   :code-hash             (.getCodeHash access-token)
-   :name                  (.getName access-token)
-   :given-name            (.getGivenName access-token)
-   :family-name           (.getFamilyName access-token)
-   :middle-name           (.getMiddleName access-token)
-   :nick-name             (.getNickName access-token)
-   :preferred-username    (.getPreferredUsername access-token)
-   :profile               (.getProfile access-token)
-   :picture               (.getPicture access-token)
-   :website               (.getWebsite access-token)
-   :email                 (.getEmail access-token)
-   :email-verified        (.getEmailVerified access-token)
-   :gender                (.getGender access-token)
-   :birthdate             (.getBirthdate access-token)
-   :zoneinfo              (.getZoneinfo access-token)
-   :locale                (.getLocale access-token)
-   :phone-number          (.getPhoneNumber access-token)
-   :phone-number-verified (.getPhoneNumberVerified access-token)
-   :address               (.getAddress access-token)
-   :updated-at            (.getUpdatedAt access-token)
-   :claims-locales        (.getClaimsLocales access-token)
-   :acr                   (.getAcr access-token)
-   :state-hash            (.getStateHash access-token)})
+  (map->AccessToken {:username              (.getPreferredUsername access-token)
+                     :roles                 (set (map keyword (.getRoles (.getRealmAccess access-token))))
+                     :nonce                 (.getNonce access-token)
+                     :auth-time             (.getAuthTime access-token)
+                     :session-state         (.getSessionState access-token)
+                     :access-token-hash     (.getAccessTokenHash access-token)
+                     :code-hash             (.getCodeHash access-token)
+                     :name                  (.getName access-token)
+                     :given-name            (.getGivenName access-token)
+                     :family-name           (.getFamilyName access-token)
+                     :middle-name           (.getMiddleName access-token)
+                     :nick-name             (.getNickName access-token)
+                     :preferred-username    (.getPreferredUsername access-token)
+                     :profile               (.getProfile access-token)
+                     :picture               (.getPicture access-token)
+                     :website               (.getWebsite access-token)
+                     :email                 (.getEmail access-token)
+                     :email-verified        (.getEmailVerified access-token)
+                     :gender                (.getGender access-token)
+                     :birthdate             (.getBirthdate access-token)
+                     :zoneinfo              (.getZoneinfo access-token)
+                     :locale                (.getLocale access-token)
+                     :phone-number          (.getPhoneNumber access-token)
+                     :phone-number-verified (.getPhoneNumberVerified access-token)
+                     :address               (.getAddress access-token)
+                     :updated-at            (.getUpdatedAt access-token)
+                     :claims-locales        (.getClaimsLocales access-token)
+                     :acr                   (.getAcr access-token)
+                     :state-hash            (.getStateHash access-token)
+                     :other-claims          (into {} (map (fn [[k v]] [(keyword k) v]) (.getOtherClaims access-token)))}))
+
 
 (defn access-token [deployment keycloak-client username password]
   (let [access-token-string (-> keycloak-client (.tokenManager) (.getAccessToken) (.getToken))
