@@ -14,22 +14,26 @@
      (.setEmailTheme theme)
      (.setLoginTheme theme))))
 
+(defn get-realm
+  [keycloak-client realm-name]
+  (-> keycloak-client (.realm realm-name) (.toRepresentation)))
+
 (defn create-realm!
   ([keycloak-client realm-name]
    (info "create realm" realm-name)
-   (-> keycloak-client (.realms) (.create (realm-representation realm-name))))
+   (-> keycloak-client (.realms) (.create (realm-representation realm-name)))
+   (info "realm" realm-name "created")
+   (get-realm keycloak-client realm-name))
   ([keycloak-client realm-name login-theme]
    (info "create realm" realm-name)
-   (-> keycloak-client (.realms) (.create (realm-representation realm-name login-theme)))))
+   (-> keycloak-client (.realms) (.create (realm-representation realm-name login-theme)))
+   (info "realm" realm-name "created")
+   (get-realm keycloak-client realm-name)))
 
 (defn delete-realm!
   [keycloak-client realm-name]
   (info "delete realm" realm-name)
   (-> keycloak-client (.realms) (.realm realm-name) (.remove)))
-
-(defn get-realm
-  [keycloak-client realm-name]
-  (-> keycloak-client (.realm realm-name) (.toRepresentation)))
 
 (defn list-realms
   [keycloak-client]
