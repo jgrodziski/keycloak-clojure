@@ -21,7 +21,6 @@
 (def integration-test-conf
   (deployment/client-conf "master" "admin-cli" auth-server-url))
 
-; (def deployments (deployment-for-realms kc-admin-client auth-server-url client-account-backend ["electre"]))
 
 (deftest ^:integration deployment-test
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)]
@@ -31,20 +30,19 @@
         (is (= realm-name (.getRealm realm)))
         (testing "create a client, then a deployment for that client"
           (let [client-id (str "test-client-" (rand-int 1000))
-                test-client (create-client! admin-client realm-name client-id true)
+                created-client (create-client! admin-client realm-name client-id true)
                 deployments (deployment-for-realms admin-client auth-server-url client-id [realm-name])]
-            (is (= client-id (.getClientId test-client)))
+            (is (= client-id (.getClientId created-client)))
             (testing "user creation in the realm then join to group"
               (let [username (str "user-" (rand-int 1000))
                     password (str "pass" (rand-int 100))
-                    user (delete-and-create-user! admin-client realm-name {:username username :password password})
-                    ]
+                    user (delete-and-create-user! admin-client realm-name {:username username :password password})]
                 (is (= username (:username user)))
                 (testing "authentication and token verification and extraction"
                   (let [token (authenticate auth-server-url realm-name client-id username password)
-                        access-token (verify deployments realm-name (:access_token token))]
-                    (let [extracted-token (extract access-token)]
-                      (is (= username  (:username extracted-token))))))))))
+                        access-token (verify deployments realm-name (:access_token token))
+                        extracted-token (extract access-token)]
+                    (is (= username (:username extracted-token)))))))))
         (testing "realm deletion"
           (delete-realm! admin-client realm-name)
           (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name))))))))
