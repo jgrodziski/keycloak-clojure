@@ -11,16 +11,23 @@
     (.setFirstName first-name)
     (.setLastName last-name)
     (.setEmail email)
-    (.setRealmRoles (java.util.ArrayList. (vec (map name roles))))
-    ;;setRealmRoles has a bug with the admin REST API and doesn't work, keep it here, but need to deal with UserResource to add them
-    (.setEnabled true)))
+    (.setEnabled true)
+    ;;setRealmRoles has a bug with the admin REST API and doesn't work
+    ))
 
-(defn user-for-creation [{:keys [username first-name last-name email password] :as person}]
-  (doto (user-for-update person)
-    (.setRequiredActions (java.util.ArrayList. ["UPDATE_PASSWORD"]))
-    (.setCredentials [(doto (CredentialRepresentation.)
-                        (.setType CredentialRepresentation/PASSWORD)
-                        (.setValue password))])))
+(defn user-for-creation
+  ([{:keys [username first-name last-name email password] :as person}]
+   (doto (user-for-update person nil)
+     (.setCredentials [(doto (CredentialRepresentation.)
+                         (.setType CredentialRepresentation/PASSWORD)
+                         (.setValue password))])))
+  ([{:keys [username first-name last-name email password] :as person} required-actions]
+   (doto (user-for-update person nil)
+     (.setRequiredActions (java.util.ArrayList. required-actions))
+                                        ;(.setRequiredActions (java.util.ArrayList. ["UPDATE_PASSWORD"]))
+     (.setCredentials [(doto (CredentialRepresentation.)
+                         (.setType CredentialRepresentation/PASSWORD)
+                         (.setValue password))]))))
 
 (defn search-user
   ([keycloak-client realm-name user-attribute]
@@ -110,7 +117,7 @@
       )
     (try
       (if (and username-exists? user-id)
-        (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.update (user-for-update person)))
+        (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.update (user-for-update person roles)))
         (-> keycloak-client (.realm realm-name) (.users) (.create (user-for-creation person))))
       (catch javax.ws.rs.ClientErrorException cee
         (warn "Exception while creating or updating " person (.getMessage cee))))

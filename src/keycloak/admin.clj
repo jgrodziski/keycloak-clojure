@@ -50,7 +50,6 @@
   (info "create role" role-name "in realm" realm-name)
   (-> keycloak-client (.realm realm-name) (.roles) (.create (role-representation role-name))))
 
-
 (defn group-representation "create a GroupRepresentation object" [group-name]
   (doto (GroupRepresentation.) (.setName group-name)))
 
@@ -108,10 +107,21 @@
   (->> (get-subgroup-id keycloak-client realm-name group-id subgroup-name)
        (get-group keycloak-client realm-name)))
 
+(defn credential-representation [type value]
+  (doto (CredentialRepresentation.)
+    (.setType type)
+    (.setValue value)))
+
 (defn user-representation
-  [username]
-  (doto (UserRepresentation.)
-    (.setUsername username)))
+  ([username]
+   (doto (UserRepresentation.)
+     (.setUsername username)
+     (.setEnabled true)))
+  ([username password]
+   (doto (UserRepresentation.)
+     (.setUsername username)
+     (.setEnabled true)
+     (.setCredentials [(credential-representation CredentialRepresentation/PASSWORD password)]))))
 
 (defn list-users
   [keycloak-client realm-name]
@@ -137,11 +147,11 @@
   (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.toRepresentation)))
 
 (defn create-user!
-  [keycloak-client realm-name username]
-  (info "create user" username "in realm" realm-name)
-  (-> keycloak-client (.realm realm-name) (.users) (.create (user-representation username)))
-  (info "user" username "created in realm" realm-name)
-  (get-user-by-username keycloak-client realm-name username))
+  ([keycloak-client realm-name username password]
+   (info "create user" username "in realm" realm-name)
+   (-> keycloak-client (.realm realm-name) (.users) (.create (if password (user-representation username password) (user-representation username))))
+   (info "user" username "created in realm" realm-name)
+   (get-user-by-username keycloak-client realm-name username)))
 
 (defn add-user-to-group-by-username!
   [keycloak-client realm-name group-id username]
