@@ -35,8 +35,7 @@
                   (let [user-name (str "user-" (rand-int 1000))
                         user (create-user! admin-client realm-name user-name)
                         joined-group (add-user-to-group! admin-client realm-name (.getId subgroup) (.getId user))
-                        members (get-group-members admin-client realm-name (.getId subgroup))
-]
+                        members (get-group-members admin-client realm-name (.getId subgroup))]
                     (is (= user-name (.getUsername user)))
                     (is (some #(= (.getId user) (.getId %)) members))
                     ))))))

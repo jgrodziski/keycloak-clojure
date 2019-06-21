@@ -169,17 +169,21 @@
   [keycloak-client realm-name user-id]
   (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.groups)))
 
-(defn client [client-name public?]
-  (doto (ClientRepresentation.)
-    (.setClientId client-name)
-    (.setPublicClient public?)
-    (.setStandardFlowEnabled true)
-    (.setDirectAccessGrantsEnabled true)
-    (.setServiceAccountsEnabled (not public?))
-    (.setAuthorizationServicesEnabled (not public?))
-    (.setRedirectUris ["http://localhost:3449/*"])
-    (.setWebOrigins ["http://localhost:3449"])
-    (.setName client-name)))
+(defn client
+  "create a ClientRepresentation with client-name the public/private flag"
+  ([client-name public?]
+   (client client-name public? ["http://localhost:3449/*"] ["http://localhost:3449"]))
+  ([client-name public? redirect-uris web-origins]
+   (doto (ClientRepresentation.)
+     (.setClientId client-name)
+     (.setPublicClient public?)
+     (.setStandardFlowEnabled true)
+     (.setDirectAccessGrantsEnabled true)
+     (.setServiceAccountsEnabled (not public?))
+     (.setAuthorizationServicesEnabled (not public?))
+     (.setRedirectUris redirect-uris)
+     (.setWebOrigins web-origins)
+     (.setName client-name))))
 
 (defn get-client
   [keycloak-client realm-name client-id]
