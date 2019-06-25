@@ -6,8 +6,10 @@
 
 (def admin-login "admin")
 (def admin-password "secretadmin")
+(def auth-server-url "http://localhost:8090/auth")
+
 (def integration-test-conf
-  (client-conf "master" "admin-cli" "http://localhost:8090/auth"))
+  (deployment/client-conf auth-server-url "master" "admin-cli"))
 
 (def admin-client (deploy/keycloak-client integration-test-conf admin-login admin-password))
 

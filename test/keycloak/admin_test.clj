@@ -9,7 +9,7 @@
 (def auth-server-url "http://localhost:8090/auth")
 
 (def integration-test-conf
-  (deployment/client-conf "master" "admin-cli" auth-server-url))
+  (deployment/client-conf auth-server-url "master" "admin-cli"))
 
 ; (def deployments (deployment-for-realms kc-admin-client auth-server-url client-account-backend ["electre"]))
 

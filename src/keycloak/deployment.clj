@@ -21,25 +21,27 @@
       (error "failed to build the keycloak app client" t))))
 
 (defn client-conf
-  ([realm-name client-name keycloak-app-server-url]
-   (client-conf realm-name client-name keycloak-app-server-url nil))
-  ([realm-name client-name keycloak-app-server-url client-secret]
+  ([{:keys [realm-name auth-server-url client-id client-secret] :as conf}]
+   (client-conf auth-server-url realm-name client-id client-secret))
+  ([auth-server-url realm-name client-id]
+   (client-conf auth-server-url realm-name client-id nil))
+  ([auth-server-url realm-name client-id client-secret]
    (->> {:realm realm-name
-         :auth-server-url keycloak-app-server-url
+         :auth-server-url auth-server-url
          :credentials {:secret client-secret}
          :ssl-required "external"
          :verify-token-audience true
          :use-resource-role-mappings true
-         :resource client-name
+         :resource client-id
          :confidential-port 0
          :policy-enforcer {}}
         (#(if client-secret (assoc % :credentials {:secret client-secret}) %)))))
 
 (defn client-conf-input-stream
-  ([realm-name client-name keycloak-app-server-url]
-   (client-conf-input-stream realm-name client-name keycloak-app-server-url nil))
-  ([realm-name client-name keycloak-app-server-url client-secret]
-   (io/input-stream (.getBytes (json/encode (client-conf realm-name client-name keycloak-app-server-url client-secret))))))
+  ([auth-server-url realm-name client-id]
+   (client-conf-input-stream auth-server-url realm-name client-id nil))
+  ([auth-server-url realm-name client-id client-secret]
+   (io/input-stream (.getBytes (json/encode (client-conf auth-server-url realm-name client-id client-secret))))))
 
 (defn- base-keycloak-builder [conf]
   (-> (KeycloakBuilder/builder)
@@ -66,15 +68,15 @@
        (.build))))
 
 (defn deployment-for-realms
-  "Given an keycloak client with admin priv., an array of realm name, retrieve the secrets and build dynamically a map with realm-name as key and the keycloak deployment as value, useful for large number of realms and multi-tenant applications, otherwise define them statically"
-  [keycloak-client keycloak-app-server-url client-name realms-name]
+  "Given an keycloak client with admin privilege, an array of realm name, retrieve the secrets and build dynamically a map with realm-name as key and the keycloak deployment as value, useful for large number of realms and multi-tenant applications or tests, otherwise define them statically"
+  [keycloak-client auth-server-url client-id realms-name]
   (into {} (map (fn [realm-name]
-                  (info "Get client secret for realm" realm-name "and client \"" client-name "\"")
+                  (info "Get client secret for realm" realm-name "and client \"" client-id "\"")
                   (try
-                    (let [client-secret (get-client-secret keycloak-client realm-name client-name)]
-                      [realm-name (deployment (client-conf realm-name client-name keycloak-app-server-url client-secret))])
+                    (let [client-secret (get-client-secret keycloak-client realm-name client-id)]
+                      [realm-name (deployment (client-conf auth-server-url realm-name client-id client-secret))])
                     (catch javax.ws.rs.NotFoundException nfe
-                      (error (str "The client '"client-name"' was not found in realm '" realm-name "', maybe you should create it at the repl with: (fill! \""realm-name"\")"))
+                      (error (str "The client '"client-id "' was not found in realm '" realm-name "', maybe you should create it at the repl with: (fill! \""realm-name"\")"))
                       nil)))
                 realms-name)))
 

@@ -19,9 +19,9 @@
     :client_secret client-secret}))
 
 (defn authenticate
-  "return the access token decoded as a clojure data struct."
+  "return the bearer token decoded as a clojure data struct. (with :access_token and :refresh_token keys, beware 'underscore _' not 'hyphen -')"
   [auth-server-url realm-name client-id username password]
-  (info "Authenticate against " (oidc-connect-url auth-server-url realm-name))
+  (info "Authenticate against" (oidc-connect-url auth-server-url realm-name) "for client-id"  client-id "with user" username)
   (-> (http/post (oidc-connect-url auth-server-url realm-name)
                     {:form-params (client-credentials client-id username password)})
         :body
@@ -29,3 +29,8 @@
 
 (defn access-token [client username password]
   (-> client (.obtainAccessToken username password)))
+
+(defn auth-cookie [bearer]
+  {"X-Authorization-Token" {:discard true, :path "/", :value (:access_token bearer), :version 0}})
+
+(defn auth-header [bearer])

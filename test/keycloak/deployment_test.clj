@@ -19,8 +19,7 @@
 (def auth-server-url "http://localhost:8090/auth")
 
 (def integration-test-conf
-  (deployment/client-conf "master" "admin-cli" auth-server-url))
-
+  (deployment/client-conf auth-server-url "master" "admin-cli"))
 
 (deftest ^:integration deployment-test
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)]
