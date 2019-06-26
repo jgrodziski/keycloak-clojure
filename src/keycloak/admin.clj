@@ -8,6 +8,10 @@
   (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation GroupRepresentation UserRepresentation]
            [javax.ws.rs.core Response]))
 
+(defn extract-id [^Response resp]
+  (let [uri (-> resp .getLocation .toString)]
+    (subs uri (+ (last-index-of uri "/") 1))))
+
 (defn realm-representation
   ([realm-name]
    (doto (RealmRepresentation.) (.setEnabled true) (.setRealm realm-name) (.setId realm-name)))
@@ -70,14 +74,10 @@
   [keycloak-client realm-name group-id]
   (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.toRepresentation)))
 
-(defn extract-group-id [^Response resp]
-  (let [uri (-> resp .getLocation .toString)]
-    (subs uri (+ (last-index-of uri "/") 1))))
-
 (defn create-group!
   [keycloak-client realm-name group-name]
   (info "create group" group-name "in realm" realm-name)
-  (let [group-id (-> keycloak-client (.realm realm-name) (.groups) (.add (group-representation group-name)) extract-group-id)]
+  (let [group-id (-> keycloak-client (.realm realm-name) (.groups) (.add (group-representation group-name)) extract-id)]
     (info "group" group-name "created in realm" realm-name " with group id" group-id)
     (get-group keycloak-client realm-name group-id)))
 
@@ -107,7 +107,7 @@
 (defn create-subgroup!
   [keycloak-client realm-name group-id subgroup-name]
   (info "create subgroup" subgroup-name "in group" group-id "in realm" realm-name)
-  (let [subgroup-id (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.subGroup (group-representation subgroup-name)) extract-group-id)]
+  (let [subgroup-id (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.subGroup (group-representation subgroup-name)) extract-id)]
     (info "subgroup" subgroup-name "created in group" group-id "in realm" realm-name "with subgroup-id" subgroup-id)
     (get-group keycloak-client realm-name subgroup-id)))
 
@@ -151,11 +151,11 @@
   (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.toRepresentation)))
 
 (defn create-user!
-  ([keycloak-client realm-name username password]
-   (info "create user" username "in realm" realm-name)
-   (-> keycloak-client (.realm realm-name) (.users) (.create (if password (user-representation username password) (user-representation username))))
-   (info "user" username "created in realm" realm-name)
-   (get-user-by-username keycloak-client realm-name username)))
+  [keycloak-client realm-name username password]
+  (info "create user" username "in realm" realm-name)
+  (let [user-id (-> keycloak-client (.realm realm-name) (.users) (.create (if password (user-representation username password) (user-representation username))) extract-id)]
+    (info "user with username " username "created in realm" realm-name " with id" user-id)
+    (get-user keycloak-client realm-name user-id)))
 
 (defn add-user-to-group-by-username!
   [keycloak-client realm-name group-id username]
