@@ -2,10 +2,11 @@
   (:require
    [clojure.java.io :as io]
    [clojure.java.data :refer [from-java]]
+   [clojure.string :as string :refer [last-index-of]]
    [clojure.tools.logging :as log :refer [info]]
-   [cheshire.core :as json :refer [encode]]
-   [bean-dip.core :as bd])
-  (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation GroupRepresentation UserRepresentation]))
+   [cheshire.core :as json :refer [encode]])
+  (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation GroupRepresentation UserRepresentation]
+           [javax.ws.rs.core Response]))
 
 (defn realm-representation
   ([realm-name]
@@ -65,21 +66,25 @@
   [keycloak-client realm-name group-name]
   (some #(if (= group-name (.getName %)) (.getId %)) (list-groups keycloak-client realm-name)))
 
+(defn get-group
+  [keycloak-client realm-name group-id]
+  (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.toRepresentation)))
+
+(defn extract-group-id [^Response resp]
+  (let [uri (-> resp .getLocation .toString)]
+    (subs uri (+ (last-index-of uri "/") 1))))
+
 (defn create-group!
   [keycloak-client realm-name group-name]
   (info "create group" group-name "in realm" realm-name)
-  (-> keycloak-client (.realm realm-name) (.groups) (.add (group-representation group-name)))
-  (info "group" group-name "created in realm" realm-name)
-  (first (list-groups keycloak-client realm-name group-name)))
+  (let [group-id (-> keycloak-client (.realm realm-name) (.groups) (.add (group-representation group-name)) extract-group-id)]
+    (info "group" group-name "created in realm" realm-name " with group id" group-id)
+    (get-group keycloak-client realm-name group-id)))
 
 (defn delete-group!
   [keycloak-client realm-name group-id]
   (info "delete group [id=" group-id "] in realm" realm-name)
   (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.remove)))
-
-(defn get-group
-  [keycloak-client realm-name group-id]
-  (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.toRepresentation)))
 
 (defn get-subgroup
   [keycloak-client realm-name group-id subgroup-id]
@@ -102,10 +107,9 @@
 (defn create-subgroup!
   [keycloak-client realm-name group-id subgroup-name]
   (info "create subgroup" subgroup-name "in group" group-id "in realm" realm-name)
-  (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.subGroup (group-representation subgroup-name)))
-  (info "subgroup" subgroup-name "created in group" group-id "in realm" realm-name)
-  (->> (get-subgroup-id keycloak-client realm-name group-id subgroup-name)
-       (get-group keycloak-client realm-name)))
+  (let [subgroup-id (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.subGroup (group-representation subgroup-name)) extract-group-id)]
+    (info "subgroup" subgroup-name "created in group" group-id "in realm" realm-name "with subgroup-id" subgroup-id)
+    (get-group keycloak-client realm-name subgroup-id)))
 
 (defn credential-representation [type value]
   (doto (CredentialRepresentation.)

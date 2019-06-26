@@ -21,8 +21,8 @@
       (error "failed to build the keycloak app client" t))))
 
 (defn client-conf
-  ([{:keys [realm-name auth-server-url client-id client-secret] :as conf}]
-   (client-conf auth-server-url realm-name client-id client-secret))
+  ([{:keys [realm auth-server-url client-id client-secret] :as conf}]
+   (client-conf auth-server-url realm client-id client-secret))
   ([auth-server-url realm-name client-id]
    (client-conf auth-server-url realm-name client-id nil))
   ([auth-server-url realm-name client-id client-secret]
@@ -54,12 +54,14 @@
 
 (defn keycloak-client
   ([conf secret]
+   (prn conf)
    (info "Build keycloak client with config for realm" (:realm conf) "on server" (:auth-server-url conf) "with secret starting with" (when-let [secret  (get-in conf [:credentials :secret])] (subs secret 0 8)))
    (-> (base-keycloak-builder conf)
        (.clientSecret secret)
        (.grantType OAuth2Constants/CLIENT_CREDENTIALS)
        (.build)))
   ([conf username password]
+   (prn conf)
    (info "Build keycloak client with config for realm" (:realm conf) "on server" (:auth-server-url conf) "with username" username)
    (-> (base-keycloak-builder conf)
        (.username username)
@@ -71,7 +73,7 @@
   "Given an keycloak client with admin privilege, an array of realm name, retrieve the secrets and build dynamically a map with realm-name as key and the keycloak deployment as value, useful for large number of realms and multi-tenant applications or tests, otherwise define them statically"
   [keycloak-client auth-server-url client-id realms-name]
   (into {} (map (fn [realm-name]
-                  (info "Get client secret for realm" realm-name "and client \"" client-id "\"")
+                  (info (format "Get client secret on server %s for realm %s and client \"%s\"" auth-server-url realm-name client-id))
                   (try
                     (let [client-secret (get-client-secret keycloak-client realm-name client-id)]
                       [realm-name (deployment (client-conf auth-server-url realm-name client-id client-secret))])

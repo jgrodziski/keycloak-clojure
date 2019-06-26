@@ -9,7 +9,7 @@
 (def auth-server-url "http://localhost:8090/auth")
 
 (def integration-test-conf
-  (deployment/client-conf auth-server-url "master" "admin-cli"))
+  (deploy/client-conf auth-server-url "master" "admin-cli"))
 
 (def admin-client (deploy/keycloak-client integration-test-conf admin-login admin-password))
 
