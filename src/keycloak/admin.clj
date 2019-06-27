@@ -9,8 +9,9 @@
            [javax.ws.rs.core Response]))
 
 (defn extract-id [^Response resp]
-  (let [uri (-> resp .getLocation .toString)]
-    (subs uri (+ (last-index-of uri "/") 1))))
+  (when resp
+    (let [uri (-> resp .getLocation .toString)]
+      (subs uri (+ (last-index-of uri "/") 1)))))
 
 (defn realm-representation
   ([realm-name]

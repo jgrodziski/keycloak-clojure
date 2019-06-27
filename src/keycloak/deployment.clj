@@ -61,7 +61,6 @@
        (.grantType OAuth2Constants/CLIENT_CREDENTIALS)
        (.build)))
   ([conf username password]
-   (prn conf)
    (info "Build keycloak client with config for realm" (:realm conf) "on server" (:auth-server-url conf) "with username" username)
    (-> (base-keycloak-builder conf)
        (.username username)
