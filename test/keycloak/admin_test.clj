@@ -13,6 +13,8 @@
 
 ; (def deployments (deployment-for-realms kc-admin-client auth-server-url client-account-backend ["electre"]))
 
+(def admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password))
+
 (deftest ^:integration admin-test
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)]
     (testing "realm creation "

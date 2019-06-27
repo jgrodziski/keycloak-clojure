@@ -55,7 +55,6 @@
 
 (defn keycloak-client
   ([conf secret]
-   (prn conf)
    (info "Build keycloak client with config for realm" (:realm conf) "on server" (:auth-server-url conf) "with secret starting with" (when-let [secret  (get-in conf [:credentials :secret])] (subs secret 0 8)))
    (-> (base-keycloak-builder conf)
        (.clientSecret secret)
