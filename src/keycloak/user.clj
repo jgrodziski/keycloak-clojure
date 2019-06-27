@@ -12,23 +12,27 @@
     (when-let [loc (.getLocation resp)]
       (subs (str loc) (+ (last-index-of (str loc) "/") 1)))))
 
-(defn user-for-update [{:keys [username first-name last-name email] :as person} roles]
-  (doto (UserRepresentation.)
-    (.setUsername username)
-    (.setFirstName first-name)
-    (.setLastName last-name)
-    (.setEmail email)
-    (.setEnabled true)
-    ;;setRealmRoles has a bug with the admin REST API and doesn't work
-    ))
+(defn set-attributes [user-representation attributes]
+  (doto user-representation
+    (.setAttributes (java.util.HashMap. attributes))))
+
+(defn user-for-update [{:keys [username first-name last-name email attributes] :as person} roles]
+  (set-attributes (doto (UserRepresentation.)
+                    (.setUsername username)
+                    (.setFirstName first-name)
+                    (.setLastName last-name)
+                    (.setEmail email)
+                    (.setEnabled true)
+                    ;;setRealmRoles has a bug with the admin REST API and doesn't work
+                    ) attributes))
 
 (defn user-for-creation
-  ([{:keys [username first-name last-name email password] :as person}]
+  ([{:keys [username first-name last-name email password attributes] :as person}]
    (doto (user-for-update person nil)
      (.setCredentials [(doto (CredentialRepresentation.)
                          (.setType CredentialRepresentation/PASSWORD)
                          (.setValue password))])))
-  ([{:keys [username first-name last-name email password] :as person} required-actions]
+  ([{:keys [username first-name last-name email password attributes] :as person} required-actions]
    (doto (user-for-update person nil)
      (.setRequiredActions (java.util.ArrayList. required-actions))
                                         ;(.setRequiredActions (java.util.ArrayList. ["UPDATE_PASSWORD"]))
