@@ -10,8 +10,8 @@
 
 (defn extract-id [^Response resp]
   (when resp
-    (let [uri (-> resp .getLocation .toString)]
-      (subs uri (+ (last-index-of uri "/") 1)))))
+    (when-let [loc (.getLocation resp)]
+      (subs (str loc) (+ (last-index-of (str loc) "/") 1)))))
 
 (defn realm-representation
   ([realm-name]
@@ -51,6 +51,14 @@
 (defn role-representation "create a RoleRepresentation object" [name]
   (RoleRepresentation. name (str "Role created automatically by admin client") false))
 
+(defn get-role [keycloak-client realm-name role-name]
+  (info "get role" role-name "in realm" realm-name)
+  (-> keycloak-client (.realm realm-name) (.roles) (.get role-name)))
+
+(defn list-roles [keycloak-client realm-name]
+  (info "list roles in realm" realm-name)
+  (-> keycloak-client (.realm realm-name) (.roles) (.list)))
+
 (defn create-role!
   [keycloak-client realm-name role-name]
   (info "create role" role-name "in realm" realm-name)
@@ -78,9 +86,14 @@
 (defn create-group!
   [keycloak-client realm-name group-name]
   (info "create group" group-name "in realm" realm-name)
-  (let [group-id (-> keycloak-client (.realm realm-name) (.groups) (.add (group-representation group-name)) extract-id)]
-    (info "group" group-name "created in realm" realm-name " with group id" group-id)
-    (get-group keycloak-client realm-name group-id)))
+  (let [resp (-> keycloak-client (.realm realm-name) (.groups) (.add (group-representation group-name)))
+        group-id (extract-id resp)]
+    (.close resp)
+    (if group-id
+      (do
+        (info "group" group-name "created in realm" realm-name " with group id" group-id)
+        (get-group keycloak-client realm-name group-id))
+      (first (list-groups keycloak-client realm-name group-name)))))
 
 (defn delete-group!
   [keycloak-client realm-name group-id]
@@ -108,7 +121,9 @@
 (defn create-subgroup!
   [keycloak-client realm-name group-id subgroup-name]
   (info "create subgroup" subgroup-name "in group" group-id "in realm" realm-name)
-  (let [subgroup-id (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.subGroup (group-representation subgroup-name)) extract-id)]
+  (let [resp (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.subGroup (group-representation subgroup-name))) 
+        subgroup-id (extract-id resp)]
+    (.close resp)
     (info "subgroup" subgroup-name "created in group" group-id "in realm" realm-name "with subgroup-id" subgroup-id)
     (get-group keycloak-client realm-name subgroup-id)))
 
@@ -154,7 +169,9 @@
 (defn create-user!
   [keycloak-client realm-name username password]
   (info "create user" username "in realm" realm-name)
-  (let [user-id (-> keycloak-client (.realm realm-name) (.users) (.create (if password (user-representation username password) (user-representation username))) extract-id)]
+  (let [resp (-> keycloak-client (.realm realm-name) (.users) (.create (if password (user-representation username password) (user-representation username))))
+        user-id (extract-id resp)]
+    (.close resp)
     (info "user with username " username "created in realm" realm-name " with id" user-id)
     (get-user keycloak-client realm-name user-id)))
 
@@ -178,7 +195,7 @@
 
 (defn delete-user!
   [keycloak-client realm-name user-id]
-  (-> keycloak-client (.realm realm-name) (.users) (.delete user-id)))
+  (-> keycloak-client (.realm realm-name) (.users) (.delete user-id) .close))
 
 (defn get-user-groups
   [keycloak-client realm-name user-id]

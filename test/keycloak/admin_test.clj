@@ -25,6 +25,11 @@
           (let [client-id (str "keycloak-clojure-test-client-" (rand-int 1000))
                 test-client (create-client! admin-client realm-name client-id false)]
             (is (= client-id (.getClientId test-client)))))
+        (testing "create a role in that realm"
+          (let [role (create-role! admin-client realm-name "employee")
+                roles (list-roles admin-client realm-name)]
+            (is (> (count roles) 0))
+            (is (not (nil? (get-role admin-client realm-name "employee"))))))
         (testing (str "group creation in the realm" realm-name)
           (let [group-name (str "group-" (rand-int 1000))
                 group (create-group! admin-client realm-name group-name)]
@@ -40,7 +45,7 @@
                         members (get-group-members admin-client realm-name (.getId subgroup))]
                     (is (= user-name (.getUsername user)))
                     (is (some #(= (.getId user) (.getId %)) members))
-                    ))))))
+                    (delete-user! admin-client realm-name (.getId user))))))))
         (testing "realm deletion"
           (delete-realm! admin-client realm-name)
           (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name))))))))

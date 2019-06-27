@@ -50,7 +50,7 @@
       (.serverUrl (:auth-server-url conf))
       (.clientId (:resource conf))
       (.resteasyClient (-> (ResteasyClientBuilder.)
-                           (.connectionPoolSize 2)
+                           (.connectionPoolSize 4)
                            (.build)))))
 
 (defn keycloak-client
