@@ -1,9 +1,16 @@
 (ns keycloak.user
   (:require [clojure.tools.logging :as log :refer [info warn]]
+            [clojure.string :as string :refer [last-index-of]]
             [clojure.java.data :refer [from-java]]
             [clojure.java.io :as io]
             [cheshire.core :as json :refer [encode]])
-  (:import [org.keycloak.representations.idm CredentialRepresentation UserRepresentation RoleRepresentation]))
+  (:import [org.keycloak.representations.idm CredentialRepresentation UserRepresentation RoleRepresentation]
+           [javax.ws.rs.core Response]))
+
+(defn extract-id [^Response resp]
+  (when resp
+    (when-let [loc (.getLocation resp)]
+      (subs (str loc) (+ (last-index-of (str loc) "/") 1)))))
 
 (defn user-for-update [{:keys [username first-name last-name email] :as person} roles]
   (doto (UserRepresentation.)
@@ -89,6 +96,11 @@
                            " validity of the username and email in Keycloak (email:"email")")
                       {:username username :email email})))))
 
+(defn get-user
+  [keycloak-client realm-name user-id]
+  (info "get user [id=" user-id "] in realm " realm-name)
+  (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.toRepresentation)))
+
 (defn delete-and-create-user!
   ([keycloak-client realm-name person]
    (delete-and-create-user! keycloak-client realm-name person nil))
@@ -100,14 +112,24 @@
          _ (if username-exists? (do (delete-user! keycloak-client realm-name username) (Thread/sleep 250)))
          _ (if email-exists? (do (delete-user! keycloak-client realm-name email) (Thread/sleep 250)))
          response (-> keycloak-client (.realm realm-name) (.users) (.create (user-for-creation person)))
+         user-id (extract-id response)
          _ (check-user-properly-created keycloak-client realm-name username email)]
      (when roles (add-roles! keycloak-client realm-name username roles))
-     person)))
+     (get-user keycloak-client realm-name user-id))))
 
-(defn get-user
-  [keycloak-client realm-name user-id]
-  (info "get user [id=" user-id "] in realm " realm-name)
-  (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.toRepresentation)))
+
+(defn update-user! [keycloak-client realm-name user-id {:keys [username first-name last-name email password is-manager] :as person} roles]
+  (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.update (user-for-update person roles)))
+  (get-user keycloak-client realm-name user-id))
+
+(defn create-user!
+  [keycloak-client realm-name {:keys [username first-name last-name email password is-manager] :as person}]
+  (info "create user" username "in realm" realm-name)
+  (let [resp (-> keycloak-client (.realm realm-name) (.users) (.create (user-for-creation person)))
+        user-id (extract-id resp)]
+    (.close resp)
+    (info "user with username " username "created in realm" realm-name " with id" user-id)
+    (get-user keycloak-client realm-name user-id)))
 
 (defn create-or-update-user!
   [keycloak-client realm-name {:keys [username first-name last-name email password is-manager] :as person} roles]
@@ -122,14 +144,14 @@
                                         ;(throw (ex-info (str "Email " email " already exists in realm " realm-name) {:realm-name realm-name :email email})
       )
     (try
-      (if (and username-exists? user-id)
-        (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.update (user-for-update person roles)))
-        (-> keycloak-client (.realm realm-name) (.users) (.create (user-for-creation person))))
+      (let [user (if (and username-exists? user-id)
+                   (update-user! keycloak-client realm-name user-id person roles)
+                   (create-user! keycloak-client realm-name person))]
+        (check-user-properly-created keycloak-client realm-name username email)
+        (add-roles! keycloak-client realm-name username roles)
+        user)
       (catch javax.ws.rs.ClientErrorException cee
-        (warn "Exception while creating or updating " person (.getMessage cee))))
-    (check-user-properly-created keycloak-client realm-name username email)
-    (add-roles! keycloak-client realm-name username roles)
-    (get-user keycloak-client realm-name user-id)))
+        (warn "Exception while creating or updating " person (.getMessage cee))))))
 
 (defn get-users
   ([keycloak-client realm-name]

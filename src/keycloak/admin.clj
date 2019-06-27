@@ -9,6 +9,22 @@
   (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation GroupRepresentation UserRepresentation]
            [javax.ws.rs.core Response]))
 
+(defmacro setters
+  "Given a compile-time literal map of attributes and values, return a function
+  that calls the corresponding setters on some java object."
+  [m]
+  (when-not (map? m)
+    (throw (ex-info "m must be a literal map, not a symbol" {})))
+  (let [capitalize (fn [coll] (map string/capitalize coll))
+        camel-case (fn [kw] (-> (name kw) (string/split #"\W") capitalize string/join))
+        setter-sym (fn [kw] (->> (camel-case kw) (str ".set") symbol))
+        expanded (map (fn [[a val]]
+                        (if (vector? val)
+                          `( ~(setter-sym a) ~@val)
+                          `( ~(setter-sym a) ~val)))
+                      m)]
+    `(fn [obj#] (doto obj# ~@expanded))))
+
 (defn extract-id [^Response resp]
   (when resp
     (when-let [loc (.getLocation resp)]
@@ -176,12 +192,7 @@
 
 (defn create-user!
   [keycloak-client realm-name username password]
-  (info "create user" username "in realm" realm-name)
-  (let [resp (-> keycloak-client (.realm realm-name) (.users) (.create (if password (user-representation username password) (user-representation username))))
-        user-id (extract-id resp)]
-    (.close resp)
-    (info "user with username " username "created in realm" realm-name " with id" user-id)
-    (get-user keycloak-client realm-name user-id)))
+  (user/create-user! keycloak-client realm-name {:username username :password  password}))
 
 (defn add-user-to-group-by-username!
   [keycloak-client realm-name group-id username]
@@ -212,30 +223,40 @@
 
 (defn client
   "create a ClientRepresentation with client-name the public/private flag"
-  ([client-name public?]
-   (client client-name public? ["http://localhost:3449/*"] ["http://localhost:3449"]))
-  ([client-name public? redirect-uris web-origins]
-   (doto (ClientRepresentation.)
-     (.setClientId client-name)
-     (.setPublicClient public?)
-     (.setStandardFlowEnabled true)
-     (.setDirectAccessGrantsEnabled true)
-     (.setServiceAccountsEnabled (not public?))
-     (.setAuthorizationServicesEnabled (not public?))
-     (.setRedirectUris redirect-uris)
-     (.setWebOrigins web-origins)
-     (.setName client-name))))
+  ([{:keys [client-id name public-client standard-flow-enabled service-accounts-enabled authorization-services-enabled redirect-uris web-origins direct-access-grants-enabled] :as client}]
+   ((setters {:client-id client-id
+              :name name
+              :public-client public-client
+              :standard-flow-enabled (or standard-flow-enabled true)
+              :direct-access-grants-enabled (or direct-access-grants-enabled true)
+              :service-accounts-enabled (or service-accounts-enabled (not public-client))
+              :authorization-services-enabled (or authorization-services-enabled (not public-client))
+              :redirect-uris redirect-uris
+              :web-origins web-origins}) (ClientRepresentation.)))
+  ([name public? redirect-uris web-origins]
+   (client {:client-id name
+            :public-client public?
+            :standard-flow-enabled true
+            :direct-access-grants-enabled true
+            :service-accounts-enabled (not public?)
+            :authorization-services-enabled (not public?)
+            :redirect-uris redirect-uris
+            :web-origins web-origins}))
+  ([name public?]
+   (client name public? ["http://localhost:3449/*"] ["http://localhost:3449"])))
 
 (defn get-client
   [keycloak-client realm-name client-id]
   (-> keycloak-client (.realm realm-name) (.clients) (.findByClientId client-id) first ))
 
 (defn create-client!
-  [keycloak-client realm-name client-id public?]
-  (info "create client" client-id "in realm" realm-name)
-  (-> keycloak-client (.realm realm-name) (.clients) (.create (client client-id public?)))
-  (info "client" client-id " created in realm" realm-name)
-  (get-client keycloak-client realm-name client-id))
+  ([keycloak-client realm-name client]
+   (info "create client" (.getClientId client) "in realm" realm-name)
+   (-> keycloak-client (.realm realm-name) (.clients) (.create client))
+   (info "client" (.getClientId client) " created in realm" realm-name)
+   (get-client keycloak-client realm-name (.getClientId client)))
+  ([keycloak-client realm-name client-id public?]
+   (create-client! keycloak-client realm-name (client {:client-id client-id :public-client public?}))))
 
 (defn get-client-secret
   [keycloak-client realm-name client-id]

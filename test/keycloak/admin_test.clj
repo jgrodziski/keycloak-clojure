@@ -1,5 +1,6 @@
 (ns keycloak.admin-test
   (:require [keycloak.admin :refer :all]
+            [keycloak.user :as user]
             [keycloak.deployment :as deployment :refer [keycloak-client client-conf]]
             [clojure.test :as t :refer [deftest testing is]]))
 
@@ -22,9 +23,16 @@
             realm (create-realm! admin-client realm-name "base")]
         (is (= realm-name (.getRealm realm)))
         (testing "create a client, then a deployment for that client"
-          (let [client-id (str "keycloak-clojure-test-client-" (rand-int 1000))
-                test-client (create-client! admin-client realm-name client-id false)]
-            (is (= client-id (.getClientId test-client)))))
+          (let [confid-client-id (str "keycloak-clojure-config-client-" (rand-int 1000))
+                public-client-id (str "keycloak-clojure-public-client-" (rand-int 1000))
+                public-client-id-2 (str "frontend-client-" (rand-int 1000))
+                public-client-2 (create-client! admin-client realm-name (client public-client-id-2 true ["http://localhost:3000/*"] ["http://localhost:3000"]))
+                confid-client (create-client! admin-client realm-name confid-client-id false)
+                public-client (create-client! admin-client realm-name public-client-id true)]
+            (is (= confid-client-id (.getClientId confid-client)))
+            (is (= public-client-id (.getClientId public-client)))
+            (is (= public-client-id-2 (.getClientId public-client-2)))
+            ))
         (testing "create a role in that realm"
           (let [role (create-role! admin-client realm-name "employee")
                 roles (list-roles admin-client realm-name)]
@@ -45,7 +53,8 @@
                         members (get-group-members admin-client realm-name (.getId subgroup))]
                     (is (= user-name (.getUsername user)))
                     (is (some #(= (.getId user) (.getId %)) members))
-                    (delete-user! admin-client realm-name (.getId user))))))))
+                    (user/delete-user! admin-client realm-name (.getId user))))))))
         (testing "realm deletion"
           (delete-realm! admin-client realm-name)
           (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name))))))))
+
