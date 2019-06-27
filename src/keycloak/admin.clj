@@ -6,7 +6,7 @@
    [clojure.tools.logging :as log :refer [info]]
    [cheshire.core :as json :refer [encode]]
    [keycloak.user :as user])
-  (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation GroupRepresentation UserRepresentation]
+  (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation GroupRepresentation UserRepresentation ProtocolMapperRepresentation]
            [javax.ws.rs.core Response]))
 
 (defmacro setters
@@ -262,3 +262,52 @@
   [keycloak-client realm-name client-id]
   (let [id (-> (get-client keycloak-client realm-name client-id) (.getId))]
     (-> keycloak-client (.realm realm-name) (.clients) (.get id) (.getSecret) (.getValue))))
+
+(defn group-membership-mapper [name claim-name]
+  (let [config (doto (java.util.HashMap.)
+                 (.put "full.path" "true")
+                 (.put "access.token.claim" "true")
+                 (.put "id.token.claim" "true")
+                 (.put "userinfo.token.claim" "true")
+                 (.put "claim.name" claim-name))]
+        (doto (ProtocolMapperRepresentation.)
+          (.setProtocol "openid-connect")
+          (.setProtocolMapper "oidc-group-membership-mapper")
+          (.setName name)
+          (.setConfig config))))
+
+(defn user-attribute-mapper [name user-attribute claim-name json-type]
+  (let [config (doto (java.util.HashMap.)
+                 (.put "user.attribute" user-attribute)
+                 (.put "access.token.claim" "true")
+                 (.put "id.token.claim" "true")
+                 (.put "userinfo.token.claim" "true")
+                 (.put "jsonType.label" json-type)
+                 (.put "claim.name" claim-name)
+                 )]
+    (doto (ProtocolMapperRepresentation.)
+      (.setProtocol "openid-connect")
+      (.setProtocolMapper "oidc-usermodel-attribute-mapper")
+      (.setName name)
+      (.setConfig config))))
+
+(defn get-mapper [keycloak-client realm-name client-id mapper-id]
+  (let [id (-> keycloak-client (.realm realm-name) (.clients) (.findByClientId client-id) first .getId)
+        client-resource (-> keycloak-client (.realm realm-name) (.clients) (.get id))
+        mapper (-> client-resource .getProtocolMappers (.getMapperById mapper-id) )]
+    mapper))
+
+(defn create-protocol-mapper! [keycloak-client realm-name client-id mapper]
+  (let [id (-> keycloak-client (.realm realm-name) (.clients) (.findByClientId client-id) first .getId)
+        client-resource (-> keycloak-client (.realm realm-name) (.clients) (.get id))
+        resp (-> client-resource .getProtocolMappers (.createMapper mapper))
+        mapper-id (extract-id resp)
+        mapper (get-mapper keycloak-client realm-name client-id mapper-id)]
+    mapper
+    ))
+
+(comment
+  (create-protocol-mapper! c "electre" "diffusion-frontend"
+                           (group-membership-mapper "testjs" "group"))
+  (create-protocol-mapper! c "electre" "diffusion-frontend"
+                           (user-attribute-mapper "testuam" "org-ref" "org-ref" "String")))
