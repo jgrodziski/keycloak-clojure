@@ -13,12 +13,13 @@
 (defn deployment
   "take a keycloak configuration as EDN and return a KeycloakDeployment object"
   [client-conf]
-  (info "Build keycloak deployment for realm" (:realm client-conf) "on server" (:auth-server-url client-conf) "secret starting with" (subs (get-in client-conf [:credentials :secret]) 0 8))
   (try
-    (let [keycloak-json-is (io/input-stream (.getBytes (json/encode client-conf)))]
+    (let [keycloak-json-is (io/input-stream (.getBytes (json/encode client-conf)))
+          truncated-secret (when-let [secret (get-in client-conf [:credentials :secret])] (subs secret 0 8))]
+      (info (format "Build keycloak deployment for realm %s on server %s secret starting with %s" (:realm client-conf) (:auth-server-url client-conf) truncated-secret))
       (KeycloakDeploymentBuilder/build keycloak-json-is))
     (catch java.lang.Throwable t
-      (error "failed to build the keycloak app client" t))))
+      (throw (ex-info "Failed to build the keycloak app client" client-conf t)))))
 
 (defn client-conf
   ([{:keys [realm auth-server-url client-id client-secret] :as conf}]
