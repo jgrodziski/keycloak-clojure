@@ -52,6 +52,7 @@
        (do (info "user with attributes username:"username ",first-name" first-name ",last-name:" last-name ",email:" email "not found in realm"realm-name) nil)))))
 
 (defn delete-user!
+  "delete user with any attribute"
   [keycloak-client realm-name user-attribute]
   (info "Delete user with attribute"user-attribute"from realm"realm-name)
   (let [user-id (user-id keycloak-client realm-name user-attribute)]
@@ -103,9 +104,14 @@
      (when roles (add-roles! keycloak-client realm-name username roles))
      person)))
 
+(defn get-user
+  [keycloak-client realm-name user-id]
+  (info "get user [id=" user-id "] in realm " realm-name)
+  (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.toRepresentation)))
+
 (defn create-or-update-user!
   [keycloak-client realm-name {:keys [username first-name last-name email password is-manager] :as person} roles]
-  (let [_ (info "Create or update user" username "in realm" realm-name "with roles" (roles person))
+  (let [_ (info "Create or update user" username "in realm" realm-name "with roles" roles)
         username-exists? (not (nil? (user-id keycloak-client realm-name username)))
         email-exists? (not (nil? (user-id keycloak-client realm-name email)))
         user-id (user-id keycloak-client realm-name username first-name last-name email)]
@@ -122,7 +128,8 @@
       (catch javax.ws.rs.ClientErrorException cee
         (warn "Exception while creating or updating " person (.getMessage cee))))
     (check-user-properly-created keycloak-client realm-name username email)
-    (add-roles! keycloak-client realm-name username roles)))
+    (add-roles! keycloak-client realm-name username roles)
+    (get-user keycloak-client realm-name user-id)))
 
 (defn get-users
   ([keycloak-client realm-name]

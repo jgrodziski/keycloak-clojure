@@ -50,5 +50,5 @@
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)
         realms (list-realms admin-client)]
     (doseq [realm realms]
-      (when (not (set realms-to-keep (.getId realm)))
+      (when (not ((set realms-to-keep) (.getId realm)))
         (delete-realm! admin-client (.getId realm))))))

@@ -4,7 +4,8 @@
    [clojure.java.data :refer [from-java]]
    [clojure.string :as string :refer [last-index-of]]
    [clojure.tools.logging :as log :refer [info]]
-   [cheshire.core :as json :refer [encode]])
+   [cheshire.core :as json :refer [encode]]
+   [keycloak.user :as user])
   (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation GroupRepresentation UserRepresentation]
            [javax.ws.rs.core Response]))
 
@@ -88,12 +89,14 @@
   (info "create group" group-name "in realm" realm-name)
   (let [resp (-> keycloak-client (.realm realm-name) (.groups) (.add (group-representation group-name)))
         group-id (extract-id resp)]
-    (.close resp)
+    (when resp (.close resp))
     (if group-id
       (do
         (info "group" group-name "created in realm" realm-name " with group id" group-id)
         (get-group keycloak-client realm-name group-id))
-      (first (list-groups keycloak-client realm-name group-name)))))
+      (do 
+        (info "group" group-name "already exist in realm" realm-name " with group id" group-id)
+        (first (list-groups keycloak-client realm-name group-name))))))
 
 (defn delete-group!
   [keycloak-client realm-name group-id]
@@ -123,9 +126,14 @@
   (info "create subgroup" subgroup-name "in group" group-id "in realm" realm-name)
   (let [resp (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.subGroup (group-representation subgroup-name))) 
         subgroup-id (extract-id resp)]
-    (.close resp)
-    (info "subgroup" subgroup-name "created in group" group-id "in realm" realm-name "with subgroup-id" subgroup-id)
-    (get-group keycloak-client realm-name subgroup-id)))
+    (when resp (.close resp))
+    (if subgroup-id
+      (do
+        (info "subgroup" subgroup-name "created in group" group-id "in realm" realm-name "with subgroup-id" subgroup-id)
+        (get-group keycloak-client realm-name subgroup-id))
+      (do
+        (info "subgroup" subgroup-name "already exist in group" group-id "in realm" realm-name)
+        (first (list-groups keycloak-client realm-name subgroup-name))))))
 
 (defn credential-representation [type value]
   (doto (CredentialRepresentation.)
@@ -193,7 +201,8 @@
 (defn remove-user-from-group! [keycloak-client realm-name group-id user-id]
   (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.leaveGroup group-id)))
 
-(defn delete-user!
+(defn delete-user-by-id!
+  "delete user by its id"
   [keycloak-client realm-name user-id]
   (-> keycloak-client (.realm realm-name) (.users) (.delete user-id) .close))
 
