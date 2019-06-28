@@ -105,6 +105,15 @@
   (info "get user [id=" user-id "] in realm " realm-name)
   (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.toRepresentation)))
 
+(defn find-users
+  [keycloak-client realm-name s]
+  (info "find user by username, email etc." s)
+  (-> keycloak-client (.realm realm-name) (.users) (.search s (int 0) (int 1000))))
+
+(defn get-user-by-username
+  [keycloak-client realm-name username]
+  (first (find-users keycloak-client realm-name username)))
+
 (defn delete-and-create-user!
   ([keycloak-client realm-name person]
    (delete-and-create-user! keycloak-client realm-name person nil))
@@ -119,7 +128,9 @@
          user-id (extract-id response)
          _ (check-user-properly-created keycloak-client realm-name username email)]
      (when roles (add-roles! keycloak-client realm-name username roles))
-     (get-user keycloak-client realm-name user-id))))
+     (if user-id
+       (get-user keycloak-client realm-name user-id)
+       (get-user-by-username keycloak-client realm-name username)))))
 
 
 (defn update-user! [keycloak-client realm-name user-id {:keys [username first-name last-name email password is-manager] :as person} roles]
@@ -133,7 +144,9 @@
         user-id (extract-id resp)]
     (.close resp)
     (info "user with username " username "created in realm" realm-name " with id" user-id)
-    (get-user keycloak-client realm-name user-id)))
+    (if user-id
+      (get-user keycloak-client realm-name user-id)
+      (get-user-by-username keycloak-client realm-name username))))
 
 (defn create-or-update-user!
   [keycloak-client realm-name {:keys [username first-name last-name email password is-manager] :as person} roles]
