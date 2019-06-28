@@ -35,4 +35,5 @@
 (defn auth-cookie [bearer]
   {"X-Authorization-Token" {:discard true, :path "/", :value (:access_token bearer), :version 0}})
 
-(defn auth-header [bearer])
+(defn auth-header [bearer]
+  {"authorization" (:access_token bearer)})
