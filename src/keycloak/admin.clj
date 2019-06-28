@@ -302,8 +302,8 @@
         client-resource (-> keycloak-client (.realm realm-name) (.clients) (.get id))
         resp (-> client-resource .getProtocolMappers (.createMapper mapper))
         mapper-id (extract-id resp)
-        mapper (get-mapper keycloak-client realm-name client-id mapper-id)]
-    mapper
+        retrieved-mapper (when mapper-id (get-mapper keycloak-client realm-name client-id mapper-id))]
+    retrieved-mapper
     ))
 
 (comment
