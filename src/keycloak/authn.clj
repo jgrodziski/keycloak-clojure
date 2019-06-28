@@ -36,4 +36,4 @@
   {"X-Authorization-Token" {:discard true, :path "/", :value (:access_token bearer), :version 0}})
 
 (defn auth-header [bearer]
-  {"authorization" (:access_token bearer)})
+  {"authorization" (str "Bearer " (:access_token bearer))})
