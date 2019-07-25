@@ -1,5 +1,5 @@
 {:paths ["src"]
- :deps  {org.clojure/clojure       {:mvn/version "release"}
+ :deps  {org.clojure/clojure       {:mvn/version "1.10.1"}
          org.clojure/tools.logging {:mvn/version "0.4.1"}
          org.clojure/java.data     {:mvn/version "0.1.1"}
 
@@ -38,11 +38,11 @@
                                                        :sha     "8fdc7d29a41620ad3e9e6210fd7140f3a4c7936b"}}
                    :main-opts  ["-m" "cambada.jar"]}
 
-           :artifact-name {:extra-deps {metav {:mvn/version "latest"}}
+           :artifact-name {:extra-deps {metav {:mvn/version "LATEST"}}
                            :main-opts  ["-m" "metav.display"]}
-           :release       {:extra-deps {metav {:mvn/version "latest"}}
+           :release       {:extra-deps {metav {:mvn/version "LATEST"}}
                            :main-opts  ["-m" "metav.release"]}
-           :spit          {:extra-deps {metav {:mvn/version "latest"}}
+           :spit          {:extra-deps {metav {:mvn/version "LATEST"}}
                            :main-opts  ["-m" "metav.spit"]}
 
            }}
