@@ -3,6 +3,9 @@
          org.clojure/tools.logging {:mvn/version "0.4.1"}
          org.clojure/java.data     {:mvn/version "0.1.1"}
 
+         yada                      {:mvn/version "1.2.16"} ;;used for authn and authz check
+
+
          cheshire        {:mvn/version "5.8.0"}
          uwcpdx/bean-dip {:mvn/version "0.7.5"}
          clj-http        {:mvn/version "3.10.0"}
