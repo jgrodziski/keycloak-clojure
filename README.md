@@ -46,16 +46,16 @@ A resource is part of the assets of an application and the organization. It can 
 
 Every resource has a unique identifier that can represent a single resource or a set of resources. For instance, you can manage a Banking Account Resource that represents and defines a set of authorization policies for all banking accounts. But you can also have a different resource named Alice’s Banking Account, which represents a single resource owned by a single customer, which can have its own set of authorization policies.
 
-## Installation
+## Keycloak Installation
 
-You can use the [JBoss Keycloak docker image](https://hub.docker.com/r/jboss/keycloak/) `docker pull jboss/keycloak:4.8.3.Final`
+You can use the [JBoss Keycloak docker image](https://hub.docker.com/r/jboss/keycloak/) `docker pull jboss/keycloak:6.0.1`
 
 You'll need an SQL database for the storage, I choose postgresql. There is a lot of documentation out there to configure Keycloak and postgresql, just google it. I put them behind a dockerized nginx proxy that manages quite easily the certificates renewing and proxying of docker container (TLS is mandatory for Keycloak outside of a localhost deployment).
 I use [nginx proxy](https://github.com/jwilder/nginx-proxy) with the [Letsencrypt nginx proxy companion](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion) for the SSL support (SSL access is for me quite mandatory for keycloak...). It's quite easy to setup (just add some env variables to the docker container and that's it) and it works very well.
 
 I put a script in `bin/start-keycloak-docker.sh` assuming a postgresql running on locahost/default port (better perf on my mac than starting a dockerized postgres) to automate that thing.
 
-### Install Postgresql
+### Postgresql installation
 
 ```
 brew install postgresql
@@ -67,20 +67,20 @@ Make sure postgresql starts along the machine booting process:
 pg_ctl -D /usr/local/var/postgres start && brew services start postgresql
 ```
 
-### create the default database user for keycloak ###
+#### create the default database user for keycloak ###
 
 ```
 createuser keycloak --createdb --pwprompt
 ```
 when asked for a password, type `password`
 
-### create the default database for keycloak ###
+#### create the default database for keycloak ###
 
 ```
 createdb keycloak -U keycloak 
 ```
 
-### start Keycloak in a docker container ###
+#### start Keycloak in a docker container ###
 
 ```
 cd docker

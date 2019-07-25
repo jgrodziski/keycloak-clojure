@@ -13,8 +13,10 @@
       (subs (str loc) (+ (last-index-of (str loc) "/") 1)))))
 
 (defn set-attributes [user-representation attributes]
-  (doto user-representation
-    (.setAttributes (java.util.HashMap. attributes))))
+  (if (and attributes (not-empty attributes))
+    (doto user-representation
+      (.setAttributes (java.util.HashMap. attributes)))
+    user-representation))
 
 (defn user-for-update [{:keys [username first-name last-name email attributes] :as person} roles]
   (set-attributes (doto (UserRepresentation.)
@@ -28,6 +30,7 @@
 
 (defn user-for-creation
   ([{:keys [username first-name last-name email password attributes] :as person}]
+   (when (empty? password) (throw (ex-info "user MUST have a password otherwise the login will throw a NPE" {:person person})))
    (doto (user-for-update person nil)
      (.setCredentials [(doto (CredentialRepresentation.)
                          (.setType CredentialRepresentation/PASSWORD)
