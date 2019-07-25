@@ -1,5 +1,5 @@
 {:paths ["src"]
- :deps  {org.clojure/clojure       {:mvn/version "RELEASE"}
+ :deps  {org.clojure/clojure       {:mvn/version "release"}
          org.clojure/tools.logging {:mvn/version "0.4.1"}
          org.clojure/java.data     {:mvn/version "0.1.1"}
 
@@ -7,25 +7,25 @@
          uwcpdx/bean-dip {:mvn/version "0.7.5"}
          clj-http        {:mvn/version "3.10.0"}
 
-         ;; Keycloak Stuff
+         ;; keycloak stuff
          org.keycloak/keycloak-adapter-core   {:mvn/version "6.0.1"}
          org.keycloak/keycloak-core           {:mvn/version "6.0.1"}
          org.keycloak/keycloak-authz-client   {:mvn/version "6.0.1"}
          org.keycloak/keycloak-adapter-spi    {:mvn/version "6.0.1"}
-         org.jboss.logging/jboss-logging      {:mvn/version "3.3.2.Final"}
+         org.jboss.logging/jboss-logging      {:mvn/version "3.3.2.final"}
          org.apache.httpcomponents/httpclient {:mvn/version "4.5.7"}
 
          ;;all the deps below are for the admin client (don't know why the transitive deps didn't work)
          org.keycloak/keycloak-admin-client                  {:mvn/version "6.0.1"}
          com.fasterxml.jackson.core/jackson-databind         {:mvn/version "2.9.8"}
-         org.jboss.resteasy/resteasy-jackson2-provider       {:mvn/version "3.6.3.Final"}
-         org.jboss.resteasy/resteasy-client                  {:mvn/version "3.6.3.Final"}
-         org.jboss.resteasy/resteasy-multipart-provider      {:mvn/version "3.6.3.Final"}
-         org.jboss.spec.javax.ws.rs/jboss-jaxrs-api_2.1_spec {:mvn/version "1.0.2.Final"}
+         org.jboss.resteasy/resteasy-jackson2-provider       {:mvn/version "3.6.3.final"}
+         org.jboss.resteasy/resteasy-client                  {:mvn/version "3.6.3.final"}
+         org.jboss.resteasy/resteasy-multipart-provider      {:mvn/version "3.6.3.final"}
+         org.jboss.spec.javax.ws.rs/jboss-jaxrs-api_2.1_spec {:mvn/version "1.0.2.final"}
 
-         org.jboss.resteasy/resteasy-jaxrs             {:mvn/version "3.6.3.Final"}
-         org.jboss.resteasy/resteasy-jettison-provider {:mvn/version "3.6.3.Final"}
-         org.jboss.resteasy/resteasy-jaxb-provider     {:mvn/version "3.6.3.Final"}
+         org.jboss.resteasy/resteasy-jaxrs             {:mvn/version "3.6.3.final"}
+         org.jboss.resteasy/resteasy-jettison-provider {:mvn/version "3.6.3.final"}
+         org.jboss.resteasy/resteasy-jaxb-provider     {:mvn/version "3.6.3.final"}
          }
 
  :aliases {
@@ -33,16 +33,16 @@
                    :main-opts  ["-m" "figwheel.main" "-b" "dev" "-r"]}
            :dev   {}
            :test  {:extra-paths ["test"]
-                   :extra-deps  {lambdaisland/kaocha {:mvn/version "LATEST"}}}
+                   :extra-deps  {lambdaisland/kaocha {:mvn/version "latest"}}}
            :build {:extra-deps {luchiniatwork/cambada {:git/url "https://github.com/xfthhxk/cambada.git"
                                                        :sha     "8fdc7d29a41620ad3e9e6210fd7140f3a4c7936b"}}
                    :main-opts  ["-m" "cambada.jar"]}
 
-           :artifact-name {:extra-deps {metav {:mvn/version "LATEST"}}
+           :artifact-name {:extra-deps {metav {:mvn/version "latest"}}
                            :main-opts  ["-m" "metav.display"]}
-           :release       {:extra-deps {metav {:mvn/version "LATEST"}}
+           :release       {:extra-deps {metav {:mvn/version "latest"}}
                            :main-opts  ["-m" "metav.release"]}
-           :spit          {:extra-deps {metav {:mvn/version "LATEST"}}
+           :spit          {:extra-deps {metav {:mvn/version "latest"}}
                            :main-opts  ["-m" "metav.spit"]}
 
            }}
