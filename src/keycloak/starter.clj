@@ -46,8 +46,8 @@
     (doseq [{:keys [name subgroups]} (:groups data)]
       (let [group (create-group! admin-client realm-name name)]
         (println (format "Group \"%s\" created" name))
-        (doseq [[idx subgroup-name] (map-indexed vector subgroups)]
-          (let [subgroup (create-subgroup! admin-client realm-name (.getId group) subgroup-name)]
+        (doseq [[idx {subgroup-name :name attributes :attributes}] (map-indexed vector subgroups)]
+          (let [subgroup (create-subgroup! admin-client realm-name (.getId group) subgroup-name attributes)]
             (println (format "   Subgroup \"%s\" created in group \"%s\"" subgroup-name name))
             ;;Generated users
             (doseq [role (:roles data)]

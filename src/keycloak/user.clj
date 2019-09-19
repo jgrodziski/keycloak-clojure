@@ -12,11 +12,11 @@
     (when-let [loc (.getLocation resp)]
       (subs (str loc) (+ (last-index-of (str loc) "/") 1)))))
 
-(defn set-attributes [user-representation attributes]
+(defn set-attributes [representation attributes]
   (if (and attributes (not-empty attributes))
-    (doto user-representation
+    (doto representation
       (.setAttributes (java.util.HashMap. attributes)))
-    user-representation))
+    representation))
 
 (defn user-for-update [{:keys [username first-name last-name email attributes] :as person} roles]
   (set-attributes (doto (UserRepresentation.)
