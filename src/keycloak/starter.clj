@@ -66,4 +66,5 @@
           (let [subgroup-id (get-subgroup-id admin-client realm-name (get-group-id admin-client realm-name (:group user)) subgroup-name)]
             (println (format "Add user \"%s\" to group \"%s\"" username subgroup-name))
             (add-user-to-group! admin-client realm-name subgroup-id (.getId created-user))))))
-    (println (format "Keycloak with realm \"%s\" initialized" realm-name))))
+    (println (format "Keycloak with realm \"%s\" initialized" realm-name))
+    data))
