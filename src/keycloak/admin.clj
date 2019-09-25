@@ -227,25 +227,29 @@
 
 (defn client
   "create a ClientRepresentation with client-name the public/private flag"
-  ([{:keys [client-id name public-client standard-flow-enabled service-accounts-enabled authorization-services-enabled redirect-uris web-origins direct-access-grants-enabled] :as client}]
-   ((setters {:client-id client-id
-              :name name
-              :public-client public-client
-              :standard-flow-enabled (or standard-flow-enabled true)
-              :direct-access-grants-enabled (or direct-access-grants-enabled true)
-              :service-accounts-enabled (or service-accounts-enabled (not public-client))
-              :authorization-services-enabled (or authorization-services-enabled (not public-client))
-              :redirect-uris redirect-uris
-              :web-origins web-origins}) (ClientRepresentation.)))
+  ([{:keys [client-id name public-client public? standard-flow-enabled service-accounts-enabled authorization-services-enabled redirect-uris web-origins direct-access-grants-enabled
+            root-url base-url admin-url] :as client}]
+   ((setters {:client-id                      (or client-id name)
+              :name                           name
+              :public-client                  (or public? public-client)
+              :standard-flow-enabled          (or standard-flow-enabled true)
+              :direct-access-grants-enabled   (or direct-access-grants-enabled true)
+              :service-accounts-enabled       (or service-accounts-enabled (not (or public? public-client)))
+              :authorization-services-enabled (or authorization-services-enabled (not (or public? public-client)))
+              :redirect-uris                  redirect-uris
+              :root-url                       root-url
+              :base-url                       base-url
+              :admin-url                      admin-url
+              :web-origins                    web-origins}) (ClientRepresentation.)))
   ([name public? redirect-uris web-origins]
-   (client {:client-id name
-            :public-client public?
-            :standard-flow-enabled true
-            :direct-access-grants-enabled true
-            :service-accounts-enabled (not public?)
+   (client {:client-id                      name
+            :public-client                  public?
+            :standard-flow-enabled          true
+            :direct-access-grants-enabled   true
+            :service-accounts-enabled       (not public?)
             :authorization-services-enabled (not public?)
-            :redirect-uris redirect-uris
-            :web-origins web-origins}))
+            :redirect-uris                  redirect-uris
+            :web-origins                    web-origins}))
   ([name public?]
    (client name public? ["http://localhost:3449/*"] ["http://localhost:3449"])))
 

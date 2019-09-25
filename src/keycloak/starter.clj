@@ -33,9 +33,10 @@
     (try (create-realm! admin-client realm-name (get-in data [:realm :theme])) (catch Exception e (get-realm admin-client realm-name)))
     (println (format "Realm \"%s\" created" realm-name))
 
-    (doseq [{:keys [name public? redirect-uris web-origins]} (:clients data)]
-      (create-client! admin-client realm-name (client name public? redirect-uris web-origins))
-      (println (format "Client \"%s\" created in realm %s" name realm-name))
+    (doseq [{:keys [name public? redirect-uris web-origins] :as client-data} (:clients data)]
+      (let [client (client client-data)]
+        (create-client! admin-client realm-name client)
+        (println (format "Client \"%s\" created in realm %s" name realm-name)))
       (create-mappers! admin-client realm-name name)
       (export-secret! admin-client realm-name name (keyword (str "secret-" name))))
     (println (format "%s Clients created in realm %s" (count (:clients data)) realm-name))
