@@ -13,7 +13,7 @@
       (subs (str loc) (+ (last-index-of (str loc) "/") 1)))))
 
 (defn set-attributes [representation attributes]
-  (if (and attributes (not-empty attributes))
+  (if (and attributes (not-empty (filter some? attributes)))
     (doto representation
       (.setAttributes (java.util.HashMap. attributes)))
     representation))
@@ -97,21 +97,21 @@
       (-> user-resource
           (.roles)
           (.realmLevel)
-          (.add (java.util.ArrayList. (vec (filter not-empty roles-representations))))))))
+          (.add (java.util.ArrayList. (vec (filter some? roles-representations))))))))
 
 (defn get-client
   [keycloak-client realm-name client-id]
-  (-> keycloak-client (.realm realm-name) (.clients) (.findByClientId client-id) first ))
+  (-> keycloak-client (.realm realm-name) (.clients) (.findByClientId client-id) first))
 
 (defn add-client-roles!
   [keycloak-client realm-name username client-roles]
   (let [user-searched (search-user keycloak-client realm-name username)
         user-id (-> user-searched first (.getId))
         user-resource (-> keycloak-client (.realm realm-name) (.users) (.get user-id))]
+    (when (not-empty client-roles) (println (format "Add client roles %s to user %s" (pr-str client-roles ) username)))
     (doseq [[client-id roles] client-roles]
       (let [client (get-client keycloak-client realm-name client-id)
             roles-representations (doall (map (fn [role]
-                                                (println role)
                                                 (try
                                                   (-> keycloak-client
                                                       (.realm realm-name)
@@ -122,11 +122,10 @@
                                                       (.toRepresentation))
                                                   (catch javax.ws.rs.NotFoundException nfe
                                                     (println "Client role" role "not found in realm" realm-name"for client" client-id)))) (map name roles)))]
-        (println roles-representations)
         (-> user-resource
             (.roles)
             (.clientLevel (.getId client))
-            (.add (java.util.ArrayList. (vec (filter #(not (nil? %)) roles-representations)))))))))
+            (.add (java.util.ArrayList. (vec (filter some? roles-representations)))))))))
 
 (defn- check-user-properly-created [keycloak-client realm-name username email]
   (let [user-searched (search-user keycloak-client realm-name username)]
@@ -158,8 +157,8 @@
    (info "create user" username "in realm" realm-name"with realm roles"realm-roles"client roles"client-roles". If user already exists, delete it and re-create it.")
    (let [username-exists? (not (nil? (user-id keycloak-client realm-name username)))
          email-exists? (not (nil? (user-id keycloak-client realm-name email)))
-         _ (if username-exists? (do (delete-user! keycloak-client realm-name username) (Thread/sleep 250)))
-         _ (if email-exists? (do (delete-user! keycloak-client realm-name email) (Thread/sleep 250)))
+         _ (if username-exists? (do (delete-user! keycloak-client realm-name username) (Thread/sleep 100)))
+         _ (if email-exists? (do (delete-user! keycloak-client realm-name email) (Thread/sleep 100)))
          response (-> keycloak-client (.realm realm-name) (.users) (.create (user-for-creation person)))
          user-id (extract-id response)
          _ (check-user-properly-created keycloak-client realm-name username email)]
