@@ -48,7 +48,7 @@
                 (is (= subgroup-name (.getName subgroup)))
                 (testing "user creation in the realm then join to group"
                   (let [user-name (str "user-" (rand-int 1000))
-                        user (create-user! admin-client realm-name user-name "pasword")
+                        user (create-user! admin-client realm-name user-name "password")
                         joined-group (add-user-to-group! admin-client realm-name (.getId subgroup) (.getId user))
                         members (get-group-members admin-client realm-name (.getId subgroup))]
                     (is (= user-name (.getUsername user)))
@@ -58,3 +58,16 @@
           (delete-realm! admin-client realm-name)
           (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name))))))))
 
+(deftest ^:integration test-creation-user-with-client-roles
+  (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)
+        realm-name (str "keycloak-clojure-test-" (rand-int 1000))
+        realm (create-realm! admin-client realm-name "base")]
+    (testing "create a user with client roles"
+      (let [user-name (str "user-" (rand-int 1000))
+            user (user/create-or-update-user! admin-client "master"
+                                              {:username "testuser" :password "password"}
+                                              nil
+                                              {(str realm-name "-realm") ["impersonation"]})]
+        (prn user)
+        ))
+    ))
