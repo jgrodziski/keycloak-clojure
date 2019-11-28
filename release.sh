@@ -3,7 +3,7 @@
 RELEASE_LEVEL=$1
 MODULE_NAME=${PWD##*/}
 echo "Release \"$MODULE_NAME\" with level '$RELEASE_LEVEL'"
-tag=$(clj -Arelease $RELEASE_LEVEL)
+tag=$(clj -Arelease $RELEASE_LEVEL --spit --output-dir . --formats json)
 
 if [ $? -eq 0 ]; then
     echo "Successfully released \"$MODULE_NAME\" to $tag"
@@ -23,7 +23,12 @@ source ./build.sh
 #                                                  #
 ####################################################
 
-if [[ $tag =~ v(.+) ]]; then
+ARTIFACT_ID=$(cat meta.json | jq -r '."module-name"')
+ARTIFACT_VERSION=$(cat meta.json | jq -r '."version"')
+ARTIFACT_TAG=$(cat meta.json | jq -r '."tag"')
+JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
+
+if [[ $ARTIFACT_TAG =~ v(.+) ]]; then
     newversion=${BASH_REMATCH[1]}
 else
     echo "unable to parse tag $tag"
@@ -39,11 +44,6 @@ else
 fi
 
 # mvn deploy 2>&1 > /dev/null
-
-ARTIFACT_NAME=$(clj -A:artifact-name)
-ARTIFACT_ID=$(echo "$ARTIFACT_NAME" | cut -f1)
-ARTIFACT_VERSION=$(echo "$ARTIFACT_NAME" | cut -f2)
-JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
 
 mvn org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy-file \
     -Durl=https://clojars.org/repo \
