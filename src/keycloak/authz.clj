@@ -22,8 +22,8 @@
 
 (defn find-resource-by-id
       [authz-client id]
-      (let [resource-client (resource-client authz-client)])
-      (.findById resource-client id))
+      (let [resource-client (resource-client authz-client)]
+        (.findById resource-client id)))
 
 (defn find-resource-by-name
       [authz-client name]
