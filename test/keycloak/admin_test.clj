@@ -16,11 +16,33 @@
 
 (def admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password))
 
+(def login {:bruteForceProtected true
+            :rememberMe true
+            :resetPasswordAllowed true})
+
+(def smtp {:host "smtp.eu.mailgun.org"
+           :port 587
+           :from "admin@example.com"
+           :auth true
+           :starttls true
+           :replyTo "example"
+           :user "postmaster@mg.example.com"
+           :password "yo"
+           })
+
+(def themes {:internationalizationEnabled true
+             :supportedLocales #{"en" "fr"}
+             :defaultLocale "fr"
+             :loginTheme "keycloak"
+             :accountTheme "keycloak"
+             :adminTheme nil
+             :emailTheme "keycloak"} )
+
 (deftest ^:integration admin-test
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)]
     (testing "realm creation "
       (let [realm-name (str "keycloak-clojure-test-" (rand-int 1000))
-            realm (create-realm! admin-client realm-name "base")]
+            realm (create-realm! admin-client realm-name themes login smtp)]
         (is (= realm-name (.getRealm realm)))
         (testing "create a client, then a deployment for that client"
           (let [confid-client-id (str "keycloak-clojure-config-client-" (rand-int 1000))

@@ -25,19 +25,38 @@
                       m)]
     `(fn [obj#] (doto obj# ~@expanded))))
 
+(defn first-letter-capitalize [s]
+  (str (string/upper-case (first s)) (subs s 1)))
+
+(defn set-all [obj m]
+  (doseq [[k v] m]
+    (let [method-name (str "set" (first-letter-capitalize (if (keyword? k) (name k) k)))]
+      (clojure.lang.Reflector/invokeInstanceMethod
+       obj
+       method-name
+       (into-array Object [v]))))
+  obj)
+
 (defn extract-id [^Response resp]
   (when resp
     (when-let [loc (.getLocation resp)]
       (subs (str loc) (+ (last-index-of (str loc) "/") 1)))))
 
+(defn ks->str
+  "convert all keys and values of the map to string"
+  [m]
+  (into {} (map (fn [[k v]]
+                  [(name k) (str v)])) m))
+
 (defn realm-representation
   ([realm-name]
    (doto (RealmRepresentation.) (.setEnabled true) (.setRealm realm-name) (.setId realm-name)))
-  ([realm-name theme]
-   (doto (realm-representation realm-name)
-     (.setAccountTheme theme)
-     (.setEmailTheme theme)
-     (.setLoginTheme theme))))
+  ([realm-name themes login smtp]
+   (let [realm-rep (realm-representation realm-name)]
+     (when themes (set-all realm-rep themes))
+     (when login(set-all realm-rep login))
+     (when smtp (.setSmtpServer realm-rep (ks->str smtp)))
+     realm-rep)))
 
 (defn get-realm
   [keycloak-client realm-name]
@@ -49,9 +68,9 @@
    (-> keycloak-client (.realms) (.create (realm-representation realm-name)))
    (info "realm" realm-name "created")
    (get-realm keycloak-client realm-name))
-  ([keycloak-client realm-name login-theme]
+  ([keycloak-client realm-name themes login smtp]
    (info "create realm" realm-name)
-   (-> keycloak-client (.realms) (.create (realm-representation realm-name login-theme)))
+   (-> keycloak-client (.realms) (.create (realm-representation realm-name themes login smtp)))
    (info "realm" realm-name "created")
    (get-realm keycloak-client realm-name)))
 
@@ -140,7 +159,7 @@
 
 (defn create-subgroup!
   ([keycloak-client realm-name group-id subgroup-name]
-   (create-subgroup! realm-name group-id subgroup-name nil))
+   (create-subgroup! keycloak-client realm-name group-id subgroup-name nil))
   ([keycloak-client realm-name group-id subgroup-name attributes]
    (info "create subgroup" subgroup-name "in group" group-id "in realm" realm-name)
    (let [group-rep (set-attributes (group-representation subgroup-name) attributes)

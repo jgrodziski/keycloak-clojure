@@ -38,16 +38,16 @@
                    :main-opts  ["-m" "figwheel.main" "-b" "dev" "-r"]}
            :dev   {}
            :test  {:extra-paths ["test"]
-                   :extra-deps  {lambdaisland/kaocha {:mvn/version "latest"}}}
+                   :extra-deps  {lambdaisland/kaocha {:mvn/version "0.0-554"}}}
            :build {:extra-deps {luchiniatwork/cambada {:git/url "https://github.com/xfthhxk/cambada.git"
                                                        :sha     "8fdc7d29a41620ad3e9e6210fd7140f3a4c7936b"}}
                    :main-opts  ["-m" "cambada.jar"]}
 
-           :artifact-name {:extra-deps {metav {:mvn/version "LATEST"}}
+           :artifact-name {:extra-deps {metav {:mvn/version "1.6.1"}}
                            :main-opts  ["-m" "metav.display"]}
-           :release       {:extra-deps {metav {:mvn/version "LATEST"}}
+           :release       {:extra-deps {metav {:mvn/version "1.6.1"}}
                            :main-opts  ["-m" "metav.release"]}
-           :spit          {:extra-deps {metav {:mvn/version "LATEST"}}
+           :spit          {:extra-deps {metav {:mvn/version "1.6.1"}}
                            :main-opts  ["-m" "metav.spit"]}
 
            }}
