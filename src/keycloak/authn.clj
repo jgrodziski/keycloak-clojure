@@ -20,8 +20,16 @@
 
 (defn authenticate
   "return the bearer token decoded as a clojure data struct. (with :access_token and :refresh_token keys, beware 'underscore _' not 'hyphen -')"
+  ([{:keys [auth-server-url realm client-id] :as conf} client-secret]
+   (authenticate auth-server-url realm client-id client-secret))
   ([{:keys [auth-server-url realm client-id] :as conf} username password]
    (authenticate auth-server-url realm client-id username password))
+  ([auth-server-url realm client-id client-secret]
+   (info "Authenticate against" (oidc-connect-url auth-server-url realm) "for client-id"  client-id)
+   (-> (http/post (oidc-connect-url auth-server-url realm)
+                  {:form-params (client-credentials client-id client-secret)})
+       :body
+       (parse-string true)))
   ([auth-server-url realm client-id username password]
    (info "Authenticate against" (oidc-connect-url auth-server-url realm) "for client-id"  client-id "with user" username)
    (-> (http/post (oidc-connect-url auth-server-url realm)
