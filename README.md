@@ -106,7 +106,7 @@ The client screen has an "installation" tab that allows to grab the credentials 
 
 ##### Automatic Realm Creation #####
 
-Add the `keycloak-clojure` dependency to your Clojure project: `[keycloak-clojure "0.1.5"]` or `keycloak-clojure {:mvn/version "0.1.5"}`.
+Add the `keycloak-clojure` dependency to your Clojure project: `[keycloak-clojure "1.8.0"]` or `keycloak-clojure {:mvn/version "1.8.0"}`.
 Fire up a REPL, then:
 
 ```clojure
