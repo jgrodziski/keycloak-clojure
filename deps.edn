@@ -46,11 +46,11 @@
            :build {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.2"}}
                    :main-opts  ["-m" "cambada.jar"]}
 
-           :artifact-name {:extra-deps {metav {:mvn/version "1.6.1"}}
+           :artifact-name {:extra-deps {metav {:mvn/version "1.6.6"}}
                            :main-opts  ["-m" "metav.display"]}
-           :release       {:extra-deps {metav {:mvn/version "1.6.1"}}
+           :release       {:extra-deps {metav {:mvn/version "1.6.6"}}
                            :main-opts  ["-m" "metav.release"]}
-           :spit          {:extra-deps {metav {:mvn/version "1.6.1"}}
+           :spit          {:extra-deps {metav {:mvn/version "1.6.6"}}
                            :main-opts  ["-m" "metav.spit"]}
 
            }}
