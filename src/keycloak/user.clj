@@ -18,13 +18,13 @@
       (.setAttributes (java.util.HashMap. attributes)))
     representation))
 
-(defn user-for-update [{:keys [username first-name last-name email attributes] :as person}]
+(defn user-for-update [{:keys [username first-name last-name email enabled attributes] :as person}]
   (set-attributes (doto (UserRepresentation.)
                     (.setUsername username)
                     (.setFirstName first-name)
                     (.setLastName last-name)
                     (.setEmail email)
-                    (.setEnabled true)
+                    (.setEnabled enabled)
                     ;;setRealmRoles has a bug with the admin REST API and doesn't work
                     ) attributes))
 
@@ -210,3 +210,11 @@
 (defn get-users
   ([keycloak-client realm-name]
    (-> keycloak-client (.realm realm-name) (.users) (.list))))
+
+(defn logout-user!
+  [keycloak-client realm-name user-id]
+  (-> keycloak-client
+      (.realm realm-name)
+      (.users)
+      (.get user-id)
+      (.logout)))
