@@ -31,8 +31,13 @@
   [admin-client data]
   (let [realm-name (get-in data [:realm :name])
         {:keys [themes login tokens smtp]} (:realm data)]
-    (try (create-realm! admin-client realm-name themes login tokens smtp) (catch Exception e (get-realm admin-client realm-name)))
-    (println (format "Realm \"%s\" created" realm-name))
+    (try (create-realm! admin-client realm-name themes login tokens smtp)
+         (println (format "Realm \"%s\" created" realm-name))
+         (catch javax.ws.rs.ClientErrorException cee
+           (when (= (-> cee (.getResponse) (.getStatus)) 409)
+             (update-realm! admin-client realm-name themes login tokens smtp)
+             (println (format "Realm \"%s\" updated" realm-name))))
+         (catch Exception e (println "Can't create Realm" e)(get-realm admin-client realm-name)))
 
     (doseq [{:keys [name public? redirect-uris web-origins] :as client-data} (:clients data)]
       (let [client (client client-data)]

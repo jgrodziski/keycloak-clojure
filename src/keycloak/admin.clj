@@ -28,7 +28,7 @@
 (defn first-letter-capitalize [s]
   (str (string/upper-case (first s)) (subs s 1)))
 
-(defn set-all [obj m]
+(defn set-all! [obj m]
   (doseq [[k v] m]
     (let [method-name (str "set" (first-letter-capitalize (if (keyword? k) (name k) k)))]
       (clojure.lang.Reflector/invokeInstanceMethod
@@ -53,10 +53,11 @@
    (doto (RealmRepresentation.) (.setEnabled true) (.setRealm realm-name) (.setId realm-name)))
   ([realm-name themes login tokens smtp]
    (let [realm-rep (realm-representation realm-name)]
-     (when themes (set-all realm-rep themes))
-     (when login  (set-all realm-rep login))
-     (when tokens (set-all realm-rep tokens))
-     (when smtp (.setSmtpServer realm-rep (ks->str smtp)))
+     (cond-> realm-rep
+             themes (set-all! themes)
+             login  (set-all! login)
+             tokens (set-all! tokens)
+             smtp   (.setSmtpServer (ks->str smtp)))
      realm-rep)))
 
 (defn get-realm
@@ -71,9 +72,17 @@
    (get-realm keycloak-client realm-name))
   ([keycloak-client realm-name themes login tokens smtp]
    (info "create realm" realm-name)
-   (-> keycloak-client (.realms) (.create (realm-representation realm-name themes login tokens smtp)))
+   (let [realm-rep (realm-representation realm-name themes login tokens smtp)]
+     (-> keycloak-client (.realms) (.create realm-rep)))
    (info "realm" realm-name "created")
    (get-realm keycloak-client realm-name)))
+
+(defn update-realm! [keycloak-client realm-name themes login tokens smtp]
+  (info "update realm" realm-name)
+  (let [realm-rep (realm-representation realm-name themes login tokens smtp)]
+    (-> keycloak-client (.realms) (.realm realm-name) (.update realm-rep)))
+  (info "realm" realm-name "updated")
+  (get-realm keycloak-client realm-name))
 
 (defn delete-realm!
   [keycloak-client realm-name]
