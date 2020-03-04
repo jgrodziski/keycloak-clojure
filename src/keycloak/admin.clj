@@ -51,10 +51,11 @@
 (defn realm-representation
   ([realm-name]
    (doto (RealmRepresentation.) (.setEnabled true) (.setRealm realm-name) (.setId realm-name)))
-  ([realm-name themes login smtp]
+  ([realm-name themes login tokens smtp]
    (let [realm-rep (realm-representation realm-name)]
      (when themes (set-all realm-rep themes))
-     (when login(set-all realm-rep login))
+     (when login  (set-all realm-rep login))
+     (when tokens (set-all realm-rep tokens))
      (when smtp (.setSmtpServer realm-rep (ks->str smtp)))
      realm-rep)))
 
@@ -68,9 +69,9 @@
    (-> keycloak-client (.realms) (.create (realm-representation realm-name)))
    (info "realm" realm-name "created")
    (get-realm keycloak-client realm-name))
-  ([keycloak-client realm-name themes login smtp]
+  ([keycloak-client realm-name themes login tokens smtp]
    (info "create realm" realm-name)
-   (-> keycloak-client (.realms) (.create (realm-representation realm-name themes login smtp)))
+   (-> keycloak-client (.realms) (.create (realm-representation realm-name themes login tokens smtp)))
    (info "realm" realm-name "created")
    (get-realm keycloak-client realm-name)))
 

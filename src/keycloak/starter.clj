@@ -30,8 +30,8 @@
   "Create a structure of keycloak objects (realm, clients, roles) and fill it with groups and users"
   [admin-client data]
   (let [realm-name (get-in data [:realm :name])
-        {:keys [themes login smtp]} (:realm data)]
-    (try (create-realm! admin-client realm-name themes login smtp) (catch Exception e (get-realm admin-client realm-name)))
+        {:keys [themes login tokens smtp]} (:realm data)]
+    (try (create-realm! admin-client realm-name themes login tokens smtp) (catch Exception e (get-realm admin-client realm-name)))
     (println (format "Realm \"%s\" created" realm-name))
 
     (doseq [{:keys [name public? redirect-uris web-origins] :as client-data} (:clients data)]
