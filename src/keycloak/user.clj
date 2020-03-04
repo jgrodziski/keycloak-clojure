@@ -79,44 +79,41 @@
         email-exists? (not (nil? (user-id keycloak-client realm-name (.getEmail user))))]
     (or username-exists? email-exists?)))
 
+(defn- get-user-resource [keycloak-client realm-name username]
+  (let [user-searched (search-user keycloak-client realm-name username)
+        user-id       (-> user-searched first (.getId))
+        user-resource (-> keycloak-client (.realm realm-name) (.users) (.get user-id))]
+    {:user-searched user-searched
+     :user-id       user-id
+     :user-resource user-resource}))
+
+(defn- get-realm-roles-representations [keycloak-client realm-name roles]
+  (doall (map (fn [role]
+                (try
+                  (-> keycloak-client
+                      (.realm realm-name)
+                      (.roles)
+                      (.get role)
+                      (.toRepresentation))
+                  (catch javax.ws.rs.NotFoundException nfe
+                    (warn "Realm role" role "not found in realm" realm-name)))) (map name roles))))
+
 (defn add-realm-roles!
   [keycloak-client realm-name username roles]
   (when roles
-    (let [user-searched (search-user keycloak-client realm-name username)
-          user-id (-> user-searched first (.getId))
-          user-resource (-> keycloak-client (.realm realm-name) (.users) (.get user-id))
-          roles-representations (doall (map (fn [role]
-                                              (try
-                                                (-> keycloak-client
-                                                    (.realm realm-name)
-                                                    (.roles)
-                                                    (.get role)
-                                                    (.toRepresentation))
-                                                (catch javax.ws.rs.NotFoundException nfe
-                                                  (warn "Realm role" role "not found in realm" realm-name)))) (map name roles)))]
+    (let [{:keys [user-searched user-id user-resource]} (get-user-resource keycloak-client realm-name username)
+          roles-representations                         (get-realm-roles-representations keycloak-client realm-name roles)]
       (-> user-resource
           (.roles)
           (.realmLevel)
           (.add (java.util.ArrayList. (vec (filter some? roles-representations))))))))
 
-(defn- get-user-roles [keycloak-client realm-name username roles]
-  {:user-searched         (search-user keycloak-client realm-name username)
-   :user-id               (-> user-searched first (.getId))
-   :user-resource         (-> keycloak-client (.realm realm-name) (.users) (.get user-id))
-   :roles-representations (doall (map (fn [role]
-                                        (try
-                                          (-> keycloak-client
-                                              (.realm realm-name)
-                                              (.roles)
-                                              (.get role)
-                                              (.toRepresentation))
-                                          (catch javax.ws.rs.NotFoundException nfe
-                                            (warn "Realm role" role "not found in realm" realm-name)))) (map name roles)))})
 
 (defn remove-realm-roles!
   [keycloak-client realm-name username roles]
   (when roles
-    (let [{:keys [user-searched user-id user-resource roles-representations]} (get-user-roles keycloak-client realm-name username roles)]
+    (let [{:keys [user-searched user-id user-resource]} (get-user-resource keycloak-client realm-name username)
+          roles-representations                         (get-realm-roles-representations keycloak-client realm-name roles)]
       (-> user-resource
           (.roles)
           (.realmLevel)
@@ -125,7 +122,9 @@
 (defn set-realm-roles!
   [keycloak-client realm-name username roles]
   (when roles
-    (let [{:keys [user-searched user-id user-resource roles-representations]} (get-user-roles keycloak-client realm-name username roles)]
+    (let [{:keys [user-searched user-id user-resource]} (get-user-resource keycloak-client realm-name username)
+          roles-representations                         (get-realm-roles-representations keycloak-client realm-name roles)
+          role-scope-resource                           (-> user-resource (.roles) (.realmLevel))]
       (.remove role-scope-resource (.listEffective role-scope-resource))
       (.add role-scope-resource (java.util.ArrayList. (vec (filter some? roles-representations)))))))
 
@@ -135,9 +134,7 @@
 
 (defn add-client-roles!
   [keycloak-client realm-name username client-roles]
-  (let [user-searched (search-user keycloak-client realm-name username)
-        user-id (-> user-searched first (.getId))
-        user-resource (-> keycloak-client (.realm realm-name) (.users) (.get user-id))]
+  (let [{:keys [user-searched user-id user-resource]} (get-user-resource keycloak-client realm-name username)]
     (when (not-empty client-roles) (println (format "Add client roles %s to user %s" (pr-str client-roles ) username)))
     (doseq [[client-id roles] client-roles]
       (let [client (get-client keycloak-client realm-name client-id)
