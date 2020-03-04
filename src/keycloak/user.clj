@@ -99,6 +99,45 @@
           (.realmLevel)
           (.add (java.util.ArrayList. (vec (filter some? roles-representations))))))))
 
+(defn remove-realm-roles!
+  [keycloak-client realm-name username roles]
+  (when roles
+    (let [user-searched (search-user keycloak-client realm-name username)
+          user-id (-> user-searched first (.getId))
+          user-resource (-> keycloak-client (.realm realm-name) (.users) (.get user-id))
+          roles-representations (doall (map (fn [role]
+                                              (try
+                                                (-> keycloak-client
+                                                    (.realm realm-name)
+                                                    (.roles)
+                                                    (.get role)
+                                                    (.toRepresentation))
+                                                (catch javax.ws.rs.NotFoundException nfe
+                                                  (warn "Realm role" role "not found in realm" realm-name)))) (map name roles)))]
+      (-> user-resource
+          (.roles)
+          (.realmLevel)
+          (.remove (java.util.ArrayList. (vec (filter some? roles-representations))))))))
+
+(defn set-realm-roles!
+  [keycloak-client realm-name username roles]
+  (when roles
+    (let [user-searched (search-user keycloak-client realm-name username)
+          user-id (-> user-searched first (.getId))
+          user-resource (-> keycloak-client (.realm realm-name) (.users) (.get user-id))
+          roles-representations (doall (map (fn [role]
+                                              (try
+                                                (-> keycloak-client
+                                                    (.realm realm-name)
+                                                    (.roles)
+                                                    (.get role)
+                                                    (.toRepresentation))
+                                                (catch javax.ws.rs.NotFoundException nfe
+                                                  (warn "Realm role" role "not found in realm" realm-name)))) (map name roles)))
+          role-scope-resource (-> user-resource (.roles) (.realmLevel))]
+      (.remove role-scope-resource (.listEffective role-scope-resource))
+      (.add role-scope-resource (java.util.ArrayList. (vec (filter some? roles-representations)))))))
+
 (defn get-client
   [keycloak-client realm-name client-id]
   (-> keycloak-client (.realm realm-name) (.clients) (.findByClientId client-id) first))
