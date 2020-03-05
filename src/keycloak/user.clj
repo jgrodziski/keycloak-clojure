@@ -18,7 +18,7 @@
       (.setAttributes (java.util.HashMap. attributes)))
     representation))
 
-(defn user-for-update [{:keys [username first-name last-name email enabled attributes] :as person}]
+(defn user-for-update [{:keys [username first-name last-name email enabled attributes] :or {enabled true} :as person}]
   (set-attributes (doto (UserRepresentation.)
                     (.setUsername username)
                     (.setFirstName first-name)
@@ -225,8 +225,8 @@
       )
     (try
       (let [user (if (and username-exists? user-id)
-                   (update-user! keycloak-client realm-name user-id person)
-                   (create-user! keycloak-client realm-name person))]
+                   (do (update-user! keycloak-client realm-name user-id person))
+                   (do (create-user! keycloak-client realm-name person)))]
         (check-user-properly-created keycloak-client realm-name username email)
         (add-realm-roles! keycloak-client realm-name username realm-roles)
         (add-client-roles! keycloak-client realm-name username client-roles)
