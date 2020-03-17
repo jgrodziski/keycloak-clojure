@@ -10,7 +10,7 @@
   "author": "Stan Silvert",
   "license": "Apache 2.0",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "bootstrap": "^4.1.0",
     "moment": "^2.22.2",
     "patternfly": "^3.23.2",
