@@ -60,15 +60,15 @@
             (doseq [role (:roles data)]
               (doseq [i (range 1 (inc (:generated-users-by-group-and-role data)))]
                 (let [user (generate-user (:username-creator-fn data) role name subgroup i)
-                      created-user (user/create-or-update-user! admin-client realm-name user (:realm-roles data) (:client-roles data))]
-                  (println (format "      User \"%s\" created" (:username user)))
+                      created-user (user/create-or-update-user! admin-client realm-name user [role] nil)]
+                  (println (format "      User \"%s\" created with realm-roles %s and client-roles %s" (:username user) [role] nil))
                   (println (format "      Add user \"%s\" to group \"%s\"" (:username user) subgroup-name))
                   (add-user-to-group! admin-client realm-name (.getId subgroup) (.getId created-user)))))))))
 
     ;;Static users
     (doseq [{:keys [username] :as user} (:users data)]
       (let [created-user (user/create-or-update-user! admin-client realm-name user (:realm-roles user) (:client-roles user))]
-        (println (format "User \"%s\" created" username))
+        (println (format "User \"%s\" created with realm-roles %s and client-roles %s" username (:realm-roles user) (:client-roles user)))
         (doseq [subgroup-name (:in-subgroups user)]
           (let [subgroup-id (get-subgroup-id admin-client realm-name (get-group-id admin-client realm-name (:group user)) subgroup-name)]
             (println (format "Add user \"%s\" to group \"%s\"" username subgroup-name))
