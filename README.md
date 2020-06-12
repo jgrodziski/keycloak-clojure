@@ -115,7 +115,8 @@ Fire up a REPL, then:
             [keycloak.deployment :refer [keycloak-client client-conf]]))
 
 ;;create the admin keycloak client in "master" realm for client "admin-cli"
-(def admin-client (keycloak-client (client-conf "master" "admin-cli" "http://localhost:8080/auth") "admin" "password"))
+
+(def admin-client (keycloak-client (client-conf "http://localhost:8080/auth" "master" "admin-cli") "admin" "password"))
 
 ;;create our own
 (create-realm! admin-client "myrealm")
