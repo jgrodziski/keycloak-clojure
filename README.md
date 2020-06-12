@@ -9,10 +9,10 @@ This repo was first an explanation of integrating Keycloak with Clojure, now I t
 [![Clojars Project](https://img.shields.io/clojars/v/keycloak-clojure.svg)](https://clojars.org/keycloak-clojure)
 
 ```clojure
-keycloak-clojure {:mvn/version "1.10.1"}
+keycloak-clojure {:mvn/version "1.10.2"}
 ```
 
-Before going further be sure to read the [sample's README](sample) to understand the concepts Keycloak offers and the integration points needed to integrate it with your application backend and frontend. Of course the way Keycloak integrates with your application depends of the stack it uses.
+Before going further be sure to read the [sample's README](sample) to understand the concepts Keycloak offers, and the integration points needed to integrate it with your application backend and frontend. Of course the way Keycloak integrates with your application depends on the stack it uses.
 
 # Keycloak 
 
@@ -106,7 +106,8 @@ The client screen has an "installation" tab that allows to grab the credentials 
 
 ##### Automatic Realm Creation #####
 
-Add the `keycloak-clojure` dependency to your Clojure project: `[keycloak-clojure "1.8.0"]` or `keycloak-clojure {:mvn/version "1.8.0"}`.
+Add the `keycloak-clojure` dependency to your Clojure project: `[keycloak-clojure "1.10.2"]` or `keycloak-clojure {:mvn
+/version "1.10.2"}`.
 Fire up a REPL, then:
 
 ```clojure
