@@ -1,0 +1,49 @@
+version: '3.7'
+
+volumes:
+  pgdata:
+    driver: local
+
+services:
+
+  postgres:
+    image: postgres:9.6
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+
+
+  keycloak:
+    image: jboss/keycloak:11.0.0
+    depends_on:
+      - postgres 
+    healthcheck:
+      test: ["CMD", "curl", "--output", "/dev/null", "--silent", "--head", "--fail", "http://127.0.0.1:8080/auth"]
+      interval: 20s
+      timeout: 5s
+      retries: 6
+      start_period: 40s
+    ports:
+      - 9990:9990
+      - 8090:8080
+      - 8443:8443
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgres
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_PASSWORD: password
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: secretadmin
+

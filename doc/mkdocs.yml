@@ -1,0 +1,12 @@
+site_name: Keycloak Clojure
+theme:
+  name: material
+  palette:
+    primary: indigo 
+    accent: green
+nav:
+  - Home: index.md
+  - Concepts: concepts.md
+  - Securing Backend: backend.md
+  - Securing Frontend: frontend.md
+  - Administrative Tasks: admin.md

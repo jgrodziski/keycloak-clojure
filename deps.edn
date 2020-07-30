@@ -17,16 +17,16 @@
          clj-http        {:mvn/version "3.10.0"}
 
          ;; keycloak stuff
-         org.keycloak/keycloak-adapter-core   {:mvn/version "9.0.0"}
-         org.keycloak/keycloak-core           {:mvn/version "9.0.0"}
-         org.keycloak/keycloak-authz-client   {:mvn/version "9.0.0"}
-         org.keycloak/keycloak-adapter-spi    {:mvn/version "9.0.0"}
+         org.keycloak/keycloak-adapter-core   {:mvn/version "11.0.0"}
+         org.keycloak/keycloak-core           {:mvn/version "11.0.0"}
+         org.keycloak/keycloak-authz-client   {:mvn/version "11.0.0"}
+         org.keycloak/keycloak-adapter-spi    {:mvn/version "11.0.0"}
          org.jboss.logging/jboss-logging      {:mvn/version "3.4.1.Final"}
-         org.apache.httpcomponents/httpclient {:mvn/version "4.5.11"}
+         org.apache.httpcomponents/httpclient {:mvn/version "4.5.12"}
 
          ;;all the deps below are for the admin client (don't know why the transitive deps didn't work)
-         org.keycloak/keycloak-admin-client                  {:mvn/version "9.0.0"}
-         com.fasterxml.jackson.core/jackson-databind         {:mvn/version "2.10.0"}
+         org.keycloak/keycloak-admin-client                  {:mvn/version "11.0.0"}
+         com.fasterxml.jackson.core/jackson-databind         {:mvn/version "2.10.4"}
          org.jboss.resteasy/resteasy-jackson2-provider       {:mvn/version "3.9.3.Final"}
          org.jboss.resteasy/resteasy-client                  {:mvn/version "3.9.3.Final"}
          org.jboss.resteasy/resteasy-multipart-provider      {:mvn/version "3.9.3.Final"}

@@ -9,6 +9,4 @@ docker run -d \
        --name keycloak-dev \
        -p 127.0.0.1:9990:9990 \
        -p 127.0.0.1:8080:8080 \
-       -v "$(pwd)"/keycloak/configuration:/opt/jboss/keycloak/standalone/configuration \
-       -v "$(pwd)"/keycloak/themes:/opt/jboss/keycloak/themes \
-       jboss/keycloak:6.0.1
+       jboss/keycloak:10.0.2
