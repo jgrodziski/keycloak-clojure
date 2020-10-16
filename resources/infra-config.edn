@@ -1,0 +1,17 @@
+{:environment "staging"
+ :color       "red"
+ :base-domain "example.com"
+ :applications [{:name    "myapp"
+                 :version "1.2.3"}]
+ :keycloak    {:protocol "http"
+               :host     "host.docker.internal"
+               :port     "8090"
+               :login    "admin"
+               :password "secretadmin"}
+ :vault       {:protocol "http"
+               :host     "localhost"
+               :port     "1234"
+               :token    "myroot"
+               :mount    "secret"
+               ;;%1$s is the environment, %2$s is the color, %3$s is the base-domain, %4$s is the client-id (so depends of your realm-config.clj code)
+               :path     "/env/%1$s/keycloak/clients/%4$s"}}

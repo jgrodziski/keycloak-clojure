@@ -5,6 +5,9 @@
    [yada.cookies :refer [parse-cookies]]
    [keycloak.deployment :as keycloak]))
 
+(set! *warn-on-reflection* true)
+
+
 (defn authorization-bearer-cred [ctx]
   (let [header (get-in ctx [:request :headers "authorization"])]
     (when header
@@ -38,7 +41,7 @@
   (swap! deployments assoc realm-name deployment)
   deployment)
 
-(defn unregister-deployment [deployment]
+(defn unregister-deployment [^org.keycloak.adapters.KeycloakDeployment deployment]
   (swap! deployments dissoc (.getRealm deployment)))
 
 (defn register-deployments [deployments]

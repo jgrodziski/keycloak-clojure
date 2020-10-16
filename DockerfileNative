@@ -1,0 +1,14 @@
+FROM alpine:latest
+
+# INPUTS
+#VOLUME /etc/keycloak/keycloak-config.edn
+#VOLUME /etc/keycloak/realm-config.clj
+
+# OUTPUTS
+#VOLUME /etc/keycloak/keycloak-secrets.json
+#VOLUME /etc/keycloak/keycloak-secrets.yml
+#VOLUME /etc/keycloak/keycloak-secrets.edn
+
+COPY target/keycloak-clojure-starter-linux /keycloak-clojure-starter-linux
+
+ENTRYPOINT ["/keycloak-clojure-starter-linux","--infra-config","/etc/keycloak/infra-config.edn","--realm-config","/etc/keycloak/realm-config.clj"]

@@ -1,12 +1,22 @@
 (ns keycloak.authz
+  (:require [keycloak.utils :refer [hint-typed-doto]])
   (:import [org.keycloak.authorization.client AuthzClient]
            [org.keycloak.representations.idm.authorization ResourceRepresentation ScopeRepresentation RolePolicyRepresentation]))
 
-(defn authz-client [^java.io.InputStream client-conf-input-stream]
+(set! *warn-on-reflection* true)
+
+(defn authz-client
+  ^AuthzClient
+  [^java.io.InputStream client-conf-input-stream]
   (AuthzClient/create ^java.io.InputStream client-conf-input-stream))
 
 (defn resource [name type-urn scopes-urn]
-  (doto (ResourceRepresentation.) (.setName name) (.setType type-urn) (.addScope (into-array String scopes-urn))))
+  (let [])
+  (hint-typed-doto "org.keycloak.representations.idm.authorization.ResourceRepresentation"
+                   (ResourceRepresentation.)
+                   (.setName name)
+                   (.setType type-urn)
+                   (.addScope ^"[Ljava.lang.String;" (into-array String scopes-urn))))
 
 (defn scope
   "create a scope representation object (eg. \"urn:hello-world-authz:scopes:view\")"
@@ -14,24 +24,29 @@
   (ScopeRepresentation. [scope-urn]))
 
 (defn get-authorization-resource
-  [keycloak-client realm-name client-id]
+  ^org.keycloak.admin.client.resource.AuthorizationResource
+  [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id]
   (-> keycloak-client (.realms) (.realm realm-name) (.clients) (.get client-id) (.authorization)))
 
-(defn resource-client [authz-client]
+(defn resource-client
+  ^org.keycloak.authorization.client.resource.ProtectedResource
+  [^AuthzClient authz-client]
   (-> authz-client (.protection) (.resource)))
 
 (defn find-resource-by-id
-      [authz-client id]
+  ^org.keycloak.representations.idm.authorization.ResourceRepresentation
+  [^AuthzClient authz-client id]
       (let [resource-client (resource-client authz-client)]
         (.findById resource-client id)))
 
 (defn find-resource-by-name
-      [authz-client name]
+  ^org.keycloak.representations.idm.authorization.ResourceRepresentation
+  [^AuthzClient authz-client name]
       (let [resource-client (resource-client authz-client)]
            (.findByName resource-client name)))
 
 (defn create-resource!
-  [authz-client name type-urn scopes-urn]
+  [^AuthzClient authz-client name type-urn scopes-urn]
   (let [resource-client (resource-client authz-client)
         existing (find-resource-by-name authz-client name)]
     (when existing
@@ -41,16 +56,16 @@
       (find-resource-by-id authz-client id))))
 
 (defn delete-resource!
-  [authz-client name]
+  [^AuthzClient authz-client name]
       (let [resource-client (resource-client authz-client)
             existing (.findByName resource-client name)]
            (when existing
                  (.delete resource-client (.getId existing)))))
 
-(defn delete-resource [authz-client name]
+(defn delete-resource [^AuthzClient authz-client name]
       (let [resource-client (resource-client authz-client)]))
 
-(defn create-role-policy [keycloak-client realm-name client-id role-name resource-id scopes-id]
+(defn create-role-policy [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id role-name resource-id scopes-id]
   (let [role-policy-representation (doto (RolePolicyRepresentation.)
                                      (.addRole role-name)
                                      (.addResource resource-id)

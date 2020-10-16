@@ -1,0 +1,5 @@
+FROM oracle/graalvm-ce:20.2.0-java11
+
+RUN gu install native-image 
+
+

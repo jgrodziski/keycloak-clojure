@@ -4,6 +4,8 @@
    [clj-http.client :as http]
    [cheshire.core :refer [parse-string]]))
 
+(set! *warn-on-reflection* true)
+
 (defn oidc-connect-url [auth-server-url realm-name]
   (str auth-server-url "/realms/" realm-name "/protocol/openid-connect/token"))
 
@@ -37,7 +39,7 @@
        :body
        (parse-string true))))
 
-(defn access-token [client username password]
+(defn access-token [^org.keycloak.authorization.client.AuthzClient client username password]
   (-> client (.obtainAccessToken username password)))
 
 (defn auth-cookie [bearer]

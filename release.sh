@@ -3,7 +3,7 @@
 RELEASE_LEVEL=$1
 MODULE_NAME=${PWD##*/}
 echo "Release \"$MODULE_NAME\" with level '$RELEASE_LEVEL'"
-tag=$(clj -Arelease $RELEASE_LEVEL --spit --output-dir . --formats json)
+tag=$(clj -Arelease $RELEASE_LEVEL --spit --output-dir . --formats json,clj --namespace keycloak.meta)
 
 if [ $? -eq 0 ]; then
     echo "Successfully released \"$MODULE_NAME\" to $tag"
@@ -52,6 +52,7 @@ mvn org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy-file \
     -DpomFile=pom.xml \
     -Dclassifier=
 
+
 if [ $? -eq 0 ]; then
     echo "Successfully deployed \"$MODULE_NAME\" version $newversion to clojars"
 else
@@ -59,3 +60,19 @@ else
     exit $?
 fi
 
+docker push jgrodziski/keycloak-clojure-starter:latest
+if [ $? -eq 0 ]; then
+    echo "Successfully pushed jgrodziski/keycloak-clojure-starter:latest to docker hub"
+else
+    echo "Fail to push docker image to docker hub!"
+    exit $?
+fi
+
+docker push jgrodziski/keycloak-clojure-starter:$newversion
+
+if [ $? -eq 0 ]; then
+    echo "Successfully pushed jgrodziski/keycloak-clojure-starter:$newversion to docker hub"
+else
+    echo "Fail to push docker image to docker hub!"
+    exit $?
+fi
