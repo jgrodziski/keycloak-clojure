@@ -162,7 +162,7 @@
    (create-subgroup! keycloak-client realm-name group-id subgroup-name nil))
   (^org.keycloak.representations.idm.GroupRepresentation[^org.keycloak.admin.client.Keycloak keycloak-client realm-name group-id subgroup-name attributes]
    (info "create subgroup" subgroup-name "in group" group-id "in realm" realm-name)
-   (let [group-rep (set-attributes (group-representation subgroup-name) attributes)
+   (let [group-rep (set-attributes ^org.keycloak.representations.idm.GroupRepresentation (group-representation subgroup-name) attributes)
          resp (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.subGroup group-rep))
          subgroup-id (extract-id resp)]
      (when resp (.close resp))

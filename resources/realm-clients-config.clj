@@ -6,22 +6,25 @@
     (format (str "https://%s.%s." base-domain) client env)
     (get default-url client)))
 
+(defn client-id [app-name app-version client-name]
+  (str app-name "-" client-name (when (not (clojure.string/blank? app-version)) (str "-" app-version))))
 
-(defn basic-realm-data [base-domain env]
+
+(defn basic-realm-data [base-domain env color app-name app-version]
   {:realm   {:name "example2"}
-   :clients [{:name          "api-client"
+   :clients [{:name          (client-id app-name app-version "api-client")
+              :public?       true
+              :redirect-uris [(str (url-or-default base-domain "myapp" env) "/*")]
+              :root-url      (url-or-default base-domain "api" env)
+              :base-url      (url-or-default base-domain "api" env)
+              :web-origins   [(url-or-default base-domain "api" env)]}
+             {:name          (client-id app-name app-version "frontend")
               :public?       true
               :redirect-uris [(str (url-or-default base-domain "myapp" env) "/*")]
               :root-url      (url-or-default base-domain "myapp" env)
               :base-url      (url-or-default base-domain "myapp" env)
               :web-origins   [(url-or-default base-domain "myapp" env)]}
-             {:name          "myfrontend"
-              :public?       true
-              :redirect-uris [(str (url-or-default base-domain "myapp" env) "/*")]
-              :root-url      (url-or-default base-domain "myapp" env)
-              :base-url      (url-or-default base-domain "myapp" env)
-              :web-origins   [(url-or-default base-domain "myapp" env)]}
-             {:name          "mybackend"
+             {:name          (client-id app-name app-version "backend")
               :public?       false
               :redirect-uris ["http://localhost:3449/*"]
               :web-origins   ["http://localhost:3449"]}]})
@@ -109,6 +112,6 @@
       "prod" (merge realm-config prod-clients-conf)
        realm-config)))
 
-
-[(realm-data base-domain environment)]
+(into [] (map (fn [{:keys [name version] :as application}]
+                (basic-realm-data base-domain environment color name version)) applications))
 

@@ -1,25 +1,25 @@
 (ns keycloak.vault
-  ;(:require [vault.core :as vault] [vault.secrets.kvv2 :as vault-kvv2])
-  )
+  (:require [vault.core :as vault]
+            [vault.client.http]
+            [vault.secrets.kvv2 :as vault-kvv2]))
 
 (defn vault-url [protocol host port]
   (str (or protocol "http") "://" (or host "localhost") (when port (str ":" port))))
 
 ;;
 (defn new-client [vault-url]
-  ;(require 'vault.client.http)
-                                        ; (vault/new-client vault-url)
-  )
+  (vault/new-client vault-url))
 
 (defn authenticate!  [client token]
-  ;(vault/authenticate! client :token token)
-  )
+  (vault/authenticate! client :token token))
 
 (defn- write-secret! [vault-url token mount path data]
   (let [client (authenticate! (new-client vault-url) token)]
-   ; (vault-kvv2/write-secret! client mount path data)
-    )
-  )
+    (vault-kvv2/write-secret! client mount path data)))
 
 (defn write-keycloak-client-secret! [vault-url token path secret]
-  (write-secret! vault-url token "secret" path {:secret secret}))
+  (try
+    (write-secret! vault-url token "secret" path {:secret secret})
+    (catch java.lang.Throwable e
+      (println (format "Can't write secret to vault at %s with engine %s and path %s because of exception:" vault-url "secret" path))
+      (.printStackTrace e))))

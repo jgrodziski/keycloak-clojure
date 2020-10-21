@@ -1,44 +1,53 @@
 (ns keycloak.starter
-  (:require [keycloak.admin :refer :all]
-            [keycloak.user :as user]
-            [keycloak.deployment :as deployment :refer [keycloak-client client-conf]]
-            [keycloak.meta :as meta]
-            [keycloak.vault :as vault]
-            [talltale.core :as talltale :refer :all]
-            [me.raynes.fs :as fs]
-            [sci.core :as sci]
-            [cli-matic.core :refer [run-cmd]]
-            [clj-yaml.core :as yaml]
-            [jsonista.core :as json])
+  (:require
+   [clojure.string :as str]
+   [me.raynes.fs :as fs]
+   [sci.core :as sci]
+   [cli-matic.core :refer [run-cmd]]
+   [clj-yaml.core :as yaml]
+   [jsonista.core :as json]
+   [talltale.core :as talltale :refer :all]
+
+   [keycloak.admin :refer :all]
+   [keycloak.user :as user]
+   [keycloak.deployment :as deployment :refer [keycloak-client client-conf]]
+   [keycloak.meta :as meta]
+   [keycloak.vault :as vault])
   (:gen-class))
 
 (set! *warn-on-reflection* true)
 
-(defn export-json [export-dir client-id key secrets]
-  (let [secrets-file (clojure.java.io/file export-dir "keycloak-secrets.json")]
+(defn export-json [export-dir export-file-without-extension client-id key secrets]
+  (let [secrets-file (clojure.java.io/file export-dir (str export-file-without-extension ".json"))]
     (fs/touch secrets-file)
     (json/write-value secrets-file secrets)
     (println (format "Secret of client \"%s\" exported in files %s at key [:keycloak %s]" client-id (str secrets-file) key))))
 
-(defn export-yaml [export-dir client-id key secrets]
-  (let [secrets-file (clojure.java.io/file export-dir "keycloak-secrets.yml")]
+(defn export-yaml [export-dir export-file-without-extension client-id key secrets]
+  (let [secrets-file (clojure.java.io/file export-dir (str export-file-without-extension ".yml"))]
     (fs/touch secrets-file)
     (spit secrets-file (yaml/generate-string secrets))
     (println (format "Secret of client \"%s\" exported in files %s at key [:keycloak %s]" client-id (str secrets-file) key))))
 
-(defn export-secret-in-files! [^org.keycloak.admin.client.Keycloak keycloak-client export-dir realm-name client-id key]
-  (println (format "Secret of client \"%s\" will be exported in files sitting in directory %s" client-id  export-dir))
-  (let [secret       (get-client-secret keycloak-client realm-name client-id)
-        home         (System/getenv "HOME")
-        secrets-file (clojure.java.io/file export-dir "keycloak-secrets.edn")
-        _            (fs/mkdir export-dir)
-        _            (fs/touch secrets-file)
-        secrets      (-> (or (clojure.edn/read-string (slurp secrets-file)) {})
-                    (assoc-in [:keycloak key] secret))]
+(defn- env-var-or-dir? [dir]
+  (if (System/getenv dir)
+    (System/getenv dir)
+    dir))
+
+(defn export-secret-in-files! [^org.keycloak.admin.client.Keycloak keycloak-client export-dir secret-file-without-extension realm-name client-id key]
+  (println (format "Secret of client \"%s\" will be exported in files %s in directory %s" client-id (str secret-file-without-extension ".edn|json|yml") export-dir))
+  (let [secret              (get-client-secret keycloak-client realm-name client-id)
+        secret-file         (or secret-file-without-extension ".keycloak-secrets")
+        resolved-export-dir (env-var-or-dir? export-dir)
+        secrets-file        (clojure.java.io/file resolved-export-dir (str secret-file ".edn"))
+        _                   (fs/mkdir resolved-export-dir)
+        _                   (fs/touch secrets-file)
+        secrets             (-> (or (clojure.edn/read-string (slurp secrets-file)) {})
+                         (assoc-in [:keycloak key] secret))]
     (println (format "Secret of client \"%s\" exported in files %s at key [:keycloak %s]" client-id (str secrets-file) key))
     (spit secrets-file secrets)
-    (export-json export-dir client-id key secrets)
-    (export-yaml export-dir client-id key secrets)
+    (export-json resolved-export-dir secret-file client-id key secrets)
+    (export-yaml resolved-export-dir secret-file client-id key secrets)
     secrets-file))
 
 (defn export-secret-in-vault!
@@ -63,64 +72,75 @@
          {:username (apply username-creator-fn role group subgroup idx opts)
           :password "password"}))
 
-(defn init-realm!
+(defn init-realm! [^org.keycloak.admin.client.Keycloak admin-client {:keys [name themes login tokens smtp] :as realm-data}]
+  (println (format "Will create realm \"%s\"" name))
+  (try (create-realm! admin-client name themes login tokens smtp)
+       (println (format "Realm \"%s\" created" name))
+       (catch javax.ws.rs.ClientErrorException cee
+         (when (= (-> cee (.getResponse) (.getStatus)) 409)
+           (update-realm! admin-client name themes login tokens smtp)
+           (println (format "Realm \"%s\" updated" name))))
+       (catch Exception e (println "Can't create Realm" e)(get-realm admin-client name))))
+
+(defn init-clients! [^org.keycloak.admin.client.Keycloak admin-client realm-name clients-data infra-config secret-export-dir secret-file-without-extension]
+  (doseq [{:keys [name public? redirect-uris web-origins] :as client-data} clients-data]
+    (let [client (client client-data)
+          client-id name]
+      (println (format "Create client \"%s\" in realm %s" name realm-name))
+      (create-client! admin-client realm-name client)
+      (println (format "Client \"%s\" created in realm %s" name realm-name))
+      (create-mappers! admin-client realm-name name)
+      (when secret-export-dir
+        (export-secret-in-files! admin-client secret-export-dir secret-file-without-extension realm-name client-id (keyword name)))
+      (when (:vault infra-config)
+        (export-secret-in-vault! admin-client infra-config realm-name client-id))))
+  (println (format "%s Clients created in realm %s" (count clients-data) realm-name)))
+
+(defn init-roles! [^org.keycloak.admin.client.Keycloak admin-client realm-name roles-data]
+  (doseq [role roles-data]
+    (try (create-role! admin-client realm-name role) (catch Exception e (get-role admin-client realm-name role)))))
+
+(defn init-generated-users! [^org.keycloak.admin.client.Keycloak admin-client realm-name data ^org.keycloak.representations.idm.GroupRepresentation subgroup]
+  (doseq [role (:roles data)]
+    (doseq [i (range 1 (inc (:generated-users-by-group-and-role data)))]
+      (let [user (generate-user (:username-creator-fn data) role name subgroup i)
+            created-user (user/create-or-update-user! admin-client realm-name user [role] nil)]
+        (println (format "      User \"%s\" created with realm-roles %s and client-roles %s" (:username user) [role] nil))
+        (println (format "      Add user \"%s\" to group \"%s\"" (:username user) (.getName subgroup)))
+        (add-user-to-group! admin-client realm-name (.getId subgroup) (.getId created-user))))))
+
+(defn init-groups-and-gen-users! [^org.keycloak.admin.client.Keycloak admin-client realm-name {:keys [groups] :as data}]
+  (doseq [{:keys [name subgroups]} groups]
+    (let [^org.keycloak.representations.idm.GroupRepresentation group (create-group! admin-client realm-name name)]
+      (println (format "Group \"%s\" created" name))
+      (doseq [[idx {subgroup-name :name attributes :attributes}] (map-indexed vector subgroups)]
+        (let [^org.keycloak.representations.idm.GroupRepresentation subgroup (create-subgroup! admin-client realm-name (.getId group) subgroup-name attributes)]
+          (println (format "   Subgroup \"%s\" created in group \"%s\"" subgroup-name name))
+          (init-generated-users! admin-client realm-name data subgroup))))))
+
+(defn init-users! [^org.keycloak.admin.client.Keycloak admin-client realm-name users-data]
+  (doseq [{:keys [username] :as user} users-data]
+    (let [created-user (user/create-or-update-user! admin-client realm-name user (:realm-roles user) (:client-roles user))]
+      (println (format "User \"%s\" created with realm-roles %s and client-roles %s" username (:realm-roles user) (:client-roles user)))
+      (doseq [subgroup-name (:in-subgroups user)]
+        (let [subgroup-id (get-subgroup-id admin-client realm-name (get-group-id admin-client realm-name (:group user)) subgroup-name)]
+          (println (format "Add user \"%s\" to group \"%s\"" username subgroup-name))
+          (add-user-to-group! admin-client realm-name subgroup-id (.getId created-user)))))))
+
+(defn init!
   "Create a structure of keycloak objects (realm, clients, roles) and fill it with groups and users"
-  ([admin-client data]
-   (init-realm! admin-client data nil))
-  ([admin-client data infra-config secret-export-dir]
-   (when (nil? data)
-     (throw (ex-info "Realm config data can't be null")))
-   (let [realm-name (get-in data [:realm :name])
-         {:keys [themes login tokens smtp]} (:realm data)]
-     (println (format "Will create realm \"%s\"" realm-name))
-     (try (create-realm! admin-client realm-name themes login tokens smtp)
-          (println (format "Realm \"%s\" created" realm-name))
-          (catch javax.ws.rs.ClientErrorException cee
-            (when (= (-> cee (.getResponse) (.getStatus)) 409)
-              (update-realm! admin-client realm-name themes login tokens smtp)
-              (println (format "Realm \"%s\" updated" realm-name))))
-          (catch Exception e (println "Can't create Realm" e)(get-realm admin-client realm-name)))
-
-     (doseq [{:keys [name public? redirect-uris web-origins] :as client-data} (:clients data)]
-       (let [client (client client-data)
-             client-id name]
-         (println (format "Create client \"%s\" in realm %s" name realm-name))
-         (create-client! admin-client realm-name client)
-         (println (format "Client \"%s\" created in realm %s" name realm-name))
-         (create-mappers! admin-client realm-name name)
-         (when secret-export-dir
-           (export-secret-in-files! admin-client secret-export-dir realm-name client-id (keyword (str name "-secret"))))
-         (when (:vault infra-config)
-           (export-secret-in-vault! admin-client infra-config realm-name client-id))))
-     (println (format "%s Clients created in realm %s" (count (:clients data)) realm-name))
-
-     (doseq [role (:roles data)]
-       (try (create-role! admin-client realm-name role) (catch Exception e (get-role admin-client realm-name role))))
-
-     (doseq [{:keys [name subgroups]} (:groups data)]
-       (let [^org.keycloak.representations.idm.GroupRepresentation group (create-group! admin-client realm-name name)]
-         (println (format "Group \"%s\" created" name))
-         (doseq [[idx {subgroup-name :name attributes :attributes}] (map-indexed vector subgroups)]
-           (let [^org.keycloak.representations.idm.GroupRepresentation subgroup (create-subgroup! admin-client realm-name (.getId group) subgroup-name attributes)]
-             (println (format "   Subgroup \"%s\" created in group \"%s\"" subgroup-name name))
-             ;;Generated users
-             (doseq [role (:roles data)]
-               (doseq [i (range 1 (inc (:generated-users-by-group-and-role data)))]
-                 (let [user (generate-user (:username-creator-fn data) role name subgroup i)
-                       created-user (user/create-or-update-user! admin-client realm-name user [role] nil)]
-                   (println (format "      User \"%s\" created with realm-roles %s and client-roles %s" (:username user) [role] nil))
-                   (println (format "      Add user \"%s\" to group \"%s\"" (:username user) subgroup-name))
-                   (add-user-to-group! admin-client realm-name (.getId subgroup) (.getId created-user)))))))))
-
-     ;;Static users
-     (doseq [{:keys [username] :as user} (:users data)]
-       (let [created-user (user/create-or-update-user! admin-client realm-name user (:realm-roles user) (:client-roles user))]
-         (println (format "User \"%s\" created with realm-roles %s and client-roles %s" username (:realm-roles user) (:client-roles user)))
-         (doseq [subgroup-name (:in-subgroups user)]
-           (let [subgroup-id (get-subgroup-id admin-client realm-name (get-group-id admin-client realm-name (:group user)) subgroup-name)]
-             (println (format "Add user \"%s\" to group \"%s\"" username subgroup-name))
-             (add-user-to-group! admin-client realm-name subgroup-id (.getId created-user))))))
-     (println (format "Keycloak with realm \"%s\" initialized" realm-name))
+  ([^org.keycloak.admin.client.Keycloak admin-client data]
+   (init! admin-client data nil))
+  ([^org.keycloak.admin.client.Keycloak admin-client data infra-config secret-export-dir export-file-without-extension]
+   (when (or (nil? admin-client) (nil? data))
+     (throw (ex-info "Admin client and/or realm config data can't be null")))
+   (let [realm-name (get-in data [:realm :name])]
+     (init-realm!                admin-client (:realm data))
+     (init-clients!              admin-client realm-name (:clients data) infra-config secret-export-dir export-file-without-extension)
+     (init-roles!                admin-client realm-name (:roles data))
+     (init-groups-and-gen-users! admin-client realm-name data)
+     (init-users!                admin-client realm-name (:users data))
+     (println (format "Keycloak realm \"%s\" initialized" realm-name))
      data)))
 
 (defn keycloak-auth-server-url [protocol host port]
@@ -130,8 +150,18 @@
   (let [{:keys [environment color base-domain applications vault keycloak]}           infra-config
         {:keys [auth-server-url login password protocol host port secret-export-dir]} (or keycloak args);either the params are in the keyclaok config file or each params is passed through a direct param
         auth-server-url (or auth-server-url (keycloak-auth-server-url protocol host port))
-        processed-args {:auth-server-url auth-server-url :login login :password password :environment environment :base-domain base-domain :color color :applications applications :vault-config vault :realm-config realm-config :infra-config infra-config :secret-export-dir (or (get-in infra-config [:keycloak :secret-export-dir]) (:secret-export-dir args))}
-        ]
+        processed-args {:auth-server-url auth-server-url
+                        :login login
+                        :password password
+                        :environment environment
+                        :base-domain base-domain
+                        :color color
+                        :applications applications
+                        :vault-config vault
+                        :realm-config realm-config
+                        :infra-config infra-config
+                        :secret-export-dir (or (get-in infra-config [:keycloak :secret-export-dir]) (:secret-export-dir args))
+                        :secret-file-without-extension (or (get-in infra-config [:keycloak :secret-file-without-extension]) (:secret-file-without-extension args))}]
     (when (or (nil? auth-server-url) (nil? password) (nil? login) (nil? base-domain) (nil? realm-config))
 
       (println "Usage: clj -m keycloak.starter <auth-server-url> <login> <password> <environment> <base-domain> <realm-config> <infra-config>" )
@@ -139,26 +169,26 @@
     processed-args))
 
 (defn init-cli! [args]
-  (let [{:keys [infra-config realm-config secret-export-dir auth-server-url login password environment color base-domain applications]} (process-args args)]
+  (let [{:keys [infra-config realm-config secret-export-dir secret-file-without-extension auth-server-url login password environment color base-domain applications]} (process-args args)]
     (let [admin-client (-> (deployment/client-conf auth-server-url "master" "admin-cli")
                            (deployment/keycloak-client login password))
-          base-domain  (sci/new-var 'base-domain base-domain)
-          environment  (sci/new-var 'environment environment)
-          color        (sci/new-var 'color color)
-          applications (sci/new-var 'applications applications)
-          config-data  (sci/eval-string realm-config {:bindings {'base-domain  base-domain
-                                                                 'environment  environment
-                                                                 'applications applications
-                                                                 'color        color}})]
-      (println (format "Keycloak init script target %s in env %s with %s realms" auth-server-url (or environment "localhost" ) (count config-data)))
+          sci-base-domain  (sci/new-var 'base-domain base-domain)
+          sci-environment  (sci/new-var 'environment environment)
+          sci-color        (sci/new-var 'color color)
+          sci-applications (sci/new-var 'applications applications)
+          config-data  (sci/eval-string realm-config {:bindings {'base-domain  sci-base-domain
+                                                                 'environment  sci-environment
+                                                                 'applications sci-applications
+                                                                 'color        sci-color}})]
+      (println (format "Keycloak init script target %s in env %s with %s realm(s)" auth-server-url (or environment "localhost" ) (count config-data)))
       (if (map? config-data)
         (do
           (println (format "Init realm %s" (get-in config-data [:realm :name])))
-          (init-realm! admin-client config-data infra-config secret-export-dir))
+          (init! admin-client config-data infra-config secret-export-dir secret-file-without-extension))
         (when (or (vector? config-data) (seq? config-data))
           (doseq [realm-data config-data]
             (println (format "Init realm %s" (get-in realm-data [:realm :name])))
-            (init-realm! admin-client realm-data infra-config secret-export-dir))))
+            (init! admin-client realm-data infra-config secret-export-dir secret-file-without-extension))))
       (shutdown-agents))))
 
 (def init-cli-opts
@@ -182,20 +212,26 @@
     :option "base-domain"
     :type :string}
 
+   {:as "Secret directory output"
+    :option "secret-export-dir"
+    :default "/etc/keycloak"
+    :type :string}
+
+   {:as "Secret file output"
+    :option "secret-file-without-extension"
+    :default ".keycloak-secrets"
+    :type :string}
+
    {:as "An EDN file containing the following keys:
          - :environment: a string of the target environment, no impact but is passed during evaluation of the realm config file\n
          - :color: a string of a \"color\" for discriminating the target (can be omitted), no impact but is passed during evaluation of the realm config file\n
          - :base-domain: a string for the DNS base domain of the target, no impact but is passed during evaluation of the realm config file\n
          - :applications: a vector of map with :name and :version key, no impact but is passed during evaluation of the realm config file\n
-         - :keycloak: a map with :protocol, :host, :port, :login, :password, :base-domain, :secret-export-dir\n
+         - :keycloak: a map with :protocol, :host, :port, :login, :password, :base-domain, :secret-export-dir, :secret-file-without-extension\n
          - :vault: a map with :protocol :host :port :token :mount :path\n
          if present it overrides all the other options"
     :option "infra-config"
     :type :ednfile}
-   {:as "Secret directory output"
-    :option "secret-export-dir"
-    :default "/etc/keycloak"
-    :type :string}
 
    {:as "A clj file that is evaluated with SCI (https://github.com/borkdude/sci) that must return a map with the keys: realm, clients, roles"
     :option "realm-config"
@@ -299,4 +335,16 @@
              {:email "xavier765@yahoo.com", :last-name "Mccall", :group "Example", :realm-roles ["employee" "manager" "example-admin" "org-admin" "group-admin" "api-consumer"], :password "s0xha8r7w9w", :username "mccall", :first-name "Xavier", :attributes {"org-ref" ["Example"]}, :in-subgroups ["IT"]}
              {:last-name "Carter", :group "Example", :realm-roles ["employee" "manager" "example-admin"], :password "secretstuff", :username "testaccount", :first-name "Bob", :attributes {"org-ref" ["Example"]}, :in-subgroups ["IT"]}]}])
 
-  (init-realm! admin-client static-realm-data))
+  (init-realm! admin-client static-realm-data)
+
+
+  (def base-domain  (sci/new-var 'base-domain "example.com"))
+  (def environment  (sci/new-var 'environment "staging"))
+  (def applications (sci/new-var 'applications [{:name "diffusion" :version "1.2.3"}]))
+  (def color        (sci/new-var 'color       "red"))
+
+  (def config-data  (sci/eval-string realm-config {:bindings {'base-domain  base-domain
+                                                              'environment  environment
+                                                              'applications applications
+                                                              'color        color}}))
+  )

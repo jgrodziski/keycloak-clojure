@@ -28,7 +28,9 @@ services:
     cap_add:
       - IPC_LOCK
     ports:
-      - 1234:1234
+      - 8200:8200
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: myroot
 
   keycloak:
     image: jboss/keycloak:11.0.2

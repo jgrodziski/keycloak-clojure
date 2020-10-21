@@ -5,12 +5,13 @@
                  :version "1.2.3"}]
  :keycloak    {:protocol "http"
                :host     "host.docker.internal"
-               :port     "8090"
+               :port     8090
                :login    "admin"
-               :password "secretadmin"}
+               :password "secretadmin"
+               :secret-file-without-extension ".keycloak-secrets"}
  :vault       {:protocol "http"
-               :host     "localhost"
-               :port     "1234"
+               :host     "host.docker.internal"
+               :port     8200
                :token    "myroot"
                :mount    "secret"
                ;;%1$s is the environment, %2$s is the color, %3$s is the base-domain, %4$s is the client-id (so depends of your realm-config.clj code)

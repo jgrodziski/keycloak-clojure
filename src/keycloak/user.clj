@@ -15,7 +15,7 @@
     (when-let [loc (.getLocation resp)]
       (subs (str loc) (+ (last-index-of (str loc) "/") 1)))))
 
-(defn set-attributes [^org.keycloak.representations.idm.UserRepresentation representation ^java.util.Map attributes]
+(defn set-attributes [representation ^java.util.Map attributes]
   (if (and attributes (not-empty (filter some? attributes)))
     (doto representation (.setAttributes ^java.util.Map (java.util.HashMap. attributes)))
     representation))
@@ -23,7 +23,8 @@
 (defn user-for-update
   ^org.keycloak.representations.idm.UserRepresentation
   [{:keys [username first-name last-name email enabled attributes] :or {enabled true} :as person}]
-  (set-attributes (hint-typed-doto "org.keycloak.representations.idm.UserRepresentation" (UserRepresentation.)
+  (set-attributes ^org.keycloak.representations.idm.UserRepresentation
+                  (hint-typed-doto "org.keycloak.representations.idm.UserRepresentation" (UserRepresentation.)
                     (.setUsername username)
                     (.setFirstName first-name)
                     (.setLastName last-name)

@@ -81,3 +81,33 @@
   (doseq [realm-data static-realm-data]
     (starter/init-realm! admin-client realm-data infra-config nil)))
 
+
+(deftest config-test
+  (let [base-domain  (sci/new-var 'base-domain  "example.com")
+        environment  (sci/new-var 'environment  "staging")
+        applications (sci/new-var 'applications [{:name "diffusion" :version "1.2.3"}])
+        color        (sci/new-var 'color        "red")
+        config-code  (slurp "resources/realm-clients-config.clj")
+        config-data  (sci/eval-string config {:bindings {'base-domain  base-domain
+                                                         'environment  environment
+                                                         'applications applications
+                                                         'color        color}})]
+    (is config-data [{:realm {:name "example2"},
+                      :clients
+                      [{:name "diffusion-api-client-1.2.3",
+                        :redirect-uris ["https://myapp.staging.example.com/*"],
+                        :base-url "https://myapp.staging.example.com",
+                        :web-origins ["https://myapp.staging.example.com"],
+                        :public? true,
+                        :root-url "https://myapp.staging.example.com"}
+                       {:name "diffusion-frontend-1.2.3",
+                        :redirect-uris ["https://myapp.staging.example.com/*"],
+                        :base-url "https://myapp.staging.example.com",
+                        :web-origins ["https://myapp.staging.example.com"],
+                        :public? true,
+                        :root-url "https://myapp.staging.example.com"}
+                       {:name "diffusion-backend-1.2.3",
+                        :redirect-uris ["http://localhost:3449/*"],
+                        :web-origins ["http://localhost:3449"],
+                        :public? false}]}])
+    ))
