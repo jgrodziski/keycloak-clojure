@@ -294,14 +294,14 @@
   (-> keycloak-client (.realm realm-name) (.clients) (.get client-id) (.remove)))
 
 (defn create-client!
-  ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name ^org.keycloak.representations.idm.ClientRepresentation client]
+  (^org.keycloak.representations.idm.ClientRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name ^org.keycloak.representations.idm.ClientRepresentation client]
    (info "create client" (.getClientId client) "in realm" realm-name)
    (when-let [retrieved-client (get-client keycloak-client realm-name (.getClientId client))]
      (delete-client! keycloak-client realm-name (.getId retrieved-client)))
    (-> keycloak-client (.realm realm-name) (.clients) (.create client))
    (info "client" (.getClientId client) " created in realm" realm-name)
    (get-client keycloak-client realm-name (.getClientId client)))
-  ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id public?]
+  (^org.keycloak.representations.idm.ClientRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id public?]
    (create-client! keycloak-client realm-name (client {:client-id client-id :public-client public?}))))
 
 (defn get-client-secret
@@ -345,13 +345,14 @@
     mapper))
 
 (defn create-protocol-mapper! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id ^org.keycloak.representations.idm.ProtocolMapperRepresentation mapper]
-  (let [^org.keycloak.representations.idm.ClientRepresentation client (-> keycloak-client (.realm realm-name) (.clients) (.findByClientId client-id) first)
-        internal-client-id (.getId client)
-        client-resource (-> keycloak-client (.realm realm-name) (.clients) (.get internal-client-id))
-        resp (-> client-resource .getProtocolMappers (.createMapper mapper))
-        mapper-id (extract-id resp)
-        retrieved-mapper (when mapper-id (get-mapper keycloak-client realm-name client-id mapper-id))]
-    retrieved-mapper))
+  (let [^org.keycloak.representations.idm.ClientRepresentation client (-> keycloak-client (.realm realm-name) (.clients) (.findByClientId client-id) first)]
+    (when client
+      (let [internal-client-id (.getId client)
+            client-resource (-> keycloak-client (.realm realm-name) (.clients) (.get internal-client-id))
+            resp (-> client-resource .getProtocolMappers (.createMapper mapper))
+            mapper-id (extract-id resp)
+            retrieved-mapper (when mapper-id (get-mapper keycloak-client realm-name client-id mapper-id))]
+        retrieved-mapper))))
 
 (comment
   (def integration-test-conf (keycloak.deployment/client-conf "http://localhost:8090/auth" "master" "admin-cli"))

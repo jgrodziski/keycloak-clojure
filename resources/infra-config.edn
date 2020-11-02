@@ -1,14 +1,20 @@
 {:environment "staging"
  :color       "red"
- :base-domain "example.com"
- :applications [{:name    "myapp"
-                 :version "1.2.3"}]
+ :applications {:name    "myapp"
+                :version "1.2.3"
+                :clients-uris {:myapp-front {:root       "https://myapp.staging.example.com"
+                                             :base       "/"
+                                             :redirects  ["https://myapp.staging.example.com", "https://myapp.staging.example.com/*"]
+                                             :origins    ["https://myapp.staging.example.com"]}
+                               :myapp-api   {:root "https://api.myapp.staging.example.com"}}}
  :keycloak    {:protocol "http"
                :host     "host.docker.internal"
                :port     8090
                :login    "admin"
                :password "secretadmin"
                :secret-file-without-extension ".keycloak-secrets"}
+ :secret-file {:name-without-extension ".keycloak-secrets"
+               :path [:infra :keycloak]}
  :vault       {:protocol "http"
                :host     "host.docker.internal"
                :port     8200

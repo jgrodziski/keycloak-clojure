@@ -16,7 +16,7 @@
    {:email "genesis@yahoo.com", :first-name "Genesis", :last-name "Lindsey", :password "7bo1fvm98gahhgwiv", :username "glindsey"}
    {:email "xavier765@yahoo.com", :first-name "Xavier", :last-name "Mccall", :password "s0xha8r7w9w", :username "mccall"}])
 
-(defn basic-realm-data [base-domain env]
+(defn basic-realm-data [uris env]
   {:realm   {:name "example2"
              :themes {:internationalizationEnabled true
                       :supportedLocales #{"en" "fr"}
@@ -32,11 +32,11 @@
                       :ssoSessionMaxLifespanRememberMe (Integer. (* 60 60 48))}
              :smtp {:host "smtp.eu.mailgun.org"
                     :port 587
-                    :from (str "admin@" base-domain)
+                    :from (str "admin@" (:root uris))
                     :auth true
                     :starttls true
                     :replyTo "example"
-                    :user (str "postmaster@mg." base-domain)
+                    :user (str "postmaster@mg." (:root uris))
                     :password ""}}
    :groups [{:name "test"} {:name "Example" :subgroups [{:name "IT"} {:name "Sales"} {:name "Logistics"}]}]
    :roles  #{"employee" "manager" "example-admin" "org-admin" "group-admin" "api-consumer"}
@@ -50,4 +50,4 @@
    :generated-users-by-group-and-role 2
    :username-creator-fn (fn [role group subgroup idx & opts] (str (str group) "-" (subs (str role) 0 3) "-" idx))})
 
-[(basic-realm-data base-domain environment) ]
+[(basic-realm-data uris environment) ]

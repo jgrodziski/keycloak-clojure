@@ -9,25 +9,17 @@
 (defn client-id [app-name app-version client-name]
   (str app-name "-" client-name (when (not (clojure.string/blank? app-version)) (str "-" app-version))))
 
+(defn client [[client-id {:keys [root base redirects origins] :as client-uris}]]
+  {:name          client-id
+   :public?       true
+   :redirect-uris redirects
+   :root-url      root
+   :base-url      base
+   :web-origins   origins})
 
-(defn basic-realm-data [base-domain env color app-name app-version]
+(defn basic-realm-data [env color app-name app-version clients-uris]
   {:realm   {:name "example2"}
-   :clients [{:name          (client-id app-name app-version "api-client")
-              :public?       true
-              :redirect-uris [(str (url-or-default base-domain "myapp" env) "/*")]
-              :root-url      (url-or-default base-domain "api" env)
-              :base-url      (url-or-default base-domain "api" env)
-              :web-origins   [(url-or-default base-domain "api" env)]}
-             {:name          (client-id app-name app-version "frontend")
-              :public?       true
-              :redirect-uris [(str (url-or-default base-domain "myapp" env) "/*")]
-              :root-url      (url-or-default base-domain "myapp" env)
-              :base-url      (url-or-default base-domain "myapp" env)
-              :web-origins   [(url-or-default base-domain "myapp" env)]}
-             {:name          (client-id app-name app-version "backend")
-              :public?       false
-              :redirect-uris ["http://localhost:3449/*"]
-              :web-origins   ["http://localhost:3449"]}]})
+   :clients (into [] (map client clients-uris))})
 
 (def demo-clients-conf
   {:clients [{:name "api-client",
@@ -105,13 +97,21 @@
               :redirect-uris ["http://localhost:3449/*"],
               :web-origins ["http://localhost:3449"]}]})
 
-(defn realm-data [base-domain env]
-  (let [realm-config (basic-realm-data base-domain env)]
+(defn realm-data [base-domains env]
+  (let [realm-config (basic-realm-data base-domains env)]
     (condp = env
       "demo" (merge realm-config demo-clients-conf)
       "prod" (merge realm-config prod-clients-conf)
        realm-config)))
 
-(into [] (map (fn [{:keys [name version] :as application}]
-                (basic-realm-data base-domain environment color name version)) applications))
+(into [] (map (fn [application]
+                (basic-realm-data environment color (:name application) (:version application) (:clients-uris application))) applications))
+
+
+
+
+
+
+
+
 

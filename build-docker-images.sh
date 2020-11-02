@@ -11,7 +11,7 @@ source build-graalvm-linux.sh
 
 docker build . -t jgrodziski/keycloak-clojure-starter:latest
 
-docker build -f DockerfileNative . -t jgrodziski/keycloak-clojure-starter-native:latest
+docker build -f DockerfileNative -t jgrodziski/keycloak-clojure-starter-native:latest .
 
 if [ $? -eq 0 ]; then
     echo "Successfully built \"keycloak-clojure\"'s docker image with native executable: jgrodziski/keycloak-clojure-starter:latest"
@@ -22,7 +22,7 @@ fi
 
 docker build . -t jgrodziski/keycloak-clojure-starter:$ARTIFACT_VERSION
 
-docker build -f DockerfileNative . -t jgrodziski/keycloak-clojure-starter-native:$ARTIFACT_VERSION
+docker build -f DockerfileNative -t jgrodziski/keycloak-clojure-starter-native:$ARTIFACT_VERSION .
 
 if [ $? -eq 0 ]; then
     echo "Successfully built \"keycloak-clojure\"'s docker image with native executable: jgrodziski/keycloak-clojure-starter:$ARTIFACT_VERSION"
