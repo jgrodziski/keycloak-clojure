@@ -180,11 +180,14 @@ The data structure expected to setup a whole realm with clients, roles, groups a
 ## REPL or Clojure setup
 
 The `keycloak.starter` namespace has the `init-realm!` function that takes a data structure like the one described above or in `resources/real-config.edn`.
+As Keycloak is an infrastructure component, the idea is that you could use the init features in two stages of your ops activity:
+- When you provision the Keycloak server, at that moment you want to setup the realm and/or the groups/users
+- Everytime new versions of your application is deployed, you want to setup some dedicated clients with their secrets exported in the Vault. Then the clients secrets are retrieved from the vault and given to the application for a proper starts.
 
+In non production environment you could also want only one Keycloak server shared between different environments (staging, dev, etc.). The tools provided by Keycloak-Clojure should give you suppleness to adapt to your Ops setup and requirements.
+The infrastructure configuration files contains all the connection data to the Keycloak and Vault server as well as metadata about the environment and applications Keycloak will secured. The idea is that Ops has the responsibility of domains URLs and deployed application and should passed that informations to the Keycloak init process. 
 
 ## Realm setup with `keycloak-clojure-starter` CLI
-
-A typical devops usage is to provision a Keycloak environment, then to configure a realm without clients (aka. applications) for the moment as they will be configured more dynamically later.
 
 A native executable called `keycloak-clojure-starter`, also embedded in a docker image for easy consumption in k8s context, is available. It takes a config file or direct configuration parameters of its environment: the keycloak and vault server, as well as optional metadata about the environment being created (environment, color, base-domain and applications). The optional metadata would then be fed to a second configuration file that will interpret the Clojure code in it in a [SCI](https://github.com/borkdude/sci) sandbox to get a realm configuration data structure.
 
@@ -194,12 +197,10 @@ The `keycloak-clojure-starter` CLI executable has the following arguments:
 * `--login` username of a user with admin role in the master realm
 * `--password` password of a user with admin role in the master realm
 * `--environment` Name of the environment for which the init is done, has no impact but is passed during evaluation of the config file
-* `--base-domain` Base domain of the environment for which the init is done, has no impact but is passed during evaluation of the config file
 * `--secret-export-dir` Path to a directory, if present clients secret will be exported in `keycloak-secrets.edn|json|yml` files for downstream usage.
-* `--infra-config` Path to an EDN file. If the file is present it overrides the previous config parameters. The file contains the following keys, 
+* `--infra-context` Path to an EDN file. If the file is present it overrides the previous config parameters. The file contains the following keys, 
     - `:environment`: a string of the target environment, no impact but is passed during evaluation of the realm config file\n
     - `:color`: a string of a \"color\" for discriminating the target (can be omitted), no impact but is passed during evaluation of the realm config file\n
-    - `:base-domain`: a string for the DNS base domain of the target, no impact but is passed during evaluation of the realm config file\n
     - `:applications`: a vector of map with :name and :version key, no impact but is passed during evaluation of the realm config file\n
     - `:keycloak`: a map with :protocol, :host, :port, :login, :password, :base-domain, :secret-export-dir\n
     - `:vault`: a map with :protocol :host :port :token :mount :path\n
@@ -207,10 +208,45 @@ The `keycloak-clojure-starter` CLI executable has the following arguments:
 
 ### Infrastructure configuration
 
-For ease of use, the infrastructure configuration can be passed as a file to the starter function. It essentially contains the keycloak, optional vault and metadata parameters.
-Example of `infra-config.edn` file 
+For ease of use, the infrastructure configuration can be passed as a file to the starter function. It essentially contains the keycloak, optional vault and metadata parameters. The metadata parameters (`:environment`, `:color` and `applications`) are not used by the init function but are passed to the realm config clojure file that will be evaluated and the correct clients emitted.
+
+Metadata are the keys:
+    * `environment`: a string describing the environment, eg. staging
+    * `color`: a string that further describe the environment with a specific infrastructure setup
+    * `applications`: A vector of map with keys: `:name`, `:version`, and `clients-uris` a vector of map with `client-id`, `:redirects`, `:base`, `:origins`, `root` keys
+
+Example of `infra-context.edn` file 
 
 ```clojure
+{:environment "staging"
+ :color       "red"
+ :applications {:name    "myapp"
+                :version "1.2.3"
+                :clients-uris {:myapp-front {:root       "https://myapp.staging.example.com"
+                                             :base       "/"
+                                             :redirects  ["https://myapp.staging.example.com", "https://myapp.staging.example.com/*"]
+                                             :origins    ["https://myapp.staging.example.com"]}
+                               :myapp-api   {:root "https://api.myapp.staging.example.com"
+                                             :base       "/"
+                                             :redirects  ["https://api.myapp.staging.example.com", "https://api.myapp.staging.example.com/*"]
+                                             :origins    ["https://api.myapp.staging.example.com"]
+                                             }}}
+ :keycloak    {:protocol "http"
+               :host     "host.docker.internal"
+               :port     8090
+               :login    "admin"
+               :password "secretadmin"
+               :secret-file-without-extension ".keycloak-secrets"}
+ :secret-file {:name-without-extension ".keycloak-secrets"
+               :path [:infra :keycloak]}
+ :vault       {:protocol "http"
+               :host     "host.docker.internal"
+               :port     8200
+               :token    "myroot"
+               :mount    "secret"
+               ;;%1$s is the environment, %2$s is the color, %3$s is the base-domain, %4$s is the client-id (so depends of your realm-config.clj code)
+               :path     "/env/%1$s/keycloak/clients/%4$s"}}
+
 
 ```
 
@@ -224,7 +260,7 @@ keycloak.clojure {:mvn/version "1.11.0"}
 ```
 
 ```clojure
-clj -m keycloak.starter --infra-config resources/keycloak-config.edn --realm-config resources/realm-config.clj
+clj -m keycloak.starter --infra-context resources/keycloak-config.edn --realm-config resources/realm-config.clj
 ```
 
 ### Native CLI

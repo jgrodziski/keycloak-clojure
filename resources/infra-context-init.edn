@@ -1,0 +1,8 @@
+{:environment "staging"
+ :color       "red"
+ :keycloak    {:protocol "http"
+               :host     "host.docker.internal"
+               :port     8090
+               :login    "admin"
+               :password "secretadmin"
+               :secret-file-without-extension ".keycloak-secrets"}}

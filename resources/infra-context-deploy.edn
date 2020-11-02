@@ -6,7 +6,11 @@
                                              :base       "/"
                                              :redirects  ["https://myapp.staging.example.com", "https://myapp.staging.example.com/*"]
                                              :origins    ["https://myapp.staging.example.com"]}
-                               :myapp-api   {:root "https://api.myapp.staging.example.com"}}}
+                               :myapp-api   {:root       "https://api.myapp.staging.example.com"
+                                             :base       "/"
+                                             :redirects  ["https://api.myapp.staging.example.com", "https://api.myapp.staging.example.com/*"]
+                                             :origins    ["https://api.myapp.staging.example.com"]
+                                             }}}
  :keycloak    {:protocol "http"
                :host     "host.docker.internal"
                :port     8090

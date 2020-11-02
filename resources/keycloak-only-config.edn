@@ -1,6 +1,0 @@
-{:base-domain "example.com"
- :keycloak    {:protocol "http"
-               :host     "host.docker.internal"
-               :port     "8090"
-               :login    "admin"
-               :password "secretadmin"}}

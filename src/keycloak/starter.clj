@@ -179,10 +179,10 @@
           sci-uris         (sci/new-var 'uris uris)
           sci-environment  (sci/new-var 'environment environment)
           sci-color        (sci/new-var 'color color)
-          sci-applications  (sci/new-var 'applications applications)
+          sci-applications (sci/new-var 'applications applications)
           config-data      (sci/eval-string realm-config {:bindings {'uris         sci-uris
                                                                      'environment  sci-environment
-                                                                     'applications  sci-applications
+                                                                     'applications sci-applications
                                                                      'color        sci-color}})]
       (println (format "Keycloak init script target %s in env %s with %s realm(s)" auth-server-url (or environment "localhost" ) (count config-data)))
       (if (map? config-data)
@@ -229,10 +229,10 @@
          - :keycloak: a map with :protocol, :host, :port, :login, :password, :secret-export-dir, :secret-file-without-extension\n
          - :vault: a map with :protocol :host :port :token :mount :path\n
          if present it overrides all the other options"
-    :option "infra-config"
+    :option "infra-context"
     :type :ednfile}
 
-   {:as "A clj file that is evaluated with SCI (https://github.com/borkdude/sci) that must return a map with the keys: realm, clients, roles"
+   {:as "A clj file that is evaluated with SCI (https://github.com/borkdude/sci) that must return a map with the keys: realm, clients, roles, groups and users"
     :option "realm-config"
     :type :slurp}])
 

@@ -8,7 +8,7 @@
    [keycloak.utils :as utils :refer [auth-server-url]]
    [keycloak.deployment :as deployment :refer [keycloak-client client-conf]]))
 
-(def infra-config {:environment "automatedtest"
+(def infra-context {:environment "automatedtest"
                    :color       "blue"
                    :base-domain "example.com"
                    :applications {:name    "myapp"
@@ -26,8 +26,8 @@
                                   ;;%1$s is the environment, %2$s is the color, %3$s is the base-domain, %4$s is the client-id (so depends of your realm-config.clj code)
                                   :path     "/env/%1$s/keycloak/clients/%4$s"}})
 
-(def integration-test-conf (deployment/client-conf (utils/auth-server-url infra-config) "master" "admin-cli"))
-(def admin-client (deployment/keycloak-client integration-test-conf (get-in infra-config [:keycloak :login]) (get-in infra-config [:keycloak :password])))
+(def integration-test-conf (deployment/client-conf (utils/auth-server-url infra-context) "master" "admin-cli"))
+(def admin-client (deployment/keycloak-client integration-test-conf (get-in infra-context [:keycloak :login]) (get-in infra-context [:keycloak :password])))
 
 
 (def static-realm-data [{:realm {:name "example2",
@@ -81,7 +81,7 @@
 
 (deftest ^:integration vault-test
   (doseq [realm-data static-realm-data]
-    (starter/init-realm! admin-client realm-data infra-config nil)))
+    (starter/init-realm! admin-client realm-data infra-context nil)))
 
 
 (deftest config-test
