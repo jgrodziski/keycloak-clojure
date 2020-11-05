@@ -88,7 +88,7 @@
     (let [client (client client-data)
           client-id name
           _ (println (format "Create client \"%s\" in realm %s and client data %s" client-id realm-name client-data))
-          created-client (create-client! admin-client realm-name client)]
+          created-client (create-or-update-client! admin-client realm-name client)]
       (if (not created-client) (throw (Exception. (format "Client %s not created in realm %s" client-id realm-name))))
       (println (format "Client with Id \"%s\" and clientId \"%s\" created in realm %s" (.getId created-client) (.getClientId created-client) realm-name))
       (create-mappers! admin-client realm-name name)
