@@ -1,6 +1,11 @@
 (ns keycloak.utils
   (:require    [clojure.string :as string]))
 
+(defn ns-clean
+  "Remove all internal mappings from a given name space or the current one if no parameter given."
+  ([] (ns-clean *ns*)) 
+  ([ns] (map #(ns-unmap ns %) (keys (ns-interns ns)))))
+
 (defmacro hint-typed-doto
   "Evaluates x then calls all of the methods and functions with the
   value of x supplied at the front of the given arguments.  The forms

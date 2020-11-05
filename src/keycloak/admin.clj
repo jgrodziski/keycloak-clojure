@@ -284,8 +284,14 @@
   ^org.keycloak.representations.idm.ClientRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id]
   (-> keycloak-client (.realm realm-name) (.clients) (.findByClientId client-id) first))
 
+(defn get-client-resource
+  "Return a [org.keycloak.admin.client.resource.ClientResource](https://www.keycloak.org/docs-api/11.0/javadocs/org/keycloak/admin/client/resource/ClientResource.html)
+  given a keycloak-client, realm-name and id. Be careful the id is the UUID given by Keycloak not the clientId given by the user" 
+  ^org.keycloak.admin.client.resource.ClientResource [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id]
+  (-> keycloak-client (.realm realm-name) (.clients) (.get client-id)))
+
 (defn find-client
- [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-name]
+  [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-name]
   (-> (some (fn [^org.keycloak.representations.idm.ClientRepresentation client]
               (when (= name (.getName client)) client)) (-> keycloak-client (.realm realm-name) (.clients) (.findAll)))))
 
@@ -303,6 +309,24 @@
    (get-client keycloak-client realm-name (.getClientId client)))
   (^org.keycloak.representations.idm.ClientRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id public?]
    (create-client! keycloak-client realm-name (client {:client-id client-id :public-client public?}))))
+
+(defn update-client!
+  ^org.keycloak.representations.idm.ClientRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name ^org.keycloak.representations.idm.ClientRepresentation client]
+  (info "Update client" (.getClientId client) "in realm" realm-name)
+  (let [client-rep-with-id (or (get-client keycloak-client realm-name (.getClientId client))
+                               (.toRepresentation (get-client-resource keycloak-client realm-name (.getId client))))
+        ^org.keycloak.admin.client.resource.ClientResource client-res (get-client-resource keycloak-client realm-name (.getId client-rep-with-id))]
+    (-> client-res (.update client))
+    (info "client" (.getClientId client) " updated in realm" realm-name)
+    (get-client keycloak-client realm-name (.getClientId client))))
+
+(defn create-or-update-client!
+  ^org.keycloak.representations.idm.ClientRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name ^org.keycloak.representations.idm.ClientRepresentation client]
+  (let [existing-client (or (get-client keycloak-client realm-name (.getClientId client))
+                            (first (find-client keycloak-client realm-name (.getName client))))]
+    (if existing-client
+      (update-client! keycloak-client realm-name client)
+      (create-client! keycloak-client realm-name client))))
 
 (defn get-client-secret
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id]

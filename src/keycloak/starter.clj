@@ -149,14 +149,13 @@
   (str protocol "://" host ":" port "/auth"))
 
 (defn process-args [{:keys [realm-config infra-context] :as args}]
-  (let [{:keys [environment color uris applications vault keycloak secret-file]} infra-context
-        {:keys [auth-server-url login password protocol host port]}                     (or keycloak args);either the params are in the keyclaok config file or each params is passed through a direct param
+  (let [{:keys [environment color applications vault keycloak secret-file]} infra-context
+        {:keys [auth-server-url login password protocol host port]}         (or keycloak args);either the params are in the keyclaok config file or each params is passed through a direct param
         auth-server-url (or auth-server-url (keycloak-auth-server-url protocol host port))
         processed-args {:auth-server-url auth-server-url
                         :login login
                         :password password
                         :environment environment
-                        :uris uris
                         :color color
                         :applications applications
                         :vault-config vault
@@ -168,8 +167,8 @@
                         }]
     (when (or (nil? auth-server-url) (nil? password) (nil? login) (nil? realm-config))
 
-      (println "Usage: clj -m keycloak.starter <auth-server-url> <login> <password> <environment> <base-domain> <realm-config> <infra-context>" )
-      (throw (ex-info "Usage: clj -m keycloak.starter <auth-server-url> <login> <password> <environment> <base-domain> <realm-config>" processed-args)))
+      (println "Usage: clj -m keycloak.starter <auth-server-url> <login> <password> <environment> <realm-config> <infra-context>" )
+      (throw (ex-info "Usage: clj -m keycloak.starter <auth-server-url> <login> <password> <environment> <realm-config>" processed-args)))
     processed-args))
 
 (defn init-cli! [args]
