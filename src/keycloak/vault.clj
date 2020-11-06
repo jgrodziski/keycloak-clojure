@@ -8,8 +8,7 @@
 
 ;;
 (defn new-client [vault-url]
-  (vault/new-client vault-url)
-  )
+  (vault/new-client vault-url))
 
 (defn authenticate!  [client token]
   (vault/authenticate! client :token token))
