@@ -6,7 +6,18 @@ theme:
     accent: green
 nav:
   - Home: index.md
+  - Setup: setup.md
   - Concepts: concepts.md
+  - Keycloak Administration: admin.md
   - Securing Backend: backend.md
   - Securing Frontend: frontend.md
-  - Administrative Tasks: admin.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      use_pygments: false
+
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js
+  - javascripts/config.js
+extra_css:
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css
