@@ -3,7 +3,7 @@
 RELEASE_LEVEL=$1
 MODULE_NAME=${PWD##*/}
 echo "Release \"$MODULE_NAME\" with level '$RELEASE_LEVEL'"
-tag=$(clj -Arelease $RELEASE_LEVEL --spit --output-dir . --formats json,clj --namespace keycloak.meta)
+tag=$(clj -Mrelease $RELEASE_LEVEL --spit --output-dir . --formats json,clj --namespace keycloak.meta)
 
 if [ $? -eq 0 ]; then
     echo "Successfully released \"$MODULE_NAME\" to $tag"
