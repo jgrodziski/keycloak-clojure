@@ -2,6 +2,14 @@
 
 RELEASE_LEVEL=$1
 MODULE_NAME=${PWD##*/}
+
+clj -Mspit
+ARTIFACT_ID=$(cat src/keycloak/meta.json | jq -r '."module-name"')
+ARTIFACT_VERSION=$(cat src/keycloak/meta.json | jq -r '."version"')
+ARTIFACT_TAG=$(cat src/keycloak/meta.json | jq -r '."tag"')
+JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
+
+
 echo "Release \"$MODULE_NAME\" with level '$RELEASE_LEVEL'"
 tag=$(clj -Mrelease $RELEASE_LEVEL --spit --output-dir . --formats json,clj --namespace keycloak.meta)
 
@@ -19,11 +27,6 @@ fi
 #                                                  #
 ####################################################
 
-clj -Mspit
-ARTIFACT_ID=$(cat src/keycloak/meta.json | jq -r '."module-name"')
-ARTIFACT_VERSION=$(cat src/keycloak/meta.json | jq -r '."version"')
-ARTIFACT_TAG=$(cat src/keycloak/meta.json | jq -r '."tag"')
-JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
 
 if [[ $ARTIFACT_TAG =~ v(.+) ]]; then
     newversion=${BASH_REMATCH[1]}
