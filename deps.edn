@@ -79,7 +79,7 @@
            :release       {:extra-deps {metav/metav {:mvn/version "1.6.7"}}
                            :main-opts  ["-m" "metav.release"]}
            :spit          {:extra-deps {metav/metav {:mvn/version "1.6.7"}}
-                           :main-opts  ["-m" "metav.spit" "--output-dir" "src" "--formats" "clj" "--namespace" "keycloak.meta"]}
+                           :main-opts  ["-m" "metav.spit" "--output-dir" "src" "--formats" "clj,json" "--namespace" "keycloak.meta"]}
            :uberdeps      {:extra-deps {uberdeps/uberdeps {:mvn/version "1.0.2"}
                                         borkdude/clj-reflector-graal-java11-fix {:mvn/version "0.0.1-graalvm-20.2.0"
                                                                                  :exclusions [org.graalvm.nativeimage/svm]}}
