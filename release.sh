@@ -3,15 +3,10 @@
 RELEASE_LEVEL=$1
 MODULE_NAME=${PWD##*/}
 
-clj -Mspit
-ARTIFACT_ID=$(cat src/keycloak/meta.json | jq -r '."module-name"')
-ARTIFACT_VERSION=$(cat src/keycloak/meta.json | jq -r '."version"')
-ARTIFACT_TAG=$(cat src/keycloak/meta.json | jq -r '."tag"')
-JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
 
 
 echo "Release \"$MODULE_NAME\" with level '$RELEASE_LEVEL'"
-tag=$(clj -Mrelease $RELEASE_LEVEL --spit --output-dir . --formats json,clj --namespace keycloak.meta)
+tag=$(clj -Mrelease $RELEASE_LEVEL --spit --output-dir src --formats clj,json --namespace keycloak.meta)
 
 if [ $? -eq 0 ]; then
     echo "Successfully released \"$MODULE_NAME\" to $tag"
