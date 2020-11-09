@@ -21,7 +21,10 @@ fi
 #     Clojars uploading stuff (easier with Maven)  #
 #                                                  #
 ####################################################
-
+ARTIFACT_ID=$(cat src/keycloak/meta.json | jq -r '."module-name"')
+ARTIFACT_VERSION=$(cat src/keycloak/meta.json | jq -r '."version"')
+ARTIFACT_TAG=$(cat src/keycloak/meta.json | jq -r '."tag"')
+JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
 
 if [[ $ARTIFACT_TAG =~ v(.+) ]]; then
     newversion=${BASH_REMATCH[1]}
