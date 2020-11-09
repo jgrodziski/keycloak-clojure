@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ARTIFACT_NAME=$(clj -A:artifact-name)
+ARTIFACT_NAME=$(clj -M:artifact-name)
 ARTIFACT_ID=$(echo "$ARTIFACT_NAME" | cut -f1)
 ARTIFACT_VERSION=$(echo "$ARTIFACT_NAME" | cut -f2)
 JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"

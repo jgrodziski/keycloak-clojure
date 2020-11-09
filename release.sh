@@ -12,10 +12,6 @@ else
     exit $?
 fi
 
-####################################################
-# build jar                                        #
-####################################################
-source ./build.sh
 
 ####################################################
 #                                                  #
@@ -44,6 +40,12 @@ else
     exit $?
 fi
 
+####################################################
+# build jar                                        #
+####################################################
+source ./build.sh
+source ./build-docker-images.sh
+
 # mvn deploy 2>&1 > /dev/null
 
 mvn org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy-file \
@@ -52,7 +54,6 @@ mvn org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy-file \
     -Dfile=target/$JAR_FILENAME \
     -DpomFile=pom.xml \
     -Dclassifier=
-
 
 if [ $? -eq 0 ]; then
     echo "Successfully deployed \"$MODULE_NAME\" version $newversion to clojars"
