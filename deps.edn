@@ -7,8 +7,6 @@
         org.clojure/tools.logging {:mvn/version "1.1.0"}
         org.clojure/java.data     {:mvn/version "1.0.86"}
 
-;        yada/yada {:mvn/version "1.2.16"} ;;used for authn and authz check
-
         talltale/talltale       {:mvn/version "0.5.3"}
 
         clj-commons/fs          {:mvn/version "1.5.0"}
