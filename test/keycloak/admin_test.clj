@@ -134,3 +134,18 @@
                            (admin/create-or-update-client! admin-client realm-name )
                            (bean/ClientRepresentation->map))]
         (fact client =in=> {:client-id client-id :name client-id :public-client? false})))))
+
+
+(deftest ^:integration test-create-or-update-client-access-token-lifespan
+  (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)
+        _            (assert (keycloak-running? admin-client))
+        realm-name   (str "keycloak-clojure-test-" (rand-int 1000))
+        realm        (admin/create-realm! admin-client realm-name)]
+    (testing "create a client then update it"
+      (let [client-id (str "client-" (rand-int 1000))
+            client    (->> {:client-id client-id :name client-id :public? false :attributes {"access.token.lifespan" "300"}}
+                           admin/client
+                           (admin/create-or-update-client! admin-client realm-name)
+                           (bean/ClientRepresentation->map))]
+        (fact client =in=> {:client-id client-id :name client-id :public-client? false })
+        (fact (:attributes client) => {"access.token.lifespan" "300"} )))))

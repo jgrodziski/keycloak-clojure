@@ -5,8 +5,8 @@
    [clojure.string :as string :refer [last-index-of]]
    [clojure.tools.logging :as log :refer [info]]
    [cheshire.core :as json :refer [encode]]
-   [keycloak.user :as user :refer [set-attributes]]
-   [keycloak.utils :as utils :refer [setters]])
+   [keycloak.user :as user]
+   [keycloak.utils :as utils :refer [setters set-attributes]])
   (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation GroupRepresentation UserRepresentation ProtocolMapperRepresentation]
            [javax.ws.rs.core Response]))
 
@@ -254,20 +254,21 @@
 
 (defn client
   "create a ClientRepresentation with client-name the public/private flag"
-  (^org.keycloak.representations.idm.ClientRepresentation [{:keys [client-id name public-client public? standard-flow-enabled service-accounts-enabled authorization-services-enabled redirect-uris web-origins direct-access-grants-enabled root-url base-url admin-url] :as client}]
+  (^org.keycloak.representations.idm.ClientRepresentation [{:keys [client-id name public-client public? standard-flow-enabled service-accounts-enabled authorization-services-enabled redirect-uris web-origins direct-access-grants-enabled root-url base-url admin-url attributes] :as client}]
    (let [^org.keycloak.representations.idm.ClientRepresentation client-representation (ClientRepresentation.)]
-     ((setters {:client-id                      (or client-id name)
-                :name                           name
-                :public-client                  (or public? public-client)
-                :standard-flow-enabled          (or standard-flow-enabled true)
-                :direct-access-grants-enabled   (or direct-access-grants-enabled true)
-                :service-accounts-enabled       (or service-accounts-enabled (not (or public? public-client)))
-                :authorization-services-enabled (or authorization-services-enabled (not (or public? public-client)))
-                :redirect-uris                  redirect-uris
-                :root-url                       root-url
-                :base-url                       base-url
-                :admin-url                      admin-url
-                :web-origins                    web-origins} "org.keycloak.representations.idm.ClientRepresentation") client-representation)))
+     (-> ((setters {:client-id                      (or client-id name)
+                    :name                           name
+                    :public-client                  (or public? public-client)
+                    :standard-flow-enabled          (or standard-flow-enabled true)
+                    :direct-access-grants-enabled   (or direct-access-grants-enabled true)
+                    :service-accounts-enabled       (or service-accounts-enabled (not (or public? public-client)))
+                    :authorization-services-enabled (or authorization-services-enabled (not (or public? public-client)))
+                    :redirect-uris                  redirect-uris
+                    :root-url                       root-url
+                    :base-url                       base-url
+                    :admin-url                      admin-url
+                    :web-origins                    web-origins} "org.keycloak.representations.idm.ClientRepresentation") client-representation)
+         (set-attributes ^org.keycloak.representations.idm.ClientRepresentation attributes))))
   (^org.keycloak.representations.idm.ClientRepresentation [name public? redirect-uris web-origins]
    (client {:client-id                      name
             :public-client                  public?

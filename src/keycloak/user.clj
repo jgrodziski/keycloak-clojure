@@ -4,7 +4,7 @@
             [clojure.java.data :refer [from-java]]
             [clojure.java.io :as io]
             [cheshire.core :as json :refer [encode]]
-            [keycloak.utils :as utils :refer [hint-typed-doto]])
+            [keycloak.utils :as utils :refer [hint-typed-doto set-attributes]])
   (:import [org.keycloak.representations.idm CredentialRepresentation UserRepresentation RoleRepresentation]
            [javax.ws.rs.core Response]))
 
@@ -14,11 +14,6 @@
   (when resp
     (when-let [loc (.getLocation resp)]
       (subs (str loc) (+ (last-index-of (str loc) "/") 1)))))
-
-(defn set-attributes [representation ^java.util.Map attributes]
-  (if (and attributes (not-empty (filter some? attributes)))
-    (doto representation (.setAttributes ^java.util.Map (java.util.HashMap. attributes)))
-    representation))
 
 (defn user-for-update
   ^org.keycloak.representations.idm.UserRepresentation

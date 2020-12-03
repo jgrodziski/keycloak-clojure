@@ -40,6 +40,12 @@
                       m)]
     `(fn [obj#] (hint-typed-doto ~type obj# ~@expanded))))
 
+(defn set-attributes
+  "call setAttributes(Map<String,String>) method on representation object with a clojure map"
+  [representation ^java.util.Map attributes]
+  (if (and attributes (not-empty (filter some? attributes)))
+    (doto representation (.setAttributes ^java.util.Map (java.util.HashMap. attributes)))
+    representation))
 
 (defn auth-server-url
   ([infra-config]

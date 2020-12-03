@@ -4,3 +4,5 @@ pom.xml
 target
 .idea
 doc
+.lsp
+.clj-kondo

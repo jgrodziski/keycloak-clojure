@@ -7,17 +7,17 @@
         org.clojure/tools.logging {:mvn/version "1.1.0"}
         org.clojure/java.data     {:mvn/version "1.0.86"}
 
-        talltale/talltale       {:mvn/version "0.5.3"}
+        talltale/talltale {:mvn/version "0.5.3"}
 
-        clj-commons/fs          {:mvn/version "1.5.0"}
+        clj-commons/fs {:mvn/version "1.5.0"}
 
-        cheshire/cheshire        {:mvn/version "5.10.0"}
-        clj-http/clj-http        {:mvn/version "3.10.3"}
+        cheshire/cheshire {:mvn/version "5.10.0"}
+        clj-http/clj-http {:mvn/version "3.10.3"}
 
-        uwcpdx/bean-dip          {:mvn/version "0.7.6"}
+        uwcpdx/bean-dip {:mvn/version "0.7.6"}
 
-        cli-matic/cli-matic      {:mvn/version "0.4.3"}
-        borkdude/sci             {:mvn/version "0.1.1-alpha.9"}
+        cli-matic/cli-matic {:mvn/version "0.4.3"}
+        borkdude/sci        {:mvn/version "0.1.1-alpha.9"}
 
         ;; used when exporting secrets in json/yaml at init
         metosin/jsonista     {:mvn/version "0.2.7"}
@@ -61,16 +61,17 @@
            :build {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.2"}}
                    :main-opts  ["-m" "cambada.jar"]}
 
-           :doc   {:extra-paths ["doc/src"]
-                   :extra-deps {codox/codox            ; {:mvn/version "0.10.7"}
-                                                   {:local/root "/Users/jeremiegrodziski/sandbox/codox/codox"}
-                                codx-theme-rdash/codox-theme-rdash {:mvn/version "0.1.2"}
-                                clj-commons/fs {:mvn/version "1.5.2"}
-                                com.cognitect.aws/api {:mvn/version "0.8.474"},
-                                com.cognitect.aws/endpoints {:mvn/version "1.1.11.842"}
-                                com.cognitect.aws/s3 {:mvn/version "809.2.734.0", :aws/serviceFullName "Amazon Simple Storage Service"}}
-                   ;:main-opts  ["-m" "keycloak.doc"]
-                   }
+           :doc {:extra-paths ["doc/src"]
+                 :extra-deps  {codox/codox                         ; {:mvn/version "0.10.7"}
+                               {:local/root "/Users/jeremiegrodziski/sandbox/codox/codox"}
+                               codox-theme-rdash/codox-theme-rdash {:mvn/version "0.1.2"}
+                               com.novemberain/pantomime           {:mvn/version "2.11.0"}
+                               clj-commons/fs                      {:mvn/version "1.5.2"}
+                               com.cognitect.aws/api               {:mvn/version "0.8.474"},
+                               com.cognitect.aws/endpoints         {:mvn/version "1.1.11.842"}
+                               com.cognitect.aws/s3                {:mvn/version "809.2.734.0", :aws/serviceFullName "Amazon Simple Storage Service"}}
+                                        ;:main-opts  ["-m" "keycloak.doc"]
+                 }
 
            :artifact-name {:extra-deps {metav/metav {:mvn/version "1.6.7"}}
                            :main-opts  ["-m" "metav.display"]}
@@ -78,11 +79,11 @@
                            :main-opts  ["-m" "metav.release"]}
            :spit          {:extra-deps {metav/metav {:mvn/version "1.6.7"}}
                            :main-opts  ["-m" "metav.spit" "--output-dir" "src" "--formats" "clj,json" "--namespace" "keycloak.meta"]}
-           :uberdeps      {:extra-deps {uberdeps/uberdeps {:mvn/version "1.0.2"}
+           :uberdeps      {:extra-deps {uberdeps/uberdeps                       {:mvn/version "1.0.2"}
                                         borkdude/clj-reflector-graal-java11-fix {:mvn/version "0.0.1-graalvm-20.2.0"
-                                                                                 :exclusions [org.graalvm.nativeimage/svm]}}
-                           :main-opts ["-m" "uberdeps.uberjar" "--main-class" "keycloak.starter"]}
-           :native-image  {:main-opts ["-m clj.native-image keycloak.starter"
+                                                                                 :exclusions  [org.graalvm.nativeimage/svm]}}
+                           :main-opts  ["-m" "uberdeps.uberjar" "--main-class" "keycloak.starter"]}
+           :native-image  {:main-opts  ["-m clj.native-image keycloak.starter"
                                        "--initialize-at-build-time"
                                        ;; optional native image name override
                                        "-H:Name=target/keycloak-clojure-starter"
@@ -91,8 +92,8 @@
                                        "--no-fallback"
                                        "--report-unsupported-elements-at-runtime"
                                        "--initialize-at-run-time=java.lang.Math\\$RandomNumberGeneratorHolder,org.keycloak.adapters.rotation.JWKPublicKeyLocator,org.keycloak.adapters.KeycloakDeployment,org.jboss.resteasy.client.jaxrs.engines.factory.ApacheHttpClient4EngineFactory,org.apache.http.impl.client.HttpClientBuilder"]
-                           :jvm-opts ["-Dclojure.compiler.direct-linking=true"]
+                           :jvm-opts   ["-Dclojure.compiler.direct-linking=true"]
                            :extra-deps {borkdude/clj-reflector-graal-java11-fix {:mvn/version "0.0.1-graalvm-20.2.0"
-                                                                                 :exclusions [org.graalvm.nativeimage/svm]}
-                                        clj.native-image/clj.native-image {:git/url "https://github.com/taylorwood/clj.native-image.git"
-                                                                           :sha "f3e40672d5c543b80a2019c1f07b2d3fe785962c"}}}}}
+                                                                                 :exclusions  [org.graalvm.nativeimage/svm]}
+                                        clj.native-image/clj.native-image       {:git/url "https://github.com/taylorwood/clj.native-image.git"
+                                                                                 :sha     "f3e40672d5c543b80a2019c1f07b2d3fe785962c"}}}}}

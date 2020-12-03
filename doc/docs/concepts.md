@@ -1,10 +1,6 @@
 ---
-layout: post
-title: Blogging Like a Hacker
 ---
 # Security Concepts
-
-[TOC]
 
 ## Generic
 
