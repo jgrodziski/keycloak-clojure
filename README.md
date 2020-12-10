@@ -309,6 +309,8 @@ clj -m keycloak.starter --infra-context resources/keycloak-config.edn --realm-co
 
 ### Native CLI
 
+The native CLI is currently broken due to the Vault integration that contains some imcompatible code for GraalVM (Thread creation).
+
 ### Docker CLI
 
 You can use the [`keycloak-clojure-starter` docker image](https://hub.docker.com/r/jgrodziski/keycloak-clojure-starter) or rebuild the image on your own (see the `build.sh` script in the repo).
