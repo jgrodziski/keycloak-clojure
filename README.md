@@ -192,7 +192,7 @@ The infrastructure configuration files contains all the connection data to the K
 
 ## Realm setup with `keycloak-clojure-starter` CLI
 
-A native executable called `keycloak-clojure-starter`, also embedded in a docker image for easy consumption in k8s context, is available. It takes a config file or direct configuration parameters of its environment: the keycloak and vault server, as well as optional metadata about the environment being created (environment, color, base-domain and applications). The optional metadata would then be fed to a second configuration file that will interpret the Clojure code in it in a [SCI](https://github.com/borkdude/sci) sandbox to get a realm configuration data structure.
+A native executable called `keycloak-clojure-starter`, also embedded in a [docker image called `keycloak-clojure-starter`](https://hub.docker.com/repository/docker/jgrodziski/keycloak-clojure-starter) for easy consumption in k8s context, is available. It takes a config file or direct configuration parameters of its environment: the keycloak and vault server, as well as optional metadata about the environment being created (environment, color, base-domain and applications). The optional metadata would then be fed to a second configuration file that will interpret the Clojure code in it in a [SCI](https://github.com/borkdude/sci) sandbox to get a realm configuration data structure.
 
 The `keycloak-clojure-starter` CLI executable has the following arguments:
 
