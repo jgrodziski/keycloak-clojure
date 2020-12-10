@@ -35,11 +35,12 @@
     (System/getenv dir)
     dir))
 
-(defn export-secret-in-files! [^org.keycloak.admin.client.Keycloak keycloak-client export-dir secret-file-without-extension realm-name client-id path]
-  (let [path                (conj path (keyword client-id) :secret)
-        _                   (println (format "Secret of client \"%s\" will be exported at path %s in files %s in directory %s" client-id path (str secret-file-without-extension ".edn|json|yml") export-dir))
+(defn export-secret-in-files! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id {:keys [name-without-extension export-dir path] :as secret-file}]
+  (let [export-dir          (or export-dir "/etc/keycloak")
+        path                (conj path (keyword client-id) :secret)
+        _                   (println (format "Secret of client \"%s\" will be exported at path %s in files %s in directory %s" client-id path (str name-without-extension ".edn|json|yml") export-dir))
         secret              (get-client-secret keycloak-client realm-name client-id)
-        secret-file         (or secret-file-without-extension ".keycloak-secrets")
+        secret-file         (or name-without-extension ".keycloak-secrets")
         resolved-export-dir (env-var-or-dir? export-dir)
         secrets-file        (clojure.java.io/file resolved-export-dir (str secret-file ".edn"))
         _                   (fs/mkdir resolved-export-dir)
@@ -88,7 +89,7 @@
        (catch Exception e (println "Can't create Realm" e)
               (get-realm admin-client name))))
 
-(defn init-clients! [^org.keycloak.admin.client.Keycloak admin-client realm-name clients-data infra-context secret-export-dir secret-file-without-extension secret-path]
+(defn init-clients! [^org.keycloak.admin.client.Keycloak admin-client realm-name clients-data infra-context export-dir secret-file-without-extension secret-path]
   (doseq [{:keys [name public? redirect-uris web-origins] :as client-data} clients-data]
     (let [client (client client-data)
           client-id name
@@ -97,8 +98,8 @@
       (if (not created-client) (throw (Exception. (format "Client %s not created in realm %s" client-id realm-name))))
       (println (format "Client with Id \"%s\" and clientId \"%s\" created in realm %s" (.getId created-client) (.getClientId created-client) realm-name))
       (create-mappers! admin-client realm-name name)
-      (when secret-export-dir
-        (export-secret-in-files! admin-client secret-export-dir secret-file-without-extension realm-name client-id secret-path))
+      (when (:secret-file infra-context )
+        (export-secret-in-files! admin-client realm-name client-id (:secret-file infra-context)))
       (when (:vault infra-context)
         (export-secret-in-vault! admin-client infra-context realm-name client-id))))
   (println (format "%s Clients created in realm %s" (count clients-data) realm-name)))
@@ -166,7 +167,7 @@
                         :vault-config vault
                         :realm-config realm-config
                         :infra-context infra-context
-                        :secret-export-dir (or (get-in infra-context [:secret-file :dir]) (:secret-export-dir args))
+                        :secret-export-dir (or (get-in infra-context [:secret-file :export-dir]) (:secret-export-dir args))
                         :secret-file-without-extension (or (get-in infra-context [:secret-file :name-without-extension]) (:secret-file-without-extension args))
                         :secret-path       (or (get-in infra-context [:secret-file :path]))
                         }]
@@ -228,7 +229,8 @@
          - :environment: a string of the target environment, no impact but is passed during evaluation of the realm config file\n
          - :color: a string of a \"color\" for discriminating the target (can be omitted), no impact but is passed during evaluation of the realm config file\n
          - :applications: a vector of map with :name, :version and clients-uris key, clients-uris is a map with 4 keys: base, root, redirects and origins,, no impact but is passed during evaluation of the realm config file\n
-         - :keycloak: a map with :protocol, :host, :port, :login, :password, :secret-export-dir, :secret-file-without-extension\n
+         - :keycloak: a map with :protocol, :host, :port, :login, :password,
+         - :secret-file: a map with :export-dir, :name-without-extension, :path a vector of keyword
          - :vault: a map with :protocol :host :port :token :mount :path\n
          if present it overrides all the other options"
     :option "infra-context"

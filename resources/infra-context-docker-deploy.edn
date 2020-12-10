@@ -21,16 +21,15 @@
                                  :redirects  ["https://backend.myapp.staging.example.com", "https://backend.myapp.staging.example.com/*"]
                                  :origins    ["https://backend.myapp.staging.example.com"]}]}]
  :keycloak    {:protocol "http"
-               :host     "localhost"
+               :host     "host.docker.internal"
                :port     8090
                :login    "admin"
                :password "secretadmin"
                :secret-file-without-extension ".keycloak-secrets"}
- :secret-file {:export-dir "/tmp"
-               :name-without-extension ".keycloak-secrets"
+ :secret-file {:name-without-extension ".keycloak-secrets"
                :path [:infra :keycloak]}
  :vault       {:protocol "http"
-               :host     "localhost"
+               :host     "host.docker.internal"
                :port     8200
                :token    "myroot"
                :mount    "secret"

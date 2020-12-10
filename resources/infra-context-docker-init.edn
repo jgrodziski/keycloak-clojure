@@ -1,7 +1,7 @@
 {:environment "staging"
  :color       "red"
  :keycloak    {:protocol "http"
-               :host     "localhost"
+               :host     "host.docker.internal"
                :port     8090
                :login    "admin"
                :password "secretadmin"
