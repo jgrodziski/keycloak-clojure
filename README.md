@@ -14,6 +14,48 @@ keycloak-clojure {:mvn/version "1.14.1"}
 
 Before going further be sure to read the [sample's README](sample) to understand the concepts Keycloak offers, and the integration points needed to integrate it with your application backend and frontend. Of course the way Keycloak integrates with your application depends on the stack it uses.
 
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+**Table of Contents**
+
+- [Keycloak](#keycloak)
+    - [Concepts](#concepts)
+    - [Authorization Concepts](#authorization-concepts)
+        - [Resource Server](#resource-server)
+        - [Resource](#resource)
+    - [Keycloak Installation](#keycloak-installation)
+        - [Postgresql installation](#postgresql-installation)
+            - [create the default database user for keycloak](#create-the-default-database-user-for-keycloak)
+            - [create the default database for keycloak](#create-the-default-database-for-keycloak)
+            - [start Keycloak in a docker container](#start-keycloak-in-a-docker-container)
+            - [Create Application Realm](#create-application-realm)
+            - [Manual Realm Creation](#manual-realm-creation)
+                - [Automatic Realm Creation](#automatic-realm-creation)
+- [Devops and Automated keycloak configuration](#devops-and-automated-keycloak-configuration)
+    - [Declarative setup](#declarative-setup)
+        - [Realm description sample](#realm-description-sample)
+    - [REPL or Clojure setup](#repl-or-clojure-setup)
+    - [Realm setup with `keycloak-clojure-starter` CLI](#realm-setup-with-keycloak-clojure-starter-cli)
+        - [Infrastructure configuration](#infrastructure-configuration)
+        - [Clojure CLI](#clojure-cli)
+        - [Native CLI](#native-cli)
+        - [Docker CLI](#docker-cli)
+    - [Clients setup](#clients-setup)
+- [Keycloak interaction with a web frontend and an API backend](#keycloak-interaction-with-a-web-frontend-and-an-api-backend)
+- [Backend](#backend)
+    - [Installation](#installation)
+    - [Keycloak configuration](#keycloak-configuration)
+    - [Client](#client)
+    - [Authentication and authorization usage](#authentication-and-authorization-usage)
+    - [Admin Usage (create Realm, Client, Role, User, etc.)](#admin-usage-create-realm-client-role-user-etc)
+    - [Sample integration with Yada](#sample-integration-with-yada)
+- [Frontend](#frontend)
+    - [Installation](#installation-1)
+    - [Usage](#usage)
+    - [Sample integration with Re-frame](#sample-integration-with-re-frame)
+
+<!-- markdown-toc end -->
+
+
 # Keycloak 
 
 ## Concepts
