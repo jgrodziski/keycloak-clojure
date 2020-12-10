@@ -253,16 +253,16 @@ The `keycloak-clojure-starter` CLI executable has the following arguments:
     - `:vault`: a map with :protocol :host :port :token :mount :path
 * `--realm-config` A path to a clj file that is evaluated with SCI (https://github.com/borkdude/sci), the code must return a vector of map with a realm config (keys: realm, clients, roles see section [Declarative Setup](#declarative-setup))
 
-### Infrastructure configuration
+### Infrastructure context 
 
-For ease of use, the infrastructure configuration can be passed as a file to the starter function. It essentially contains the keycloak, optional vault and metadata parameters. The metadata parameters (`:environment`, `:color` and `applications`) are not used by the init function but are passed to the realm config clojure file that will be evaluated and the correct clients emitted.
+For ease of use, the infrastructure context can be passed as a file to the starter function. It essentially contains the keycloak, optional vault and metadata parameters. The metadata parameters (`:environment`, `:color` and `applications`) are not used by the init function but are passed to the realm config clojure file that will be evaluated and the resulting data structure will be passed to the `keycloak.starter/init!` function.
 
 Metadata are the keys:
     * `environment`: a string describing the environment, eg. `staging`
     * `color`: a string that further describe the environment with a specific infrastructure setup
     * `applications`: A vector of map with keys: `:name`, `:version`, and `clients-uris` a vector of map with `client-id`, `:redirects`, `:base`, `:origins`, `:root` keys
 
-Example of `infra-context.edn` file 
+Example of an `infra-context.edn` file 
 
 ```clojure
 {:environment "staging"

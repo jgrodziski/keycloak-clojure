@@ -9,9 +9,9 @@
 (defn client-id [app-name app-version client-name]
   (str app-name "-" client-name (when (not (clojure.string/blank? app-version)) (str "-" app-version))))
 
-(defn client [{:keys [client-id root base redirects origins] :as client}]
+(defn client [{:keys [client-id public? root base redirects origins] :as client}]
     {:name          client-id
-     :public?       true
+     :public?       public?
      :redirect-uris redirects
      :root-url      root
      :base-url      base

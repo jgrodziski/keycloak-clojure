@@ -1,6 +1,7 @@
 (ns keycloak.starter-test
   (:require
    [sci.core :as sci]
+   [testit.core :refer :all]
    [clojure.test :as t :refer :all]
    [keycloak.starter :as starter]
    [keycloak.admin :refer :all]
@@ -89,11 +90,13 @@
         applications (sci/new-var 'applications [{:name "myapp"
                                                   :version "1.2.3"
                                                   :clients-uris [{:client-id "api-client"
+                                                                  :public? true
                                                                   :root "https://api.example.com"
                                                                   :base "/"
                                                                   :redirects ["https://api.example.com/*"]
                                                                   :origins ["https://api.example.com"]}
                                                                  {:client-id "backend"
+                                                                  :public? false
                                                                   :root "https://backend.example.com"
                                                                   :base "/"
                                                                   :redirects ["https://backend.example.com/*"]
@@ -103,7 +106,6 @@
         config-data  (sci/eval-string config-code {:bindings {'environment  environment
                                                               'applications applications
                                                               'color        color}})]
-    (is config-data [{:realm {:name "example2"},
-                      :clients [{:name "api-client," :redirect-uris ["https://api.example.com/*"], :base-url "/," :web-origins ["https://api.example.com"], :public? true, :root-url "https://api.example.com"}
-                                {:name "backend," :redirect-uris ["https://backend.example.com/*"], :base-url "/," :web-origins ["https://backend.example.com"], :public? true, :root-url "https://backend.example.com"}]}])
-    ))
+    (fact config-data => [{:realm {:name "example2"},
+                           :clients [{:name "api-client" :redirect-uris ["https://api.example.com/*"], :base-url "/" :web-origins ["https://api.example.com"], :public? true, :root-url "https://api.example.com"}
+                                     {:name "backend" :redirect-uris ["https://backend.example.com/*"], :base-url "/" :web-origins ["https://backend.example.com"], :public? false, :root-url "https://backend.example.com"}]}])))

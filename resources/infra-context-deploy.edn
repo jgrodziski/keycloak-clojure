@@ -3,15 +3,23 @@
  :applications [{:name    "myapp"
                  :version "1.2.3"
                  :clients-uris [{:client-id "myapp-front"
+                                 :public?    true
                                  :root       "https://myapp.staging.example.com"
                                  :base       "/"
                                  :redirects  ["https://myapp.staging.example.com", "https://myapp.staging.example.com/*"]
                                  :origins    ["https://myapp.staging.example.com"]}
-                                {:client-id "myapp-api"
+                                {:client-id  "myapp-api"
+                                 :public?    true
                                  :root       "https://api.myapp.staging.example.com"
                                  :base       "/"
                                  :redirects  ["https://api.myapp.staging.example.com", "https://api.myapp.staging.example.com/*"]
-                                 :origins    ["https://api.myapp.staging.example.com"]}]}]
+                                 :origins    ["https://api.myapp.staging.example.com"]}
+                                {:client-id  "myapp-backend"
+                                 :public?    false
+                                 :root       "https://backend.myapp.staging.example.com"
+                                 :base       "/"
+                                 :redirects  ["https://backend.myapp.staging.example.com", "https://backend.myapp.staging.example.com/*"]
+                                 :origins    ["https://backend.myapp.staging.example.com"]}]}]
  :keycloak    {:protocol "http"
                :host     "host.docker.internal"
                :port     8090
