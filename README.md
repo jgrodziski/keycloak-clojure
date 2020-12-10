@@ -9,7 +9,7 @@ This repo was first an explanation of integrating Keycloak with Clojure, now I t
 [![Clojars Project](https://img.shields.io/clojars/v/keycloak-clojure.svg)](https://clojars.org/keycloak-clojure)
 
 ```clojure
-keycloak-clojure {:mvn/version "1.13.5"}
+keycloak-clojure {:mvn/version "1.14.1"}
 ```
 
 Before going further be sure to read the [sample's README](sample) to understand the concepts Keycloak offers, and the integration points needed to integrate it with your application backend and frontend. Of course the way Keycloak integrates with your application depends on the stack it uses.
@@ -135,6 +135,8 @@ The data structure expected to setup a whole realm with clients, roles, groups a
 * `clients`: A vector of map with keys: `:name`, `:redirect-uris`, `:base-url`, `:web-origins`: :public?, :root-url
 * `groups`: A vector of map with keys: :name, :subgroups: A vector of map with keys: :name 
 * `users`: A vector of map with keys: :email, :last-name, :group, :realm-roles (vector of string), :password, :username, :first-name, :attributes, :in-subgroups
+* `username-creator-fn`: A function with parameters [role group subgroup idx & opts] that must return a string that will be used to automatically create user for testing purpose, in relation with the key `generated-users-by-group-and-role` that provide an integer with the number of fake users to create per group and role
+* `generated-users-by-group-and-role`: an Integer that denotes the number of fake users to create per group and role, see `username-creator-fn` key. If missing or zero no fake users are created.
 
 ### Realm description sample
 
@@ -168,7 +170,8 @@ The data structure expected to setup a whole realm with clients, roles, groups a
              :redirect-uris ["http://localhost:3449/*"],
              :web-origins ["http://localhost:3449"],
              :public? false}],
-  :username-creator-fn #function[sci.impl.fns/parse-fn-args+body/run-fn--3702],
+  :username-creator-fn (fn [role group subgroup idx & opts]
+                          (str group "-" (subs (str role) 0 3) "-" idx)),
   :generated-users-by-group-and-role 2,
   :groups [{:name "test"} {:name "Example", :subgroups [{:name "IT"} {:name "Sales"} {:name "Logistics"}]}],
   :users [{:email "britt@hotmail.com", :last-name "Britt", :group "Example", :realm-roles ["employee" "manager" "example-admin" "org-admin" "group-admin" "api-consumer"], :password "s0w5roursg3i284", :username "britt", :first-name "James", :attributes {"org-ref" ["Example"]}, :in-subgroups ["IT"]}
@@ -222,15 +225,16 @@ Example of `infra-context.edn` file
  :color       "red"
  :applications {:name    "myapp"
                 :version "1.2.3"
-                :clients-uris {:myapp-front {:root       "https://myapp.staging.example.com"
-                                             :base       "/"
-                                             :redirects  ["https://myapp.staging.example.com", "https://myapp.staging.example.com/*"]
-                                             :origins    ["https://myapp.staging.example.com"]}
-                               :myapp-api   {:root "https://api.myapp.staging.example.com"
-                                             :base       "/"
-                                             :redirects  ["https://api.myapp.staging.example.com", "https://api.myapp.staging.example.com/*"]
-                                             :origins    ["https://api.myapp.staging.example.com"]
-                                             }}}
+                :clients-uris [{:client-id "myapp-front"
+                                :root       "https://myapp.staging.example.com"
+                                :base       "/"
+                                :redirects  ["https://myapp.staging.example.com", "https://myapp.staging.example.com/*"]
+                                :origins    ["https://myapp.staging.example.com"]}
+                               {:client-id "myapp-api"
+                                :root "https://api.myapp.staging.example.com"
+                                :base       "/"
+                                :redirects  ["https://api.myapp.staging.example.com", "https://api.myapp.staging.example.com/*"]
+                                :origins    ["https://api.myapp.staging.example.com"]}]}
  :keycloak    {:protocol "http"
                :host     "host.docker.internal"
                :port     8090
@@ -247,16 +251,14 @@ Example of `infra-context.edn` file
                ;;%1$s is the environment, %2$s is the color, %3$s is the base-domain, %4$s is the client-id (so depends of your realm-config.clj code)
                :path     "/env/%1$s/keycloak/clients/%4$s"}}
 
-
 ```
-
 ### Clojure CLI
 
 The clojure CLI is a traditional [clojure tools](https://clojure.org/guides/deps_and_cli) invocation of the `keycloak.starter` namespace main function.
 
 ```clojure
 ;;declare keycloak-clojure as a dependency in your deps.edn
-keycloak.clojure {:mvn/version "1.11.0"}
+keycloak.clojure {:mvn/version "1.14.1"}
 ```
 
 ```clojure
