@@ -202,11 +202,11 @@ The `keycloak-clojure-starter` CLI executable has the following arguments:
 * `--environment` Name of the environment for which the init is done, has no impact but is passed during evaluation of the config file
 * `--secret-export-dir` Path to a directory, if present clients secret will be exported in `keycloak-secrets.edn|json|yml` files for downstream usage.
 * `--infra-context` Path to an EDN file. If the file is present it overrides the previous config parameters. The file contains the following keys, 
-    - `:environment`: a string of the target environment, no impact but is passed during evaluation of the realm config file\n
-    - `:color`: a string of a \"color\" for discriminating the target (can be omitted), no impact but is passed during evaluation of the realm config file\n
-    - `:applications`: a vector of map with :name and :version key, no impact but is passed during evaluation of the realm config file\n
-    - `:keycloak`: a map with :protocol, :host, :port, :login, :password, :base-domain, :secret-export-dir\n
-    - `:vault`: a map with :protocol :host :port :token :mount :path\n
+    - `:environment`: a string of the target environment, no impact but is passed during evaluation of the realm config file
+    - `:color`: a string of a \"color\" for discriminating the target (can be omitted), no impact but is passed during evaluation of the realm config file
+    - `:applications`: a vector of map with `:name`, `:version` and `clients-uris` keys, `clients-uris` being a vector of map with `client-id`, `:redirects`, `:base`, `:origins`, `:root` keys no impact but is passed during evaluation of the realm config file
+    - `:keycloak`: a map with `:protocol`, `:host`, `:port`, `:login`, `:password`, `:base-domain`, `:secret-export-dir`
+    - `:vault`: a map with :protocol :host :port :token :mount :path
 * `--realm-config` A path to a clj file that is evaluated with SCI (https://github.com/borkdude/sci), the code must return a vector of map with a realm config (keys: realm, clients, roles see section [Declarative Setup](#declarative-setup))
 
 ### Infrastructure configuration
@@ -214,9 +214,9 @@ The `keycloak-clojure-starter` CLI executable has the following arguments:
 For ease of use, the infrastructure configuration can be passed as a file to the starter function. It essentially contains the keycloak, optional vault and metadata parameters. The metadata parameters (`:environment`, `:color` and `applications`) are not used by the init function but are passed to the realm config clojure file that will be evaluated and the correct clients emitted.
 
 Metadata are the keys:
-    * `environment`: a string describing the environment, eg. staging
+    * `environment`: a string describing the environment, eg. `staging`
     * `color`: a string that further describe the environment with a specific infrastructure setup
-    * `applications`: A vector of map with keys: `:name`, `:version`, and `clients-uris` a vector of map with `client-id`, `:redirects`, `:base`, `:origins`, `root` keys
+    * `applications`: A vector of map with keys: `:name`, `:version`, and `clients-uris` a vector of map with `client-id`, `:redirects`, `:base`, `:origins`, `:root` keys
 
 Example of `infra-context.edn` file 
 
@@ -231,7 +231,7 @@ Example of `infra-context.edn` file
                                 :redirects  ["https://myapp.staging.example.com", "https://myapp.staging.example.com/*"]
                                 :origins    ["https://myapp.staging.example.com"]}
                                {:client-id "myapp-api"
-                                :root "https://api.myapp.staging.example.com"
+                                :root       "https://api.myapp.staging.example.com"
                                 :base       "/"
                                 :redirects  ["https://api.myapp.staging.example.com", "https://api.myapp.staging.example.com/*"]
                                 :origins    ["https://api.myapp.staging.example.com"]}]}
