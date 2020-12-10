@@ -169,6 +169,8 @@ Fire up a REPL, then:
 
 Once installed, the keycloak server must be properly configured with realm(s) and clients. Automation is key, particularly in a cloud environment. You can have one Keycloak server per environment or likely share a server for non-prod environments and one for production. for the former setup, the server would have one realm and several clients corresponding to each environments that will be created and then deleted.
 
+TODO: describe Vault integration with `init-client!` (client secret are exported automatically in Vault if the Vault config is present in ``infra-context.edn`)
+
 ## Declarative setup
 
 The data structure expected to setup a whole realm with clients, roles, groups and users is the following:
