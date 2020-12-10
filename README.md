@@ -182,7 +182,7 @@ The data structure expected to setup a whole realm with clients, roles, groups a
 
 ## REPL or Clojure setup
 
-The `keycloak.starter` namespace has the `init-realm!` function that takes a data structure like the one described above or in `resources/real-config.edn`.
+The `keycloak.starter` namespace has the `init!` function that takes a data structure like the one described above or in `resources/real-config.edn`.
 As Keycloak is an infrastructure component, the idea is that you could use the init features in two stages of your ops activity:
 - When you provision the Keycloak server, at that moment you want to setup the realm and/or the groups/users
 - Everytime new versions of your application is deployed, you want to setup some dedicated clients with their secrets exported in the Vault. Then the clients secrets are retrieved from the vault and given to the application for a proper starts.
