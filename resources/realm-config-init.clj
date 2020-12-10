@@ -41,13 +41,14 @@
    :groups [{:name "test"} {:name "Example" :subgroups [{:name "IT"} {:name "Sales"} {:name "Logistics"}]}]
    :roles  #{"employee" "manager" "example-admin" "org-admin" "group-admin" "api-consumer"}
    :users (conj  (vec (map (fn [user] (-> user
-                                               (assoc :realm-roles ["employee" "manager" "example-admin" "org-admin" "group-admin" "api-consumer"])
-                                               (assoc :group "Example")
-                                               (assoc :in-subgroups ["IT"])
-                                               (assoc :attributes {"org-ref" ["Example"]}))) users))
-                {:username "testaccount" :password "secretstuff" :first-name "Bob" :last-name  "Carter"
-                 :realm-roles ["employee" "manager" "example-admin"] :group "Example" :in-subgroups ["IT"] :attributes {"org-ref" ["Example"]}})
+                                          (assoc :realm-roles ["employee" "manager" "example-admin" "org-admin" "group-admin" "api-consumer"])
+                                          (assoc :group "Example")
+                                          (assoc :in-subgroups ["IT"])
+                                          (assoc :attributes {"org-ref" ["Example"]}))) users))
+                 {:username "testaccount" :password "secretstuff" :first-name "Bob" :last-name  "Carter"
+                  :realm-roles ["employee" "manager" "example-admin"] :group "Example" :in-subgroups ["IT"] :attributes {"org-ref" ["Example"]}})
    :generated-users-by-group-and-role 2
-   :username-creator-fn (fn [role group subgroup idx & opts] (str (str group) "-" (subs (str role) 0 3) "-" idx))})
+   :username-creator-fn (fn [role group subgroup idx & opts]
+                          (str group "-" (subs (str role) 0 3) "-" idx))})
 
 [(basic-realm-data environment) ]

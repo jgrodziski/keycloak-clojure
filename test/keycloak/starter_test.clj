@@ -9,22 +9,22 @@
    [keycloak.deployment :as deployment :refer [keycloak-client client-conf]]))
 
 (def infra-context {:environment "automatedtest"
-                   :color       "blue"
-                   :base-domain "example.com"
-                   :applications {:name    "myapp"
-                                  :version "1.4.12"}
-                   :keycloak     {:protocol "http"
-                                  :host     "localhost"
-                                  :port     "8090"
-                                  :login    "admin"
-                                  :password "secretadmin"}
-                   :vault        {:protocol "http"
-                                  :host     "localhost"
-                                  :port     "1234"
-                                  :token    "myroot"
-                                  :mount    "secret"
-                                  ;;%1$s is the environment, %2$s is the color, %3$s is the base-domain, %4$s is the client-id (so depends of your realm-config.clj code)
-                                  :path     "/env/%1$s/keycloak/clients/%4$s"}})
+                    :color       "blue"
+                    :base-domain "example.com"
+                    :applications {:name    "myapp"
+                                   :version "1.4.12"}
+                    :keycloak     {:protocol "http"
+                                   :host     "localhost"
+                                   :port     "8090"
+                                   :login    "admin"
+                                   :password "secretadmin"}
+                    :vault        {:protocol "http"
+                                   :host     "localhost"
+                                   :port     "1234"
+                                   :token    "myroot"
+                                   :mount    "secret"
+                                   ;;%1$s is the environment, %2$s is the color, %3$s is the base-domain, %4$s is the client-id (so depends of your realm-config.clj code)
+                                   :path     "/env/%1$s/keycloak/clients/%4$s"}})
 
 (def integration-test-conf (deployment/client-conf (utils/auth-server-url infra-context) "master" "admin-cli"))
 (def admin-client (deployment/keycloak-client integration-test-conf (get-in infra-context [:keycloak :login]) (get-in infra-context [:keycloak :password])))
@@ -35,7 +35,7 @@
                                  {:defaultLocale "fr",
                                   :emailTheme "keycloak",
                                   :internationalizationEnabled true,
-                                  :adminTheme nil,
+                                  :adminTheme "keycloak",
                                   :supportedLocales #{"en" "fr"},
                                   :loginTheme "keycloak",
                                   :accountTheme "keycloak"},
@@ -81,42 +81,29 @@
 
 (deftest ^:integration vault-test
   (doseq [realm-data static-realm-data]
-    (starter/init-realm! admin-client realm-data infra-context nil)))
+    (starter/init-realm! admin-client (:realm realm-data))))
 
 
 (deftest config-test
   (let [environment  (sci/new-var 'environment  "staging")
-        applications (sci/new-var 'applications [{:name "myapp" :version "1.2.3"
-                                                  :clients-uris {:api-client {:root "https://api.example.com"
-                                                                              :base "/"
-                                                                              :redirects ["https://api.example.com/*"]
-                                                                              :origins ["https://api.example.com"]}
-                                                                 :backend   {:root "https://backend.example.com"
-                                                                             :base "/"
-                                                                             :redirects ["https://backend.example.com/*"]
-                                                                             :origins ["https://backend.example.com"]}}}])
+        applications (sci/new-var 'applications [{:name "myapp"
+                                                  :version "1.2.3"
+                                                  :clients-uris [{:client-id "api-client"
+                                                                  :root "https://api.example.com"
+                                                                  :base "/"
+                                                                  :redirects ["https://api.example.com/*"]
+                                                                  :origins ["https://api.example.com"]}
+                                                                 {:client-id "backend"
+                                                                  :root "https://backend.example.com"
+                                                                  :base "/"
+                                                                  :redirects ["https://backend.example.com/*"]
+                                                                  :origins ["https://backend.example.com"]}]}])
         color        (sci/new-var 'color        "red")
-        config-code  (slurp "resources/realm-clients-config.clj")
+        config-code  (slurp "resources/realm-config-clients.clj")
         config-data  (sci/eval-string config-code {:bindings {'environment  environment
                                                               'applications applications
                                                               'color        color}})]
-    (println config-data)
-    (comment (is config-data [{:realm {:name "example2"},
-                               :clients
-                               [{:name "diffusion-api-client-1.2.3",
-                                 :redirect-uris ["https://myapp.staging.example.com/*"],
-                                 :base-url "https://myapp.staging.example.com",
-                                 :web-origins ["https://myapp.staging.example.com"],
-                                 :public? true,
-                                 :root-url "https://myapp.staging.example.com"}
-                                {:name "diffusion-frontend-1.2.3",
-                                 :redirect-uris ["https://myapp.staging.example.com/*"],
-                                 :base-url "https://myapp.staging.example.com",
-                                 :web-origins ["https://myapp.staging.example.com"],
-                                 :public? true,
-                                 :root-url "https://myapp.staging.example.com"}
-                                {:name "diffusion-backend-1.2.3",
-                                 :redirect-uris ["http://localhost:3449/*"],
-                                 :web-origins ["http://localhost:3449"],
-                                 :public? false}]}]))
+    (is config-data [{:realm {:name "example2"},
+                      :clients [{:name "api-client," :redirect-uris ["https://api.example.com/*"], :base-url "/," :web-origins ["https://api.example.com"], :public? true, :root-url "https://api.example.com"}
+                                {:name "backend," :redirect-uris ["https://backend.example.com/*"], :base-url "/," :web-origins ["https://backend.example.com"], :public? true, :root-url "https://backend.example.com"}]}])
     ))

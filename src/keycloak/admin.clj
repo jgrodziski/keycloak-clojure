@@ -253,7 +253,27 @@
   (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.groups)))
 
 (defn client
-  "create a ClientRepresentation with client-name the public/private flag"
+  "Create a [ClientRepresentation](https://www.keycloak.org/docs-api/11.0/javadocs/org/keycloak/representations/idm/ClientRepresentation.html) object to be used with [[create-client!]], [[update-client!]] or [[create-or-update-client!]] functions.
+  `client` argument is a map. Different arities are proposed for convenience with default value for the rest of the client's map keys:
+
+  - `client-id`: client-id as a string, client identifier for OIDC requests. Optional: default value is the name of the client.
+  - `name`: display name for the client whenever it is displayed in a Keycloak UI screen.name. Mandatory.
+  - `public?` or `public-client`: boolean, `true` if the client is of the `public` _Access Type_, `false` if the client is of the `confidential` _Access Type_.
+    - _confidential_: Confidential access type is for server-side clients that need to perform a browser login and require a client secret when they turn an access code into an access token, (see Access Token Request in the OAuth 2.0 spec for more details). This type should be used for server-side applications.
+public
+    - _public_: Public access type is for client-side clients that need to perform a browser login. With a client-side application there is no way to keep a secret safe. Instead it is very important to restrict access by configuring correct redirect URIs for the client.
+  - `standard-flow-enabled`: boolean, if `true` clients are allowed to use the OIDC [Authorization Code Flow](https://www.keycloak.org/docs/latest/server_admin/#_oidc-auth-flows). Default to `true`.
+  - `direct-access-grants-enabled`: boolean, if `true`, clients are allowed to use the OIDC [Direct Access Grants](https://www.keycloak.org/docs/latest/server_admin/#_oidc-auth-flows) . Default to true.
+  - `service-accounts-enabled`: boolean, if `true`, Service account is enabled for this client, only for `confidential` client. See [Service Accounts](https://www.keycloak.org/docs/latest/server_admin/#_service_accounts). Default to the logical expression: `(not (public?))`.
+  - `authorization-services-enabled`: boolean, if `true` [authorization services](https://www.keycloak.org/docs/latest/authorization_services/) are enabled for this client.
+  - `redirect-uris`: vector of String representing URL Patterns. Required if `public?`. Wildcards (*) are only allowed at the end of a URI, i.e. http://host.com/*
+  - `root-url`: String, If Keycloak uses any configured relative URLs, this value is prepended to them.
+  - `base-url`: String, If Keycloak needs to link to the client, this URL is used.
+  - `admin-url`: String, For Keycloak specific client adapters, this is the callback endpoint for the client. The Keycloak server will use this URI to make callbacks like pushing revocation policies, performing backchannel logout, and other administrative operations. For Keycloak servlet adapters, this can be the root URL of the servlet application. For more information see [Securing Applications and Services Guide](https://www.keycloak.org/docs/latest/securing_apps/).
+  - `web-origins`: vector of String representing domains. The domains listed in the Web Origins setting for the client are embedded within the access token sent to the client application. The client application can then use this information to decide whether or not to allow a CORS request to be invoked on it. This is an extension to the OIDC protocol so only Keycloak client adapters support this feature. See [Securing Applications and Services Guide](https://www.keycloak.org/docs/latest/securing_apps/) for more information.
+  - `attributes`: map with keys and values as String. Transformed to a `java.util.Map<String, String>`. Some attributes for the client are passed in this map, an attribute of interest is the `access.token.lifespan` that override the _Access Token lifespan_ of the realm for that client.
+
+  "
   (^org.keycloak.representations.idm.ClientRepresentation [{:keys [client-id name public-client public? standard-flow-enabled service-accounts-enabled authorization-services-enabled redirect-uris web-origins direct-access-grants-enabled root-url base-url admin-url attributes] :as client}]
    (let [^org.keycloak.representations.idm.ClientRepresentation client-representation (ClientRepresentation.)]
      (-> ((setters {:client-id                      (or client-id name)
@@ -262,7 +282,7 @@
                     :standard-flow-enabled          (or standard-flow-enabled true)
                     :direct-access-grants-enabled   (or direct-access-grants-enabled true)
                     :service-accounts-enabled       (or service-accounts-enabled (not (or public? public-client)))
-                    :authorization-services-enabled (or authorization-services-enabled (not (or public? public-client)))
+                    :authorization-services-enabled (or authorization-services-enabled false)
                     :redirect-uris                  redirect-uris
                     :root-url                       root-url
                     :base-url                       base-url
@@ -272,26 +292,34 @@
   (^org.keycloak.representations.idm.ClientRepresentation [name public? redirect-uris web-origins]
    (client {:client-id                      name
             :public-client                  public?
-            :standard-flow-enabled          true
-            :direct-access-grants-enabled   true
-            :service-accounts-enabled       (not public?)
-            :authorization-services-enabled (not public?)
             :redirect-uris                  redirect-uris
             :web-origins                    web-origins}))
   (^org.keycloak.representations.idm.ClientRepresentation [name public?]
    (client name public? ["http://localhost:3449/*"] ["http://localhost:3449"])))
 
 (defn get-client
+  "Get a _Client_ from a `client-id` (caution: it's not the `client-name`). Return a [ClientRepresentation](https://www.keycloak.org/docs-api/11.0/javadocs/org/keycloak/representations/idm/ClientRepresentation.html) object. It's the _Client_ concept of Keycloak, not the Keycloak admin client used to interact with the API SDK and given as a first argument of every function in that namespace.
+
+  **keycloak-client and realm-name**
+
+  Fist argument is an [admin client's _Keycloak_ object](https://www.keycloak.org/docs-api/11.0/javadocs/org/keycloak/admin/client/Keycloak.html) obtained with:
+  ```clojure
+  (require 'keycloak.deployment)
+  (keycloak.deployment/keycloak-client (keycloak.deployment/client-conf \"http://localhost:8090\" \"master\"  \"admin-cli\") admin-login admin-password)
+  ```
+  Second argument is the _Realm_ name as a String.
+  "
   ^org.keycloak.representations.idm.ClientRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id]
   (-> keycloak-client (.realm realm-name) (.clients) (.findByClientId client-id) first))
 
 (defn get-client-resource
   "Return a [org.keycloak.admin.client.resource.ClientResource](https://www.keycloak.org/docs-api/11.0/javadocs/org/keycloak/admin/client/resource/ClientResource.html)
-  given a keycloak-client, realm-name and id. Be careful the id is the UUID given by Keycloak not the clientId given by the user" 
+  given a `keycloak-client`, `realm-name` and `id`. Be careful the id is the UUID attributed by Keycloak during the creation of the client and not the `clientId` given by the user"
   ^org.keycloak.admin.client.resource.ClientResource [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id]
   (-> keycloak-client (.realm realm-name) (.clients) (.get client-id)))
 
 (defn find-client
+  "Find client from its `name`, provide a `keycloak-client` and `realm-name`, return a collection"
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-name]
   (-> (some (fn [^org.keycloak.representations.idm.ClientRepresentation client]
               (when (= name (.getName client)) client)) (-> keycloak-client (.realm realm-name) (.clients) (.findAll)))))

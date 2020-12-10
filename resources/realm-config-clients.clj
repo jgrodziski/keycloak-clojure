@@ -9,13 +9,13 @@
 (defn client-id [app-name app-version client-name]
   (str app-name "-" client-name (when (not (clojure.string/blank? app-version)) (str "-" app-version))))
 
-(defn client [[client-id {:keys [root base redirects origins] :as client-uris}]]
-  {:name          client-id
-   :public?       true
-   :redirect-uris redirects
-   :root-url      root
-   :base-url      base
-   :web-origins   origins})
+(defn client [{:keys [client-id root base redirects origins] :as client}]
+    {:name          client-id
+     :public?       true
+     :redirect-uris redirects
+     :root-url      root
+     :base-url      base
+     :web-origins   origins})
 
 (defn basic-realm-data [env color app-name app-version clients-uris]
   {:realm   {:name "example2"}
