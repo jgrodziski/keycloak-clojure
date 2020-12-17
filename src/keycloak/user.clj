@@ -142,7 +142,7 @@
 (defn add-client-roles!
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username client-roles]
   (let [{:keys [user-searched user-id user-resource]} (get-user-resource keycloak-client realm-name username)]
-    (when (not-empty client-roles) (println (format "Add client roles %s to user %s" (pr-str client-roles ) username)))
+    (when (not-empty client-roles) (info (format "Add client roles %s to user %s" (pr-str client-roles ) username)))
     (doseq [[client-id roles] client-roles]
       (let [client (get-client keycloak-client realm-name client-id)
             roles-representations (doall (map (fn [role]
@@ -155,7 +155,7 @@
                                                       (.get role)
                                                       (.toRepresentation))
                                                   (catch javax.ws.rs.NotFoundException nfe
-                                                    (println "Client role" role "not found in realm" realm-name"for client" client-id)))) (map name roles)))]
+                                                    (log/error "Client role" role "not found in realm" realm-name"for client" client-id)))) (map name roles)))]
         (-> ^org.keycloak.admin.client.resource.UserResource user-resource
             (.roles)
             (.clientLevel (.getId client))

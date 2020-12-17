@@ -106,7 +106,9 @@
 
 (defn init-roles! [^org.keycloak.admin.client.Keycloak admin-client realm-name roles-data]
   (doseq [role roles-data]
-    (try (create-role! admin-client realm-name role) (catch Exception e (get-role admin-client realm-name role)))))
+    (try (create-role! admin-client realm-name role)
+         (println (format "Role %s created in realm %s" role realm-name))
+         (catch Exception e (get-role admin-client realm-name role)))))
 
 (defn init-generated-users! [^org.keycloak.admin.client.Keycloak admin-client realm-name data ^org.keycloak.representations.idm.GroupRepresentation group ^org.keycloak.representations.idm.GroupRepresentation subgroup]
   (doseq [role (:roles data)]
