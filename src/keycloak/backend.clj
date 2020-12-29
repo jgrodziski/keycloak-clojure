@@ -1,31 +1,32 @@
 (ns keycloak.backend
   (:require
-   [clojure.string :as string :refer [last-index-of]]
-   [clojure.tools.logging :as log]
-   [keycloak.cookies :refer [parse-cookies]]
-   [keycloak.deployment :as keycloak]))
+    [clojure.string :as string :refer [last-index-of]]
+    [clojure.tools.logging :as log]
+    [keycloak.cookies :refer [parse-cookies]]
+    [keycloak.deployment :as keycloak]))
 
 (set! *warn-on-reflection* true)
 
-(defn authorization-bearer-cred [ctx]
-  (let [header (get-in ctx [:request :headers "authorization"])]
-    (when header
-      (last (re-find #"^Bearer (.*)$" header)))))
+(defmulti authorization-from-headers (fn [headers]
+                                       (cond
+                                         (contains? headers :authorization) :bearer
+                                         (contains? headers :cookie) :cookie
+                                         :else nil)))
 
-(defn authorization-token-cookie [ctx]
-  (let [cookies (parse-cookies (:request ctx))]
+(defmethod authorization-from-headers :bearer [headers]
+  (last (re-find #"^Bearer (.*)$" (:authorization headers))))
+(defmethod authorization-from-headers :cookie [headers]
+  (let [cookies (parse-cookies (:cookie headers))]
     (get cookies "X-Authorization-Token")))
+(defmethod authorization-from-headers :default [_] nil)
 
-(defn verify-credential [ctx deployment]
-  (let [header-cred (authorization-bearer-cred ctx)
-        cookie-cred (authorization-token-cookie ctx)
-        cred-missing? (nil? (or header-cred cookie-cred))]
-                                        ;{:username "manager" :roles #{:employee :manager}}
-    (when cred-missing?
-      (log/info {:service ::yada.security.verify :header-cred header-cred :cookie-cred cookie-cred}
-                (str "Credential must be present in \"authorization\" header or \"X-Authorization-Token\" cookie"))
-      (throw (Exception. "Credential must be present in \"authorization\" header or \"X-Authorization-Token\" cookie")))
-    (let [extracted-token (->> (or header-cred cookie-cred)
+(defn verify-credential [headers deployment]
+  (let [credential (authorization-from-headers (clojure.walk/keywordize-keys headers))]
+    (when (nil? credential)
+      (log/info {:service ::yada.security.verify}
+                (str "Credential must be present in \"authorization\" header or \"X-Authorization-Token\" header cookie"))
+      (throw (Exception. "Credential must be present in \"authorization\" header or \"X-Authorization-Token\" header cookie")))
+    (let [extracted-token (->> credential
                                (keycloak/verify deployment)
                                (keycloak/extract))]
       (log/debug (str "extracted-token " extracted-token))
