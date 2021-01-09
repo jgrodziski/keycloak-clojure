@@ -3,7 +3,7 @@
 
 __[Keycloak](http://www.keycloak.org) is an open source Identity and Access Management solution for easily securing modern applications and API. This library wrap the Keycloak Java Adapter and provide some utilities facilitating the integration.__
 
-The reference documentation is available at: [https://keycloak-clojure.org](https://keycloak-clojure.org).
+The reference documentation is available at: [keycloak-clojure.org](http://keycloak-clojure.org).
 
 This repo was first an explanation of integrating Keycloak with Clojure, now I transform it to offer a library named `keycloak-clojure` to wrap the Keycloak Java Adapter and provide some utilities facilitating the integration. The initial explanation is now in the README of the `sample` directory.
 
