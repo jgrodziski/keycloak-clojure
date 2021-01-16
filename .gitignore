@@ -6,3 +6,4 @@ target
 .lsp
 .clj-kondo
 doc/site
+doc/codox
