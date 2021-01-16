@@ -1,0 +1,284 @@
+<!DOCTYPE html PUBLIC ""
+    "">
+<html><head><meta charset="UTF-8" /><title>Administrative tasks</title><link rel="stylesheet" type="text/css" href="css/default.css" /><link rel="stylesheet" type="text/css" href="highlight/github.css" /><script type="text/javascript" src="highlight/highlight.min.js"></script><script type="text/javascript" src="js/jquery.min.js"></script><script type="text/javascript" src="js/page_effects.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body><div id="header"><h1><a href="index.html"><span class="project-title"><span class="project-name">keycloak-clojure</span> <span class="project-version">1.14.4</span></span></a></h1></div><div class="sidebar primary"><h3 class="no-link"><span class="inner">Project</span></h3><ul class="index-link"><li class="depth-1 "><a href="index.html"><div class="inner">Index</div></a></li></ul><h3 class="no-link"><span class="inner">Topics</span></h3><ul><li class="depth-1 "><a href="concepts.html"><div class="inner"><span>Security Concepts</span></div></a></li><li class="depth-1 "><a href="setup.html"><div class="inner"><span>Setup Keycloak</span></div></a></li><li class="depth-1  current"><a href="admin.html"><div class="inner"><span>Administrative tasks</span></div></a></li><li class="depth-1 "><a href="frontend.html"><div class="inner"><span>Securing a frontend</span></div></a></li><li class="depth-1 "><a href="backend.html"><div class="inner"><span>Securing a backend</span></div></a></li><li class="depth-1 "><a href="howtos.html"><div class="inner"><span>HOWTOs</span></div></a></li></ul><h3 class="no-link"><span class="inner">Namespaces</span></h3><ul><li class="depth-1"><div class="no-link"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>keycloak</span></div></div></li><li class="depth-2 branch"><a href="keycloak.admin.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>admin</span></div></a></li><li class="depth-2 branch"><a href="keycloak.authn.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>authn</span></div></a></li><li class="depth-2 branch"><a href="keycloak.authz.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>authz</span></div></a></li><li class="depth-2 branch"><a href="keycloak.backend.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>backend</span></div></a></li><li class="depth-2 branch"><a href="keycloak.bean.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>bean</span></div></a></li><li class="depth-2 branch"><a href="keycloak.cookies.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>cookies</span></div></a></li><li class="depth-2 branch"><a href="keycloak.deployment.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>deployment</span></div></a></li><li class="depth-2 branch"><a href="keycloak.meta.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>meta</span></div></a></li><li class="depth-2 branch"><a href="keycloak.starter.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>starter</span></div></a></li><li class="depth-2 branch"><a href="keycloak.user.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>user</span></div></a></li><li class="depth-2 branch"><a href="keycloak.utils.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>utils</span></div></a></li><li class="depth-2"><a href="keycloak.vault.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>vault</span></div></a></li></ul></div><div class="document" id="content"><div class="doc"><div class="markdown"><h1><a href="#administrative-tasks" name="administrative-tasks"></a>Administrative tasks</h1>
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+<ul>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#create-a-keycloak-client">Create a keycloak client</a></li>
+  <li><a href="#create-a-realm">Create a realm</a></li>
+  <li><a href="#create-clients">Create clients</a></li>
+  <li><a href="#create-realm-roles">Create realm roles</a></li>
+  <li><a href="#create-users">Create users</a></li>
+  <li><a href="#assign-roles-to-user">Assign roles to user</a></li>
+  <li><a href="#create-groups">Create groups</a></li>
+  <li><a href="#declarative-creation-of-keycloak-objects">Declarative creation of Keycloak objects</a>
+    <ul>
+      <li><a href="#realm-declaration">Realm declaration</a></li>
+      <li><a href="#clients-declaration">Clients declaration</a></li>
+      <li><a href="#roles-declaration">Roles declaration</a></li>
+      <li><a href="#groups-declaration">Groups declaration</a></li>
+      <li><a href="#users-declaration">Users declaration</a></li>
+    </ul>
+  </li>
+  <li><a href="#devops-and-automated-keycloak-configuration">Devops and Automated keycloak configuration</a>
+    <ul>
+      <li><a href="#declarative-setup">Declarative setup</a>
+        <ul>
+          <li><a href="#realm-description-sample">Realm description sample</a></li>
+        </ul>
+      </li>
+      <li><a href="#repl-or-clojure-setup">REPL or Clojure setup</a></li>
+      <li><a href="#realm-setup-with-keycloak-clojure-starter-cli">Realm setup with <code>keycloak-clojure-starter</code> CLI</a>
+        <ul>
+          <li><a href="#infrastructure-context">Infrastructure context</a></li>
+          <li><a href="#clojure-cli">Clojure CLI</a></li>
+          <li><a href="#native-cli">Native CLI</a></li>
+          <li><a href="#docker-cli">Docker CLI</a></li>
+        </ul>
+      </li>
+      <li><a href="#clients-setup">Clients setup</a></li>
+    </ul>
+  </li>
+</ul>
+<!-- markdown-toc end -->
+<h2><a href="#introduction" name="introduction"></a>Introduction</h2>
+<p>Before using Keycloak you must create the necessary <a href="/concepts/#keycloak-concepts">Keycloak resources</a> in the following order: </p>
+<ol>
+  <li>A realm</li>
+  <li>Then clients, roles</li>
+  <li>and groups and users</li>
+</ol>
+<p>You can create all theses resources through the <a href="http://localhost:8090">Keycloak administration console</a> or keycloak-clojure brings you functions to do that easily and declaratively in the section <a href="#declarative-setup">Declarative setup</a>.</p>
+<h2><a href="#create-a-keycloak-client" name="create-a-keycloak-client"></a>Create a keycloak client</h2>
+<p>In every interaction with keycloak-clojure you must provide a keycloak client object that holds the server reference, password, etc. The keycloak client is created with:</p>
+<pre><code class="clojure"><br />(require '[keycloak.deployment :as deployment 
+           :refer [keycloak-client client-conf]])
+
+(def kc-client
+  (-&gt; (client-conf {:auth-server-url "http://localhost:8090/auth" 
+                    :realm "master"
+                    :client-id  "admin-cli"})
+      (keycloak-client "admin" "secretadmin")))
+</code></pre>
+<h2><a href="#create-a-realm" name="create-a-realm"></a>Create a realm</h2>
+<pre><code class="clojure">(require '[keycloak.admin :as admin])
+(admin/create-realm! kc-client "example-realm")
+
+</code></pre>
+<h2><a href="#create-clients" name="create-clients"></a>Create clients</h2>
+<pre><code class="clojure">(admin/create-client! kc-client "example-realm" "myfrontend")
+(admin/create-client! kc-client "example-realm" "mybackend")
+</code></pre>
+<h2><a href="#create-realm-roles" name="create-realm-roles"></a>Create realm roles</h2>
+<pre><code class="clojure">(admin/create-role! kc-client "example-realm" "employee")
+(admin/create-role! kc-client "example-realm" "manager")
+</code></pre>
+<h2><a href="#create-users" name="create-users"></a>Create users</h2>
+<pre><code class="clojure"><br />(admin/create-user! kc-client "example-realm" "user1" "pwd1")
+
+;; The keycloak.user namespace contains function with more exhaustive parameters like:
+(require '[keycloak.user :as user])
+
+(user/create-or-update-user! kc-client "example-realm" {:username "bcarter" :first-name "Bob" :last-name "Carter" :password "abcdefg" :email "bcarter@example.com"} ["employee" "manager"] nil)
+</code></pre>
+<h2><a href="#assign-roles-to-user" name="assign-roles-to-user"></a>Assign roles to user</h2>
+<pre><code class="clojure">(require '[keycloak.user :as user])
+
+(user/add-realm-roles! kc-client "example-realm" "bcarter" ["manager"])
+
+</code></pre>
+<h2><a href="#create-groups" name="create-groups"></a>Create groups</h2>
+<pre><code class="clojure"><br />(admin/create-group! kc-client "example-realm" "mygroup")
+(admin/add-username-to-group-name! kc-client "example-realm" "mygroup" "bcarter")
+
+</code></pre>
+<h2><a href="#declarative-creation-of-keycloak-objects" name="declarative-creation-of-keycloak-objects"></a>Declarative creation of Keycloak objects</h2>
+<p>Keycloak-clojure offers a declarative way to create all the Keycloak resources instead of invoking all the imperative functions. The <code>init!</code> function to create all the resource sits in the namespace <code>keycloak.starter</code>.</p>
+<p>The function expects the following top-level keys: <code>:realm</code>, <code>:clients</code>, <code>:roles</code>, <code>:groups</code>, <code>:users</code>.</p>
+<p>Two additional keys provides a way to generate fake users, groups and roles: <code>:generated-users-by-group-and-role</code> and <code>:username-creator-fn</code>.</p>
+<h3><a href="#realm-declaration" name="realm-declaration"></a>Realm declaration</h3>
+<pre><code class="clojure">{:name "electre"
+ :themes {:internationalizationEnabled true
+          :supportedLocales #{"en" "fr"}
+          :defaultLocale "fr"
+          :loginTheme "example-theme"
+          :accountTheme "example-theme"
+          :adminTheme nil
+          :emailTheme "example-theme"}
+ :login {:bruteForceProtected true
+         :rememberMe true
+         :resetPasswordAllowed true}
+ :tokens {:ssoSessionIdleTimeoutRememberMe (Integer. (* 60 60 48)) ;2 days
+          :ssoSessionMaxLifespanRememberMe (Integer. (* 60 60 48))}
+ :smtp {:host "smtp.eu.mailgun.org"
+        :port 587
+        :from "admin@example.com" 
+        :auth true
+        :starttls true
+        :replyTo "example"
+        :user "postmaster@mail.example.com"
+        :password ""}}
+</code></pre>
+<h3><a href="#clients-declaration" name="clients-declaration"></a>Clients declaration</h3>
+<pre><code class="clojure">{:clients [{:name          "api-client"
+            :public?       true
+            :redirect-uris ["https://api.example.com/*"]
+            :root-url      "https://api.example.com"
+            :base-url      "https://api.example.com"
+            :web-origins   ["https://api.example.com"]}
+           {:name          "myfrontend"
+            :public?       true
+            :redirect-uris ["https://www.example.com/*"]
+            :root-url      "https://www.example.com"
+            :base-url      "https://www.example.com"
+            :web-origins   ["https://www.example.com"]}
+           {:name          "mybackend"
+            :public?       false
+            :redirect-uris ["http://localhost:3449/*"]
+            :web-origins   ["http://localhost:3449"]}]}
+
+</code></pre>
+<h3><a href="#roles-declaration" name="roles-declaration"></a>Roles declaration</h3>
+<pre><code class="clojure">{:roles  #{"employee" "manager" "admin" "org-admin" "group-admin" "api-consumer"}}
+</code></pre>
+<h3><a href="#groups-declaration" name="groups-declaration"></a>Groups declaration</h3>
+<pre><code class="clojure">{:groups [{:name "group1" :subgroups ["subgroup1" "subgroup2"]}]}
+</code></pre>
+<h3><a href="#users-declaration" name="users-declaration"></a>Users declaration</h3>
+<pre><code class="clojure">{:users [{:username "bcarter" :password "password" :first-name "Bob" :last-name  "Carter"
+         :realm-roles ["employee" "manager"] :group "group1" :in-subgroups ["subgroup2"] :attributes {"myorg" ["ACME"]}}]}
+</code></pre>
+<h1><a href="#devops-and-automated-keycloak-configuration" name="devops-and-automated-keycloak-configuration"></a>Devops and Automated keycloak configuration</h1>
+<p>Once installed, the keycloak server must be properly configured with realm(s) and clients. Automation is key, particularly in a cloud environment. You can have one Keycloak server per environment or likely share a server for non-prod environments and one for production. for the former setup, the server would have one realm and several clients corresponding to each environments that will be created and then deleted.</p>
+<p>TODO: describe Vault integration with <code>init-client!</code> (client secret are exported automatically in Vault if the Vault config is present in `<code>infra-context.edn</code>)</p>
+<h2><a href="#declarative-setup" name="declarative-setup"></a>Declarative setup</h2>
+<p>The data structure expected to setup a whole realm with clients, roles, groups and users is the following:</p>
+<ul>
+  <li><code>realm</code>: map with keys: <code>:name,</code> <code>:themes</code>, <code>:login</code>, <code>:smtp</code>, <code>:tokens</code>. <code>realm</code> with <code>name</code> is mandatory, all the other attributes are optional.</li>
+  <li><code>roles</code>: set with roles as string</li>
+  <li><code>clients</code>: vector of map with keys: <code>:name</code>, <code>:redirect-uris</code>, <code>:base-url</code>, <code>:web-origins</code>, <code>:public?</code>, <code>:root-url</code></li>
+  <li><code>groups</code>: vector of map with keys: <code>:name</code>, <code>:subgroups</code>: vector of map with keys: <code>:name</code></li>
+  <li><code>users</code>: vector of map with keys: <code>:email</code>, <code>:last-name</code>, <code>:group</code>, <code>:realm-roles</code> (vector of string), <code>:password</code>, <code>:username</code>, <code>:first-name</code>, <code>:attributes</code>, <code>:in-subgroups</code></li>
+  <li><code>username-creator-fn</code>: function with parameters <code>[role group subgroup idx &amp; opts]</code> that must return a string that will be used to automatically create user for testing purpose, in relation with the key <code>generated-users-by-group-and-role</code> that provide an integer with the number of fake users to create per group and role</li>
+  <li><code>generated-users-by-group-and-role</code>: Integer that denotes the number of fake users to create per group and role, see <code>username-creator-fn</code> key. If missing or zero no fake users are created.</li>
+</ul>
+<h3><a href="#realm-description-sample" name="realm-description-sample"></a>Realm description sample</h3>
+<pre><code class="clojure"><br />[{:realm {:name "example",
+          :themes {:defaultLocale "fr",
+                   :emailTheme "keycloak",
+                   :internationalizationEnabled true,
+                   :adminTheme nil,
+                   :supportedLocales #{"en" "fr"},
+                   :loginTheme "keycloak",
+                   :accountTheme "keycloak"},
+          :login {:resetPasswordAllowed true, :bruteForceProtected true, :rememberMe true},
+          :smtp {:starttls true, :password "", :port 587, :auth true, :host "smtp.eu.mailgun.org", :replyTo "example", :from "admin@example.com", :user "postmaster@mg.example.com"},
+          :tokens {:ssoSessionIdleTimeoutRememberMe 172800, :ssoSessionMaxLifespanRememberMe 172800}},
+  :roles #{"org-admin" "example-admin" "group-admin" "api-consumer" "employee" "manager"},
+  :clients [{:name "api-client",
+             :redirect-uris ["https://myapp.staging.example.com/*"],
+             :base-url "https://myapp.staging.example.com",
+             :web-origins ["https://myapp.staging.example.com"],
+             :public? true,
+             :root-url "https://myapp.staging.example.com"}
+            {:name "myfrontend",
+             :redirect-uris ["https://myapp.staging.example.com/*"],
+             :base-url "https://myapp.staging.example.com",
+             :web-origins ["https://myapp.staging.example.com"],
+             :public? true,
+             :root-url "https://myapp.staging.example.com"}
+            {:name "mybackend",
+             :redirect-uris ["http://localhost:3449/*"],
+             :web-origins ["http://localhost:3449"],
+             :public? false}],
+  :groups [{:name "test"} {:name "Example", :subgroups [{:name "IT"} {:name "Sales"} {:name "Logistics"}]}],
+  :users [{:email "britt@hotmail.com", :last-name "Britt", :group "Example", :realm-roles ["employee" "manager" "example-admin" "org-admin" "group-admin" "api-consumer"], :password "s0w5roursg3i284", :username "britt", :first-name "James", :attributes {"org-ref" ["Example"]}, :in-subgroups ["IT"]}
+          {:email "charlotte.peters@gmail.com", :last-name "Peters", :group "Example", :realm-roles ["employee" "manager" "example-admin" "org-admin" "group-admin" "api-consumer"], :password "7o9573867", :username "cpeters", :first-name "Charlotte", :attributes {"org-ref" ["Example"]}, :in-subgroups ["IT"]}
+          {:email "skylar91@yahoo.com", :last-name "Nielsen", :group "Example", :realm-roles ["employee" "manager" "example-admin" "org-admin" "group-admin" "api-consumer"], :password "02e9nx6y6", :username "snielsen", :first-name "Skylar", :attributes {"org-ref" ["Example"]}, :in-subgroups ["IT"]}],
+  :username-creator-fn (fn [role group subgroup idx &amp; opts]
+                          (str group "-" (subs (str role) 0 3) "-" idx)),
+  :generated-users-by-group-and-role 2}]
+
+</code></pre>
+<h2><a href="#repl-or-clojure-setup" name="repl-or-clojure-setup"></a>REPL or Clojure setup</h2>
+<p>The <code>keycloak.starter</code> namespace has the <code>init!</code> function that takes a data structure like the one described above or in <code>resources/real-config.edn</code>. As Keycloak is an infrastructure component, the idea is that you could use the init features in two stages of your ops activity:</p>
+<ul>
+  <li><strong>When you provision the Keycloak server</strong>, at that moment you want to setup the realm and/or the groups/users</li>
+  <li><strong>Everytime new versions of your application is deployed</strong>, you want to setup some dedicated clients with their secrets exported in the Vault. Then the clients secrets are retrieved from the vault and given to the application for a proper starts.</li>
+</ul>
+<p>In non production environment you could also want only one Keycloak server shared between different environments (staging, dev, etc.). The tools provided by Keycloak-Clojure should give you suppleness to adapt to your Ops setup and requirements.</p>
+<p>The infrastructure configuration files contains all the connection data to the Keycloak and Vault server as well as metadata about the environment and applications Keycloak will secured. The idea is that Ops has the responsibility of domains URLs and deployed application and should passed that informations to the Keycloak init process. </p>
+<h2><a href="#realm-setup-with-cli" name="realm-setup-with-cli"></a>Realm setup with <code>keycloak-clojure-starter</code> CLI</h2>
+<p>A native executable called <code>keycloak-clojure-starter</code>, also embedded in a <a href="https://hub.docker.com/repository/docker/jgrodziski/keycloak-clojure-starter">docker image called <code>keycloak-clojure-starter</code></a> for easy consumption in k8s context, is available. It takes a config file or direct configuration parameters of its environment: the keycloak and vault server, as well as optional metadata about the environment being created (environment, color, base-domain and applications). The optional metadata would then be fed to a second configuration file that will interpret the Clojure code in it in a <a href="https://github.com/borkdude/sci">SCI</a> sandbox to get a realm configuration data structure.</p>
+<p>The <code>keycloak-clojure-starter</code> CLI executable has the following arguments:</p>
+<ul>
+  <li><code>--auth-server-url</code> URL of the Keycloak Authentication Server</li>
+  <li><code>--login</code> username of a user with admin role in the master realm</li>
+  <li><code>--password</code> password of a user with admin role in the master realm</li>
+  <li><code>--environment</code> Name of the environment for which the init is done, has no impact but is passed during evaluation of the config file</li>
+  <li><code>--secret-export-dir</code> Path to a directory, if present clients secret will be exported in <code>keycloak-secrets.edn|json|yml</code> files for downstream usage.</li>
+  <li><code>--infra-context</code> Path to an EDN file. If the file is present it overrides the previous config parameters. The file contains the following keys,
+    <ul>
+      <li><code>:environment</code>: a string of the target environment, no impact but is passed during evaluation of the realm config file</li>
+      <li><code>:color</code>: a string of a "color" for discriminating the target (can be omitted), no impact but is passed during evaluation of the realm config file</li>
+      <li><code>:applications</code>: a vector of map with <code>:name</code>, <code>:version</code> and <code>clients-uris</code> keys, <code>clients-uris</code> being a vector of map with <code>client-id</code>, <code>:redirects</code>, <code>:base</code>, <code>:origins</code>, <code>:root</code> keys no impact but is passed during evaluation of the realm config file</li>
+      <li><code>:keycloak</code>: a map with <code>:protocol</code>, <code>:host</code>, <code>:port</code>, <code>:login</code>, <code>:password</code>, <code>:base-domain</code>, <code>:secret-export-dir</code></li>
+      <li><code>:vault</code>: a map with :protocol :host :port :token :mount :path</li>
+    </ul>
+  </li>
+  <li><code>--realm-config</code> A path to a clj file that is evaluated with SCI (<a href="https://github.com/borkdude/sci)">https://github.com/borkdude/sci)</a>, the code must return a vector of map with a realm config (keys: realm, clients, roles see section <a href="#declarative-setup">Declarative Setup</a>)</li>
+</ul>
+<h3><a href="#infrastructure-context" name="infrastructure-context"></a>Infrastructure context</h3>
+<p>For ease of use, the infrastructure context can be passed as a file to the starter function. It essentially contains the keycloak, optional vault and metadata parameters. The metadata parameters (<code>:environment</code>, <code>:color</code> and <code>applications</code>) are not used by the init function but are passed to the realm config clojure file that will be evaluated and the resulting data structure will be passed to the <code>keycloak.starter/init!</code> function.</p>
+<p>Metadata are the keys:  * <code>environment</code>: a string describing the environment, eg. <code>staging</code>  * <code>color</code>: a string that further describe the environment with a specific infrastructure setup  * <code>applications</code>: A vector of map with keys: <code>:name</code>, <code>:version</code>, and <code>clients-uris</code> a vector of map with <code>client-id</code>, <code>:redirects</code>, <code>:base</code>, <code>:origins</code>, <code>:root</code> keys</p>
+<p>Example of an <code>infra-context.edn</code> file </p>
+<pre><code class="clojure">{:environment "staging"
+ :color       "red"
+ :applications {:name    "myapp"
+                :version "1.2.3"
+                :clients-uris [{:client-id "myapp-front"
+                                :root       "https://myapp.staging.example.com"
+                                :base       "/"
+                                :redirects  ["https://myapp.staging.example.com", "https://myapp.staging.example.com/*"]
+                                :origins    ["https://myapp.staging.example.com"]}
+                               {:client-id "myapp-api"
+                                :root       "https://api.myapp.staging.example.com"
+                                :base       "/"
+                                :redirects  ["https://api.myapp.staging.example.com", "https://api.myapp.staging.example.com/*"]
+                                :origins    ["https://api.myapp.staging.example.com"]}]}
+ :keycloak    {:protocol "http"
+               :host     "host.docker.internal"
+               :port     8090
+               :login    "admin"
+               :password "secretadmin"
+               :secret-file-without-extension ".keycloak-secrets"}
+ :secret-file {:name-without-extension ".keycloak-secrets"
+               :path [:infra :keycloak]}
+ :vault       {:protocol "http"
+               :host     "host.docker.internal"
+               :port     8200
+               :token    "myroot"
+               :mount    "secret"
+               ;;%1$s is the environment, %2$s is the color, %3$s is the base-domain, %4$s is the client-id (so depends of your realm-config.clj code)
+               :path     "/env/%1$s/keycloak/clients/%4$s"}}
+
+</code></pre>
+<h3><a href="#clojure-cli" name="clojure-cli"></a>Clojure CLI</h3>
+<p>The clojure CLI is a traditional <a href="https://clojure.org/guides/deps_and_cli">clojure tools</a> invocation of the <code>keycloak.starter</code> namespace main function.</p>
+<pre><code class="clojure">;;declare keycloak-clojure as a dependency in your deps.edn
+keycloak.clojure {:mvn/version "1.14.1"}
+</code></pre>
+<pre><code class="clojure">clj -m keycloak.starter --infra-context resources/keycloak-config.edn --realm-config resources/realm-config.clj
+</code></pre>
+<h3><a href="#native-cli" name="native-cli"></a>Native CLI</h3>
+<p>The native CLI is currently broken due to the Vault integration that contains some imcompatible code for GraalVM (Thread creation).</p>
+<h3><a href="#docker-cli" name="docker-cli"></a>Docker CLI</h3>
+<p>You can use the <a href="https://hub.docker.com/r/jgrodziski/keycloak-clojure-starter"><code>keycloak-clojure-starter</code> docker image</a> or rebuild the image on your own (see the <code>build.sh</code> script in the repo).</p>
+<p>Then you use the image by running it and mounting the config files like:</p>
+<pre><code class="bash">docker run -d \
+       --mount type=bind,source=/Users/yourusername/keycloak-clojure/resources/keycloak-config.edn,destination=/etc/keycloak/keycloak-config.edn \
+       --mount type=bind,source=/Users/yourusername/keycloak-clojure/resources/realm-config.clj,destination=/etc/keycloak/realm-config.clj \
+       jgrodziski/keycloak-clojure-starter:latest
+
+</code></pre>
+<h2><a href="#clients-setup" name="clients-setup"></a>Clients setup</h2></div></div></div></body></html>

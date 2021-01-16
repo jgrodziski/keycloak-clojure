@@ -1,0 +1,770 @@
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.5.9">
+    
+    
+      
+        <title>Keycloak Administration - Keycloak Clojure</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.36ee6aaa.min.css">
+      
+        <link rel="stylesheet" href="../assets/stylesheets/palette.83bccb1f.min.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="#4051b5">
+      
+    
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="indigo" data-md-color-accent="green">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#administrative-tasks" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid" aria-label="Header">
+    <a href=".." title="Keycloak Clojure" class="md-header-nav__button md-logo" aria-label="Keycloak Clojure">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header-nav__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header-nav__title" data-md-component="header-title">
+      
+        <div class="md-header-nav__ellipsis">
+          <span class="md-header-nav__topic md-ellipsis">
+            Keycloak Clojure
+          </span>
+          <span class="md-header-nav__topic md-ellipsis">
+            
+              Keycloak Administration
+            
+          </span>
+        </div>
+      
+    </div>
+    
+      <label class="md-header-nav__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active">
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+        
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Keycloak Clojure" class="md-nav__button md-logo" aria-label="Keycloak Clojure">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Keycloak Clojure
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="Home" class="md-nav__link">
+      Home
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../setup/" title="Setup" class="md-nav__link">
+      Setup
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../concepts/" title="Concepts" class="md-nav__link">
+      Concepts
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Keycloak Administration
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9h14V7H3v2m0 4h14v-2H3v2m0 4h14v-2H3v2m16 0h2v-2h-2v2m0-10v2h2V7h-2m0 6h2v-2h-2v2z"/></svg>
+        </span>
+      </label>
+    
+    <a href="./" title="Keycloak Administration" class="md-nav__link md-nav__link--active">
+      Keycloak Administration
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    Introduction
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-a-keycloak-client" class="md-nav__link">
+    Create a keycloak client
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-a-realm" class="md-nav__link">
+    Create a realm
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-clients" class="md-nav__link">
+    Create clients
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-realm-roles" class="md-nav__link">
+    Create realm roles
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-users" class="md-nav__link">
+    Create users
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assign-roles-to-user" class="md-nav__link">
+    Assign roles to user
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-groups" class="md-nav__link">
+    Create groups
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#declarative-creation-of-keycloak-objects" class="md-nav__link">
+    Declarative creation of Keycloak objects
+  </a>
+  
+    <nav class="md-nav" aria-label="Declarative creation of Keycloak objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#realm-declaration" class="md-nav__link">
+    Realm declaration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clients-declaration" class="md-nav__link">
+    Clients declaration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roles-declaration" class="md-nav__link">
+    Roles declaration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#groups-declaration" class="md-nav__link">
+    Groups declaration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#users-declaration" class="md-nav__link">
+    Users declaration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#whole-data-structure-for-resources-declaration" class="md-nav__link">
+    Whole data structure for resources declaration
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../backend/" title="Securing Backend" class="md-nav__link">
+      Securing Backend
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../frontend/" title="Securing Frontend" class="md-nav__link">
+      Securing Frontend
+    </a>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    Introduction
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-a-keycloak-client" class="md-nav__link">
+    Create a keycloak client
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-a-realm" class="md-nav__link">
+    Create a realm
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-clients" class="md-nav__link">
+    Create clients
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-realm-roles" class="md-nav__link">
+    Create realm roles
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-users" class="md-nav__link">
+    Create users
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assign-roles-to-user" class="md-nav__link">
+    Assign roles to user
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-groups" class="md-nav__link">
+    Create groups
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#declarative-creation-of-keycloak-objects" class="md-nav__link">
+    Declarative creation of Keycloak objects
+  </a>
+  
+    <nav class="md-nav" aria-label="Declarative creation of Keycloak objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#realm-declaration" class="md-nav__link">
+    Realm declaration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clients-declaration" class="md-nav__link">
+    Clients declaration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roles-declaration" class="md-nav__link">
+    Roles declaration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#groups-declaration" class="md-nav__link">
+    Groups declaration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#users-declaration" class="md-nav__link">
+    Users declaration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#whole-data-structure-for-resources-declaration" class="md-nav__link">
+    Whole data structure for resources declaration
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  
+                
+                
+                <h1 id="administrative-tasks">Administrative tasks</h1>
+<div class="toc">
+<ul>
+<li><a href="#administrative-tasks">Administrative tasks</a><ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#create-a-keycloak-client">Create a keycloak client</a></li>
+<li><a href="#create-a-realm">Create a realm</a></li>
+<li><a href="#create-clients">Create clients</a></li>
+<li><a href="#create-realm-roles">Create realm roles</a></li>
+<li><a href="#create-users">Create users</a></li>
+<li><a href="#assign-roles-to-user">Assign roles to user</a></li>
+<li><a href="#create-groups">Create groups</a></li>
+<li><a href="#declarative-creation-of-keycloak-objects">Declarative creation of Keycloak objects</a><ul>
+<li><a href="#realm-declaration">Realm declaration</a></li>
+<li><a href="#clients-declaration">Clients declaration</a></li>
+<li><a href="#roles-declaration">Roles declaration</a></li>
+<li><a href="#groups-declaration">Groups declaration</a></li>
+<li><a href="#users-declaration">Users declaration</a></li>
+<li><a href="#whole-data-structure-for-resources-declaration">Whole data structure for resources declaration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="introduction">Introduction</h2>
+<p>Before using Keycloak you must create the necessary resources in the following order: firstly you create a realm that will holds your clients, roles, groups and then users (See <a href="/concepts/#keycloak-concepts">the Keycloak concepts section</a>).
+You can create all theses resources through the <a href="http://localhost:8090">Keycloak administration console</a> or keycloak-clojure brings you functions to do that easily that are detailed in the next sections.</p>
+<h2 id="create-a-keycloak-client">Create a keycloak client</h2>
+<p>In every interaction with keycloak-clojure you must provide a keycloak client object that holds the server reference, password, etc.
+The keycloak client is created with:</p>
+<pre><code class="clojure">
+(require '[keycloak.deployment :as deployment 
+           :refer [keycloak-client client-conf]])
+
+(def kc-client
+  (-&gt; (client-conf {:auth-server-url &quot;http://localhost:8090/auth&quot; 
+                    :realm &quot;master&quot;
+                    :client-id  &quot;admin-cli&quot;})
+      (keycloak-client &quot;admin&quot; &quot;secretadmin&quot;)))
+</code></pre>
+
+<h2 id="create-a-realm">Create a realm</h2>
+<pre><code class="clojure">(require '[keycloak.admin :as admin])
+(admin/create-realm! kc-client &quot;example-realm&quot;)
+
+</code></pre>
+
+<h2 id="create-clients">Create clients</h2>
+<pre><code class="clojure">(admin/create-client! kc-client &quot;example-realm&quot; &quot;myfrontend&quot;)
+(admin/create-client! kc-client &quot;example-realm&quot; &quot;mybackend&quot;)
+</code></pre>
+
+<h2 id="create-realm-roles">Create realm roles</h2>
+<pre><code class="clojure">(admin/create-role! kc-client &quot;example-realm&quot; &quot;employee&quot;)
+(admin/create-role! kc-client &quot;example-realm&quot; &quot;manager&quot;)
+</code></pre>
+
+<h2 id="create-users">Create users</h2>
+<pre><code class="clojure">
+(admin/create-user! kc-client &quot;example-realm&quot; &quot;user1&quot; &quot;pwd1&quot;)
+
+;; The keycloak.user namespace contains function with more exhaustive parameters like:
+(require '[keycloak.user :as user])
+
+(user/create-or-update-user! kc-client &quot;example-realm&quot; {:username &quot;bcarter&quot; :first-name &quot;Bob&quot; :last-name &quot;Carter&quot; :password &quot;abcdefg&quot; :email &quot;bcarter@example.com&quot;} [&quot;employee&quot; &quot;manager&quot;] nil)
+</code></pre>
+
+<h2 id="assign-roles-to-user">Assign roles to user</h2>
+<pre><code class="clojure">(require '[keycloak.user :as user])
+
+(user/add-realm-roles! kc-client &quot;example-realm&quot; &quot;bcarter&quot; [&quot;manager&quot;])
+
+</code></pre>
+
+<h2 id="create-groups">Create groups</h2>
+<pre><code class="clojure">
+(admin/create-group! kc-client &quot;example-realm&quot; &quot;mygroup&quot;)
+(admin/add-username-to-group-name! kc-client &quot;example-realm&quot; &quot;mygroup&quot; &quot;bcarter&quot;)
+
+</code></pre>
+
+<h2 id="declarative-creation-of-keycloak-objects">Declarative creation of Keycloak objects</h2>
+<p>Keycloak-clojure offers a declarative way to create all the Keycloak resources instead of invoking all the imperative functions.
+The <code>init!</code> function to create all the resource sits in the namespace <code>keycloak.starter</code>.</p>
+<p>The function expects the following top-level keys: <code>:realm</code>, <code>:clients</code>, <code>:roles</code>, <code>:groups</code>, <code>:users</code>.</p>
+<p>Two additional keys provides a way to generate fake users, groups and roles: <code>:generated-users-by-group-and-role</code> and <code>:username-creator-fn</code>.</p>
+<h3 id="realm-declaration">Realm declaration</h3>
+<pre><code class="clojure">{:name &quot;electre&quot;
+ :themes {:internationalizationEnabled true
+          :supportedLocales #{&quot;en&quot; &quot;fr&quot;}
+          :defaultLocale &quot;fr&quot;
+          :loginTheme &quot;example-theme&quot;
+          :accountTheme &quot;example-theme&quot;
+          :adminTheme nil
+          :emailTheme &quot;example-theme&quot;}
+ :login {:bruteForceProtected true
+         :rememberMe true
+         :resetPasswordAllowed true}
+ :tokens {:ssoSessionIdleTimeoutRememberMe (Integer. (* 60 60 48)) ;2 days
+          :ssoSessionMaxLifespanRememberMe (Integer. (* 60 60 48))}
+ :smtp {:host &quot;smtp.eu.mailgun.org&quot;
+        :port 587
+        :from &quot;admin@example.com&quot; 
+        :auth true
+        :starttls true
+        :replyTo &quot;example&quot;
+        :user &quot;postmaster@mail.example.com&quot;
+        :password &quot;&quot;}}
+</code></pre>
+
+<h3 id="clients-declaration">Clients declaration</h3>
+<pre><code class="clojure">{:clients [{:name          &quot;api-client&quot;
+            :public?       true
+            :redirect-uris [&quot;https://api.example.com/*&quot;]
+            :root-url      &quot;https://api.example.com&quot;
+            :base-url      &quot;https://api.example.com&quot;
+            :web-origins   [&quot;https://api.example.com&quot;]}
+           {:name          &quot;myfrontend&quot;
+            :public?       true
+            :redirect-uris [&quot;https://www.example.com/*&quot;]
+            :root-url      &quot;https://www.example.com&quot;
+            :base-url      &quot;https://www.example.com&quot;
+            :web-origins   [&quot;https://www.example.com&quot;]}
+           {:name          &quot;mybackend&quot;
+            :public?       false
+            :redirect-uris [&quot;http://localhost:3449/*&quot;]
+            :web-origins   [&quot;http://localhost:3449&quot;]}]}
+
+</code></pre>
+
+<h3 id="roles-declaration">Roles declaration</h3>
+<pre><code class="clojure">{:roles  #{&quot;employee&quot; &quot;manager&quot; &quot;admin&quot; &quot;org-admin&quot; &quot;group-admin&quot; &quot;api-consumer&quot;}}
+</code></pre>
+
+<h3 id="groups-declaration">Groups declaration</h3>
+<pre><code class="clojure">{:groups [{:name &quot;group1&quot; :subgroups [&quot;subgroup1&quot; &quot;subgroup2&quot;]}]}
+</code></pre>
+
+<h3 id="users-declaration">Users declaration</h3>
+<pre><code class="clojure">{:users [{:username &quot;bcarter&quot; :password &quot;password&quot; :first-name &quot;Bob&quot; :last-name  &quot;Carter&quot;
+         :realm-roles [&quot;employee&quot; &quot;manager&quot;] :group &quot;group1&quot; :in-subgroups [&quot;subgroup2&quot;] :attributes {&quot;myorg&quot; [&quot;ACME&quot;]}}]}
+</code></pre>
+
+<h3 id="whole-data-structure-for-resources-declaration">Whole data structure for resources declaration</h3>
+<pre><code class="clojure">
+(require '[keycloak.starter :as starter])
+(starter/init! {:realm ...
+                :clients ...
+                :roles ... 
+                :groups ... 
+                :users ... 
+                :generated-users-by-group-and-role 3
+                :username-creator-fn (fn [role group subgroup i &amp; opts] (str (str group) &quot;-&quot; (subs (str role) 0 3) &quot;-&quot; i))})
+
+</code></pre>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
+        
+          <a href="../concepts/" title="Concepts" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+            </div>
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Concepts
+              </div>
+            </div>
+          </a>
+        
+        
+          <a href="../backend/" title="Securing Backend" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Securing Backend
+              </div>
+            </div>
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/vendor.df0def68.min.js"></script>
+      <script src="../assets/javascripts/bundle.ba57d267.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      
+      <script>
+        app = initialize({
+          base: "..",
+          features: [],
+          search: Object.assign({
+            worker: "../assets/javascripts/worker/search.5eca75d3.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script>
+      
+        <script src="../javascripts/config.js"></script>
+      
+    
+  </body>
+</html>

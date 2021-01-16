@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC ""
+    "">
+<html><head><meta charset="UTF-8" /><title>Security Concepts</title><link rel="stylesheet" type="text/css" href="css/default.css" /><link rel="stylesheet" type="text/css" href="highlight/github.css" /><script type="text/javascript" src="highlight/highlight.min.js"></script><script type="text/javascript" src="js/jquery.min.js"></script><script type="text/javascript" src="js/page_effects.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body><div id="header"><h1><a href="index.html"><span class="project-title"><span class="project-name">keycloak-clojure</span> <span class="project-version">1.14.4</span></span></a></h1></div><div class="sidebar primary"><h3 class="no-link"><span class="inner">Project</span></h3><ul class="index-link"><li class="depth-1 "><a href="index.html"><div class="inner">Index</div></a></li></ul><h3 class="no-link"><span class="inner">Topics</span></h3><ul><li class="depth-1  current"><a href="concepts.html"><div class="inner"><span>Security Concepts</span></div></a></li><li class="depth-1 "><a href="setup.html"><div class="inner"><span>Setup Keycloak</span></div></a></li><li class="depth-1 "><a href="admin.html"><div class="inner"><span>Administrative tasks</span></div></a></li><li class="depth-1 "><a href="frontend.html"><div class="inner"><span>Securing a frontend</span></div></a></li><li class="depth-1 "><a href="backend.html"><div class="inner"><span>Securing a backend</span></div></a></li><li class="depth-1 "><a href="howtos.html"><div class="inner"><span>HOWTOs</span></div></a></li></ul><h3 class="no-link"><span class="inner">Namespaces</span></h3><ul><li class="depth-1"><div class="no-link"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>keycloak</span></div></div></li><li class="depth-2 branch"><a href="keycloak.admin.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>admin</span></div></a></li><li class="depth-2 branch"><a href="keycloak.authn.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>authn</span></div></a></li><li class="depth-2 branch"><a href="keycloak.authz.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>authz</span></div></a></li><li class="depth-2 branch"><a href="keycloak.backend.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>backend</span></div></a></li><li class="depth-2 branch"><a href="keycloak.bean.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>bean</span></div></a></li><li class="depth-2 branch"><a href="keycloak.cookies.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>cookies</span></div></a></li><li class="depth-2 branch"><a href="keycloak.deployment.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>deployment</span></div></a></li><li class="depth-2 branch"><a href="keycloak.meta.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>meta</span></div></a></li><li class="depth-2 branch"><a href="keycloak.starter.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>starter</span></div></a></li><li class="depth-2 branch"><a href="keycloak.user.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>user</span></div></a></li><li class="depth-2 branch"><a href="keycloak.utils.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>utils</span></div></a></li><li class="depth-2"><a href="keycloak.vault.html"><div class="inner"><span class="tree"><span class="top"></span><span class="bottom"></span></span><span>vault</span></div></a></li></ul></div><div class="document" id="content"><div class="doc"><div class="markdown"><h1><a href="#security-concepts" name="security-concepts"></a>Security Concepts</h1>
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+<ul>
+  <li><a href="#generic-security-concepts">Generic security concepts</a>
+    <ul>
+      <li><a href="#identification-and-authentication">Identification and Authentication</a></li>
+      <li><a href="#authorization">Authorization</a></li>
+      <li><a href="#confidentiality-and-integrity">Confidentiality and integrity</a></li>
+    </ul>
+  </li>
+  <li><a href="#oauth2--openid-connect-oidc-concepts">OAuth2 / OpenId Connect (OIDC) concepts</a></li>
+  <li><a href="#tokens">Tokens</a>
+    <ul>
+      <li><a href="#grant-types-and-credentials">Grant Types and Credentials</a></li>
+      <li><a href="#differences-between-oauth2-and-oidc">Differences between OAuth2 and OIDC</a></li>
+    </ul>
+  </li>
+  <li><a href="#keycloak-concepts">Keycloak concepts</a></li>
+</ul>
+<!-- markdown-toc end -->
+<h2><a href="#generic-security-concepts" name="generic-security-concepts"></a>Generic security concepts</h2>
+<h3><a href="#identification-and-authentication" name="identification-and-authentication"></a>Identification and Authentication</h3>
+<p>Identification means knowing who is interacting with your application and so you need a repository of identities (the persons or systems that interact with your application). Those identities can be handled by keycloak itself or it can delegates to </p>
+<h3><a href="#authorization" name="authorization"></a>Authorization</h3>
+<h3><a href="#confidentiality-and-integrity" name="confidentiality-and-integrity"></a>Confidentiality and integrity</h3>
+<h2><a href="#oauth2-openid-connect-oidc-concepts" name="oauth2-openid-connect-oidc-concepts"></a>OAuth2 / OpenId Connect (OIDC) concepts</h2>
+<p>The OAuth2 and OIDC concepts are defined below, with the specificities of an application composed of an SPA frontend and an API backend.</p>
+<ul>
+  <li><strong>Resource</strong>: the thing you want to protect, your API if you develop a backend for instance.</li>
+  <li><strong>Resource Owner</strong>: the owner of the identity, data and any actions that can be performed with the identity. if you develop an API, you’ll typically include then extract the roles from the access token the backend will receive</li>
+  <li><strong>Client</strong>: The application that wants to access data or perform actions on behalf of the Resource Owner. If you develop an application with an SPA as frontend and backend with an API, both your frontend and backend will be client</li>
+  <li><strong>Authorization Server</strong>: The system that knows the Resource Owner. Here we’re talking about Keycloak.</li>
+  <li><strong>Resource Server</strong>: The Application Programming Interface (API) or service the Client wants to use on behalf of the Resource Owner. The backend of your application</li>
+  <li><strong>OpenID provider (OP)</strong>: The OpenID provider is an OAuth 2.0 authorization server which offers authentication as a service. It ensures the end user is authenticated and provides claims about the end user and the authentication event to the relying party. The identity provider provides the relying party information about the end user through identity tokens.</li>
+  <li><strong>Redirect URI</strong>: The URL the Authorization Server will redirect the Resource Owner back to after granting permission to the Client. This is sometimes referred to as the “Callback URL”. Once you have some permissions given by Keycloak as an Access Token (see below), Keycloak will redirect towards your frontend, so it’s the URL where your frontend sits</li>
+  <li><strong>Response Type</strong>: The type of information the Client expects to receive. The most common Response Type is code, where the Client expects an Authorization Code.</li>
+  <li><strong>Scope</strong>: These are the granular permissions the Client wants, such as access to data or to perform actions.</li>
+  <li><strong>Consent</strong>: The Authorization Server takes the Scopes the Client is requesting, and verifies with the Resource Owner whether or not they want to give the Client permission.</li>
+  <li><strong>Client ID</strong>: This ID is used to identify the Client with the Authorization Server. When you ask for an access token, you’ll give the <code>client-id</code> on behalf of which you ask permissions. Say you have api client, you can create a specific client in Keycloak for that particular use case.</li>
+  <li><strong>Client Secret</strong>: This is a secret password that only the Client and Authorization Server know. This allows them to securely share information privately behind the scenes. This is typically for your backend that you materialize as a client. Keycloak expects your backend to be able to holds some confidentiality, therefore holding a secret to prove its identity with Keycloak.</li>
+  <li><strong>Authorization Code</strong>: A short-lived temporary code the Client gives the Authorization Server in exchange for an Access Token used during authorization code grant.</li>
+</ul>
+<h3><a href="#tokens" name="tokens"></a>Tokens</h3>
+<ul>
+  <li><strong>Access Token</strong>: An *Access Token * is th key the client use to communicate with the <em>Resource Server</em>. This is like a badge or key card that gives the <em>Client</em> permission to request data or perform actions with the <em>Resource Server</em> on your behalf. Gives permission to the client application to obtain end-user owned resources from a resource server. It is an opaque token that is validated by fetching user claims from userInfo endpoint.
+</li>
+  <li><strong>Refresh Token</strong>: <em>Refresh Token</em> are used to get a new <em>Access Token</em>. They are long lived and kept by the <em>Authorization Server</em> that can invalidate them in case of a disclosure.</li>
+  <li><strong>ID Token</strong>: Similar to a ID card or passport, it contains many required attributes or claims about the user.</li>
+</ul>
+<h3><a href="#grant-types-and-credentials" name="grant-types-and-credentials"></a>Grant Types and Credentials</h3>
+<p><em>Access Token</em> can be acquired through different <em>Grant Types</em> (aka. methods): </p>
+<ul>
+  <li><strong>Authorization code</strong>: the client will go to the authorization server to get first an authorization code to exchange for an access token in a second time.</li>
+  <li><strong>Implicit</strong>: the client get directly an access token only (no refresh token) because of being insecure.</li>
+  <li><strong>Resource owner credentials:</strong> given a username and a password the authorization server returns an access token and a refresh token, for trusted client only.</li>
+  <li><strong>Client credentials:</strong> using a client secret to get an access token, suitable for machine-to-machine authentication.</li>
+  <li><strong>Refresh token:</strong> Access tokens eventually expire; however some grants respond with a refresh token which enables the client to get a new access token without requiring the user to be redirected. Refresh Token is long lived and are stored on the authorization server (and so can be disabled) and are used to refresh the access token periodically.</li>
+</ul>
+<p>We choose the Grant type depending on the level of trust we have with the client to handle authorization credentials.</p>
+<h3><a href="#differences-between-oauth2-and-oidc" name="differences-between-oauth2-and-oidc"></a>Differences between OAuth2 and OIDC</h3>
+<h2><a href="#keycloak-concepts" name="keycloak-concepts"></a>Keycloak concepts</h2>
+<p>Keycloak comes with many concepts closely related to the OAuth ones:</p>
+<ul>
+  <li><strong>Realm</strong> is the core concept in Keycloak. A <em>realm</em> secures and manages security metadata for a set of users, applications and registered oauth clients.</li>
+  <li>A <strong>Client</strong> is a service, i.e. a runtime component talking to Keycloak, that is secured by a <em>realm</em>. Once your <em>realm</em> is created, you can create a <em>client</em>: e.g. web frontend code in a browser, mobile frontend code in a React Native app, API server, etc. You will often use <em>Client</em> for every Application secured by Keycloak. When a user browses an application’s web site, the application can redirect the user agent to the Keycloak Server and request a login. Once a user is logged in, they can visit any other client (application) managed by the <em>realm</em> and not have to re-enter credentials. This also hold true for logging out.</li>
+  <li><strong>Roles</strong> can also be defined at the <em>client</em> level and assigned to specific users. Depending on the <em>client</em> type, you may also be able to view and manage <em>user</em> <em>sessions</em> from the administration console.</li>
+  <li><strong>Adapters</strong> are keycloak librairies in different technologies used for <em>client</em> to communicate with the keycloak servers. Luckily thanks to Clojure and Clojurescript running on hosted platform, respectively the JVM and the JS engine, we can use the <a href="https://www.keycloak.org/docs/latest/securing_apps/index.html#java-adapters">Keycloak Java Adapter</a> and the <a href="https://www.keycloak.org/docs/latest/securing_apps/index.html#_javascript_adapter">Keycloak Javascript Adapter</a>.</li>
+</ul>
+<p><a href="http://openid.net/specs/openid-connect-core-1_0.html#Terminology">OpenId Connect terminology</a> is implemented by keycloak.</p></div></div></div></body></html>
