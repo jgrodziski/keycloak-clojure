@@ -77,27 +77,29 @@
        (.grantType OAuth2Constants/PASSWORD)
        (.build))))
 
+(defn deployment-for-realm [^org.keycloak.admin.client.Keycloak keycloak-client auth-server-url client-id realm-name]
+  (info (format "Get client secret on server %s for realm %s and client \"%s\"" auth-server-url realm-name client-id))
+  (try
+    (let [client-secret (get-client-secret keycloak-client realm-name client-id)]
+      (deployment (client-conf auth-server-url realm-name client-id client-secret)))
+    (catch javax.ws.rs.NotFoundException nfe
+      (error (str "The client '"client-id "' was not found in realm '" realm-name "', maybe you should create it at the repl with: (fill! \""realm-name"\")"))
+      nil)))
+
 (defn deployment-for-realms
   "retrieve the secrets and build dynamically a map with realm-name as key and the keycloak deployment as value given a keycloak client with admin role, an array of realm name. This is useful for large number of realms and multi-tenant applications or tests, otherwise you should define them statically"
   [^org.keycloak.admin.client.Keycloak keycloak-client auth-server-url client-id realms-name]
   (into {} (map (fn [realm-name]
-                  (info (format "Get client secret on server %s for realm %s and client \"%s\"" auth-server-url realm-name client-id))
-                  (try
-                    (let [client-secret (get-client-secret keycloak-client realm-name client-id)]
-                      [realm-name (deployment (client-conf auth-server-url realm-name client-id client-secret))])
-                    (catch javax.ws.rs.NotFoundException nfe
-                      (error (str "The client '"client-id "' was not found in realm '" realm-name "', maybe you should create it at the repl with: (fill! \""realm-name"\")"))
-                      nil)))
-                realms-name)))
+                  [realm-name (partial deployment-for-realm keycloak-client auth-server-url client-id)]) realms-name)))
 
 (defn verify
-  "Verify a token given a deployment to check against"
-  ([^KeycloakDeployment deployment ^org.keycloak.representations.AccessToken token]
+  "Verify an Access Token given a deployment to check against"
+  (^org.keycloak.representations.AccessToken [^KeycloakDeployment deployment ^java.lang.String token]
    (let [verifier (-> token RSATokenVerifier/create (.realmUrl (.getRealmInfoUrl deployment)))
          kid (-> verifier (.getHeader) (.getKeyId))
          public-key (.getPublicKey (.getPublicKeyLocator deployment) kid deployment)]
      (-> verifier (.publicKey public-key) (.verify) (.getToken))))
-  ([deployments realm-name token]
+  (^org.keycloak.representations.AccessToken [deployments realm-name token]
    (verify (get deployments realm-name) token)))
 
 (defrecord ClojureAccessToken
@@ -109,7 +111,7 @@
 
 (defn extract
   "return a map with :user and :roles keys with values extracted from the Keycloak access token along with all the props of the AccessToken bean"
-  [^org.keycloak.representations.AccessToken access-token]
+  ^keycloak.deployment.ClojureAccessToken [^org.keycloak.representations.AccessToken access-token]
   (map->ClojureAccessToken {:username              (.getPreferredUsername access-token)
                             :roles                 (set (map keyword (.getRoles (.getRealmAccess access-token))))
                             :nonce                 (.getNonce access-token)
@@ -144,7 +146,7 @@
 
 (defn access-token
   "get an access token extracted in a [[ClojureAccessToken]] record with one additionnal attribute :token that hold the token as a string"
-  [deployment ^org.keycloak.admin.client.Keycloak keycloak-client username password]
+  [deployment ^org.keycloak.admin.client.Keycloak keycloak-client]
   (let [access-token-string (-> keycloak-client (.tokenManager) (.getAccessToken) (.getToken))
         access-token (->> access-token-string (verify deployment) (extract))]
     (assoc access-token :token access-token-string)))

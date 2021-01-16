@@ -2,7 +2,8 @@
   (:require
    [clojure.tools.logging :as log :refer [info]]
    [clj-http.client :as http]
-   [cheshire.core :refer [parse-string]]))
+   [cheshire.core :refer [parse-string]]
+   [keycloak.deployment :as deployment]))
 
 (set! *warn-on-reflection* true)
 
@@ -38,6 +39,7 @@
                   {:form-params (client-credentials client-id username password)})
        :body
        (parse-string true))))
+
 
 (defn access-token [^org.keycloak.authorization.client.AuthzClient client username password]
   (-> client (.obtainAccessToken username password)))

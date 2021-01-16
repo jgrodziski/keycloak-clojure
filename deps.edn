@@ -3,7 +3,7 @@
              "clojars"   {:url "https://repo.clojars.org/"}
              "confluent" {:url "https://packages.confluent.io/maven/"}}
 
- :deps {org.clojure/clojure       {:mvn/version "1.10.2-alpha2"}
+ :deps {org.clojure/clojure       {:mvn/version "1.10.2-rc2"}
         org.clojure/tools.logging {:mvn/version "1.1.0"}
         org.clojure/java.data     {:mvn/version "1.0.86"}
 
@@ -64,12 +64,14 @@
            :doc {:extra-paths ["doc/src"]
                  :extra-deps  {codox/codox                         ; {:mvn/version "0.10.7"}
                                {:local/root "/Users/jeremiegrodziski/sandbox/codox/codox"}
-                               codox-theme-rdash/codox-theme-rdash {:mvn/version "0.1.2"}
+                               codox-theme-rdash/codox-theme-rdash
+                               {:local/root "/Users/jeremiegrodziski/sandbox/codox-theme-rdash"}
+                               environ/environ                     {:mvn/version "1.2.0"}
                                com.novemberain/pantomime           {:mvn/version "2.11.0"}
                                clj-commons/fs                      {:mvn/version "1.5.2"}
-                               com.cognitect.aws/api               {:mvn/version "0.8.474"},
-                               com.cognitect.aws/endpoints         {:mvn/version "1.1.11.842"}
-                               com.cognitect.aws/s3                {:mvn/version "809.2.734.0", :aws/serviceFullName "Amazon Simple Storage Service"}}
+                               com.cognitect.aws/api               {:mvn/version "0.8.484"},
+                               com.cognitect.aws/endpoints         {:mvn/version "1.1.11.926"}
+                               com.cognitect.aws/s3                {:mvn/version "810.2.817.0", :aws/serviceFullName "Amazon Simple Storage Service"}}
                                         ;:main-opts  ["-m" "keycloak.doc"]
                  }
 

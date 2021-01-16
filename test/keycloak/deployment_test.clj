@@ -8,13 +8,14 @@
    [keycloak.user :as user :refer [delete-and-create-user!]]
    ))
 
+(def admin-login "admin")
+(def admin-password "secretadmin")
+(def auth-server-url "http://localhost:8090/auth")
 
-(comment 
-  (defn setup-keycloak []
-    (let [{:keys [admin-realm client-admin-cli auth-server-url admin-username admin-password client-account-backend secret-account-backend]} (conf/keycloak config)
-          kc-admin-client (keycloak-client (client-conf admin-realm client-admin-cli auth-server-url secret-account-backend) admin-username admin-password)
-          deployments (deployment-for-realms kc-admin-client auth-server-url client-account-backend ["electre"])]
-      (security/register-deployments deployments))))
+(def integration-test-conf (deployment/client-conf "http://localhost:8090/auth" "master" "admin-cli"))
+(def admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password))
+
+
 
 
 (def admin-login "admin")
