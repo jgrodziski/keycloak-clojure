@@ -3,6 +3,6 @@ pom.xml
 .nrepl-port
 target
 .idea
-doc
 .lsp
 .clj-kondo
+doc/site
