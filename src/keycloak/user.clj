@@ -185,7 +185,7 @@
 
 (defn delete-and-create-user!
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name person]
-   (delete-and-create-user! keycloak-client realm-name person nil))
+   (delete-and-create-user! keycloak-client realm-name person nil nil))
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name {:keys [username first-name last-name email password]
                                 :as person} realm-roles client-roles]
    (info "create user" username "in realm" realm-name"with realm roles"realm-roles"client roles"client-roles". If user already exists, delete it and re-create it.")

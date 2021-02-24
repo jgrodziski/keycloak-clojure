@@ -35,7 +35,7 @@ The OAuth2 and OIDC concepts are defined below, with the specificities of an app
 * **Authorization Server**: The system that knows the Resource Owner. Here we're talking about Keycloak.
 * **Resource Server**: The Application Programming Interface (API) or service the Client wants to use on behalf of the Resource Owner. The backend of your application
 *  **OpenID provider (OP)**: The OpenID provider is an OAuth 2.0 authorization server which offers authentication as a service. It ensures the end user is authenticated and provides claims about the end user and the authentication event to the relying party. The identity provider provides the relying party information about the end user through identity tokens.
-* **Redirect URI**: The URL the Authorization Server will redirect the Resource Owner back to after granting permission to the Client. This is sometimes referred to as the “Callback URL”. Once you have some permissions given by Keycloak as an Access Token (see below), Keycloak will redirect towards your frontend, so it's the URL where your frontend sits 
+* **Redirect URI**: The URL the Authorization Server will redirect the Resource Owner back to after granting permission to the Client. This is sometimes referred to as the “Callback URL”. Once you have some permissions given by Keycloak as an Access Token (see below), Keycloak will redirect towards your frontend, so it's the URL where your frontend sits.
 * **Response Type**: The type of information the Client expects to receive. The most common Response Type is code, where the Client expects an Authorization Code.
 * **Scope**: These are the granular permissions the Client wants, such as access to data or to perform actions.
 * **Consent**: The Authorization Server takes the Scopes the Client is requesting, and verifies with the Resource Owner whether or not they want to give the Client permission.
@@ -45,7 +45,7 @@ The OAuth2 and OIDC concepts are defined below, with the specificities of an app
 
 ### Tokens 
 
-* **Access Token**: An *Access Token * is th key the client use to communicate with the *Resource Server*. This is like a badge or key card that gives the *Client* permission to request data or perform actions with the *Resource Server* on your behalf. Gives permission to the client application to obtain end-user owned resources from a resource server. It is an opaque token that is validated by fetching user claims from userInfo endpoint.
+* **Access Token**: An *Access Token * is the key the client use to communicate with the *Resource Server*. This is like a badge or key card that gives the *Client* permission to request data or perform actions with the *Resource Server* on your behalf. Gives permission to the client application to obtain end-user owned resources from a resource server. It is an opaque token that is validated by fetching user claims from userInfo endpoint.
 * **Refresh Token**: *Refresh Token* are used to get a new *Access Token*. They are long lived and kept by the *Authorization Server* that can invalidate them in case of a disclosure. 
 * **ID Token**: Similar to a ID card or passport, it contains many required attributes or claims about the user.
 
@@ -72,6 +72,9 @@ Keycloak comes with many concepts closely related to the OAuth ones:
 * A **Client** is a service, i.e. a runtime component talking to Keycloak, that is secured by a *realm*. Once your *realm* is created, you can create a *client*: e.g. web frontend code in a browser, mobile frontend code in a React Native app, API server, etc. You will often use *Client* for every Application secured by Keycloak. When a user browses an application's web site, the application can redirect the user agent to the Keycloak Server and request a login. Once a user is logged in, they can visit any other client (application) managed by the *realm* and not have to re-enter credentials. This also hold true for logging out. 
 * **Roles** can also be defined at the *client* level and assigned to specific users. Depending on the *client* type, you may also be able to view and manage *user* *sessions* from the administration console.
 * **Adapters** are keycloak librairies in different technologies used for *client* to communicate with the keycloak servers. Luckily thanks to Clojure and Clojurescript running on hosted platform, respectively the JVM and the JS engine, we can use the [Keycloak Java Adapter](https://www.keycloak.org/docs/latest/securing_apps/index.html#java-adapters) and the [Keycloak Javascript Adapter](https://www.keycloak.org/docs/latest/securing_apps/index.html#_javascript_adapter).
+
+Brokering
+Federation
 
 [OpenId Connect terminology](http://openid.net/specs/openid-connect-core-1_0.html#Terminology) is implemented by keycloak.
 

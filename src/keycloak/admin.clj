@@ -393,7 +393,7 @@ public
 (defn get-client-secret
   [^Keycloak keycloak-client realm-name client-id]
   (let [id (-> (get-client keycloak-client realm-name client-id) (.getId))]
-    (println "Get secret for client" client-id)
+    ;(println "Get secret for client" client-id)
     (-> keycloak-client (.realm realm-name) (.clients) (.get id) (.getSecret) (.getValue))))
 
 (defn group-membership-mapper [name claim-name]

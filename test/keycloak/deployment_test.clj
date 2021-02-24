@@ -29,7 +29,15 @@
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)]
     (testing "realm creation "
       (let [realm-name (str "test-realm-" (rand-int 1000))
-            realm (create-realm! admin-client realm-name "base")]
+            realm (create-realm! admin-client {:name realm-name
+                                               :themes {:defaultLocale "fr",
+                                                        :emailTheme "keycloak",
+                                                        :internationalizationEnabled true,
+                                                        :adminTheme "keycloak",
+                                                        :supportedLocales #{"en" "fr"},
+                                                        :loginTheme "keycloak",
+                                                        :accountTheme "keycloak"}
+                                               :accessTokenLifespan (Integer. 2)})]
         (is (= realm-name (.getRealm realm)))
         (log/info "realm created")
         (testing "create a client, then a deployment for that client"

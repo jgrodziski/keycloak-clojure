@@ -1,9 +1,9 @@
-{:paths     ["classes" "src" "resources"]
+{:paths     ["src" "resources"]
  :mvn/repos {"central"   {:url "https://repo1.maven.org/maven2/"}
              "clojars"   {:url "https://repo.clojars.org/"}
              "confluent" {:url "https://packages.confluent.io/maven/"}}
 
- :deps {org.clojure/clojure       {:mvn/version "1.10.2-rc2"}
+ :deps {org.clojure/clojure       {:mvn/version "1.10.2"}
         org.clojure/tools.logging {:mvn/version "1.1.0"}
         org.clojure/java.data     {:mvn/version "1.0.86"}
 
@@ -57,7 +57,10 @@
            :test  {:extra-paths ["test"]
                    :extra-deps  {lambdaisland/kaocha {:mvn/version "0.0-554"}
                                  metosin/testit      {:mvn/version "0.4.0"}
-                                 uwcpdx/bean-dip     {:mvn/version "0.7.6"}}}
+                                 uwcpdx/bean-dip     {:mvn/version "0.7.6"}
+                                 ring/ring-mock      {:mvn/version "0.4.0"}
+                                 yada/yada           {:mvn/version "1.2.16"}
+                                 }}
            :build {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.2"}}
                    :main-opts  ["-m" "cambada.jar"]}
 

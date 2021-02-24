@@ -1,20 +1,18 @@
 (ns keycloak.deployment
-  (:require [clojure.tools.logging :as log :refer [info error warn]]
-            [clojure.java.data :refer [from-java]]
+  (:require [clojure.tools.logging :as log :refer [info error]]
             [cheshire.core :as json :refer [encode]]
             [clojure.java.io :as io :refer [input-stream]]
             [keycloak.admin :refer [get-client-secret]])
   (:import [org.keycloak.adapters KeycloakDeployment KeycloakDeploymentBuilder]
            [org.keycloak.admin.client KeycloakBuilder]
            [org.keycloak RSATokenVerifier OAuth2Constants]
-           [org.keycloak.representations AccessToken]
            [org.jboss.resteasy.client.jaxrs ResteasyClientBuilder]))
 
 (set! *warn-on-reflection* true)
 
 (defn deployment
   "take a keycloak client configuration as EDN and return a KeycloakDeployment object, see [[client-conf]] for getting a proper conf structure"
-  [client-conf]
+  ^org.keycloak.adapters.KeycloakDeployment [client-conf]
   (try
     (let [keycloak-json-is (io/input-stream (.getBytes (json/encode client-conf)))
           truncated-secret (when-let [secret (get-in client-conf [:credentials :secret])] (subs secret 0 8))]
@@ -60,7 +58,7 @@
                            (.build)))))
 
 (defn keycloak-client
-  "build a org.keycloak.admin.client.Keycloak object from a [[client-conf]] and a credential (secret or username/password), use the RestEasy client.
+  "Build a [org.keycloak.admin.client.Keycloak](https://www.keycloak.org/docs-api/12.0/javadocs/org/keycloak/admin/client/Keycloak.html) object from a [[client-conf]] and a credential (secret or username/password), use the RestEasy client.
   This keycloak-client object will be used as the first param for every interactions with the Keycloak server.
   "
   (^org.keycloak.admin.client.Keycloak [conf secret]
@@ -90,7 +88,7 @@
   "retrieve the secrets and build dynamically a map with realm-name as key and the keycloak deployment as value given a keycloak client with admin role, an array of realm name. This is useful for large number of realms and multi-tenant applications or tests, otherwise you should define them statically"
   [^org.keycloak.admin.client.Keycloak keycloak-client auth-server-url client-id realms-name]
   (into {} (map (fn [realm-name]
-                  [realm-name (partial deployment-for-realm keycloak-client auth-server-url client-id)]) realms-name)))
+                  [realm-name (deployment-for-realm keycloak-client auth-server-url client-id realm-name)]) realms-name)))
 
 (defn verify
   "Verify an Access Token given a deployment to check against"
@@ -100,6 +98,10 @@
          public-key (.getPublicKey (.getPublicKeyLocator deployment) kid deployment)]
      (-> verifier (.publicKey public-key) (.verify) (.getToken))))
   (^org.keycloak.representations.AccessToken [deployments realm-name token]
+   (when (not (coll? deployments))
+     (throw (ex-info "deployments argument must be a coll of KeycloakDeployment object" {:deployments deployments})))
+   (when (not (contains? deployments realm-name))
+     (throw (ex-info (format "Deployments collection doesn't contain a deployment for realm %s" realm-name) {:realm-name realm-name :deployments deployments})))
    (verify (get deployments realm-name) token)))
 
 (defrecord ClojureAccessToken
