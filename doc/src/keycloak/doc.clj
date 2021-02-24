@@ -15,16 +15,14 @@
     :version meta/version
     :logo "http://keycloak-clojure.org/keycloak-plus-clojure.png"
     :license {:name "MIT License" :url "https://github.com/jgrodziski/keycloak-clojure/blob/master/LICENSE"}
-    :description "Keycloak library for Clojure
-
-"
+    :description "Keycloak library for Clojure."
     :language :clojure
     :source-paths ["src"]
     ;root-path (System/getProperty "user.dir")
     ;:root-path "~/Dropbox/projects/keycloak-clojure"
     :output-path "doc/codox"
-    ;:source-uri "https://www.github.com/jgrodziski/keycloak-clojure/blob/{git-commit}/{filepath}#L{line}"
-    :source-uri "https://github.com/foo/bar/blob/{version}/#L{line}"
+    :source-uri "https://www.github.com/jgrodziski/keycloak-clojure/blob/{git-commit}/{filepath}#L{line}"
+    ;:source-uri "https://github.com/jgrodziski/keycloak-clojure/blob/{version}/#L{line}"
     :metadata {:doc/format :markdown :doc ""}
     :doc-files ["doc/docs/concepts.md" "doc/docs/setup.md" "doc/docs/admin.md" "doc/docs/frontend.md" "doc/docs/backend.md" "doc/docs/howtos.md"]
     :themes [:rdash]}))

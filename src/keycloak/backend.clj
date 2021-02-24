@@ -32,7 +32,7 @@
   (throw (ex-info "Missing token from headers: \"authorization\" header with Bearer value or \"X-Authorization-Token\" cookie"
                   {:headers headers :type :missing-token})))
 
-(defn- verify-then-extract
+(defn verify-then-extract
   "Fist argument is a [_Keycloak Deployment_ object](https://github.com/keycloak/keycloak/blob/master/adapters/oidc/adapter-core/src/main/java/org/keycloak/adapters/KeycloakDeployment.java), second is a token. Return the extracted token"
   ^keycloak.deployment.ClojureAccessToken [^org.keycloak.adapters.KeycloakDeployment deployment token]
   (let [extracted-token (->> token
@@ -64,6 +64,8 @@
     (when (nil? token)
       (throw (Exception. "Token cannot be nil")))
     (verify-then-extract deployment token)))
+
+
 
 ;;map of realm-name to KeycloakDeployment object
 (def deployments (atom {}))
