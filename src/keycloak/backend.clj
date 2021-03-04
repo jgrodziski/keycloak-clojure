@@ -65,8 +65,6 @@
       (throw (Exception. "Token cannot be nil")))
     (verify-then-extract deployment token)))
 
-
-
 ;;map of realm-name to KeycloakDeployment object
 (def deployments (atom {}))
 

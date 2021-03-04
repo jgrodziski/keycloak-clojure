@@ -24,7 +24,7 @@
     :source-uri "https://www.github.com/jgrodziski/keycloak-clojure/blob/{git-commit}/{filepath}#L{line}"
     ;:source-uri "https://github.com/jgrodziski/keycloak-clojure/blob/{version}/#L{line}"
     :metadata {:doc/format :markdown :doc ""}
-    :doc-files ["doc/docs/concepts.md" "doc/docs/setup.md" "doc/docs/admin.md" "doc/docs/frontend.md" "doc/docs/backend.md" "doc/docs/howtos.md"]
+    :doc-files ["doc/docs/concepts.md" "doc/docs/run.md" "doc/docs/admin.md" "doc/docs/frontend.md" "doc/docs/backend.md" "doc/docs/howtos.md"]
     :themes [:rdash]}))
 
 (System/setProperty "AWS_REGION" "us-east-1")

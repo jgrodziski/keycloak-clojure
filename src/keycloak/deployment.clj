@@ -112,7 +112,7 @@
   (toString [access-token] (pr-str access-token)))
 
 (defn extract
-  "return a map with :user and :roles keys with values extracted from the Keycloak access token along with all the props of the AccessToken bean"
+  "Return a [[keycloak.deployment/ClojureAccessToken]] record with `:user` and `:roles` keys with values extracted from the Keycloak access token along with all the props of the AccessToken bean"
   ^keycloak.deployment.ClojureAccessToken [^org.keycloak.representations.AccessToken access-token]
   (map->ClojureAccessToken {:username              (.getPreferredUsername access-token)
                             :roles                 (set (map keyword (.getRoles (.getRealmAccess access-token))))
@@ -147,7 +147,7 @@
 
 
 (defn access-token
-  "get an access token extracted in a [[ClojureAccessToken]] record with one additionnal attribute :token that hold the token as a string"
+  "Get an access token extracted in a [[ClojureAccessToken]] record with one additionnal attribute `:token` that hold the token as a string"
   [deployment ^org.keycloak.admin.client.Keycloak keycloak-client]
   (let [access-token-string (-> keycloak-client (.tokenManager) (.getAccessToken) (.getToken))
         access-token (->> access-token-string (verify deployment) (extract))]
