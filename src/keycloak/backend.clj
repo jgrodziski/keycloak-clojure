@@ -8,10 +8,10 @@
 (set! *warn-on-reflection* true)
 
 (defmulti token-from-headers* (fn [headers]
-                                     (cond
-                                       (contains? headers :authorization) :bearer
-                                       (contains? headers :cookie) :cookie
-                                       :else :default)))
+                                (cond
+                                  (contains? headers :authorization) :bearer
+                                  (contains? headers :cookie) :cookie
+                                  :else :default)))
 
 (def TOKEN_HEADER_KEY :authorization)
 (def TOKEN_NAME "Bearer")
@@ -20,7 +20,7 @@
   (last (re-find (re-pattern (str "^" TOKEN_NAME " (.*)$")) (get headers TOKEN_HEADER_KEY))))
 
 (def COOKIE_HEADER_KEY :cookie)
-(def COOKIE_NAME "X_Authorization-Token")
+(def COOKIE_NAME "X-Authorization-Token")
 
 (defmethod token-from-headers* :cookie [headers]
   (-> headers
@@ -35,6 +35,8 @@
 (defn verify-then-extract
   "Fist argument is a [_Keycloak Deployment_ object](https://github.com/keycloak/keycloak/blob/master/adapters/oidc/adapter-core/src/main/java/org/keycloak/adapters/KeycloakDeployment.java), second is a token. Return the extracted token"
   ^keycloak.deployment.ClojureAccessToken [^org.keycloak.adapters.KeycloakDeployment deployment token]
+  (when (empty? token)
+    (throw (ex-info "Token is missing" {:token token})))
   (let [extracted-token (->> token
                              (keycloak/verify deployment)
                              (keycloak/extract))]
@@ -62,6 +64,7 @@
   [^org.keycloak.adapters.KeycloakDeployment deployment]
   (fn ^keycloak.deployment.ClojureAccessToken [req token]
     (when (nil? token)
+      (log/error "Token is nil")
       (throw (Exception. "Token cannot be nil")))
     (verify-then-extract deployment token)))
 
