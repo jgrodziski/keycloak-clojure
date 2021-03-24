@@ -8,7 +8,7 @@ The reference documentation is available at: [keycloak-clojure.org](http://keycl
 [![Clojars Project](https://img.shields.io/clojars/v/keycloak-clojure.svg)](https://clojars.org/keycloak-clojure)
 
 ```clojure
-keycloak-clojure {:mvn/version "1.15.0"}
+keycloak-clojure {:mvn/version "1.15.2"}
 ```
 
 This repo was first an explanation of integrating Keycloak with Clojure, now I transform it to offer a library named `keycloak-clojure` to wrap the Keycloak Java Adapter and provide some utilities facilitating the integration. The initial explanation is now in the README of the `sample` directory.
