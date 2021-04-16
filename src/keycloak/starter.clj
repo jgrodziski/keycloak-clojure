@@ -158,7 +158,9 @@
 
 (defn process-args [{:keys [realm-config infra-context] :as args}]
   (let [{:keys [environment color applications vault keycloak secret-file]} infra-context
-        {:keys [auth-server-url login password protocol host port]}         (or keycloak args);either the params are in the keyclaok config file or each params is passed through a direct param
+        {:keys [auth-server-url protocol host port]}         (or keycloak args);either the params are in the keyclaok config file or each params is passed through a direct param
+        login           (or (:login keycloak) (:login args))
+        password        (or (:password keycloak) (:password args))
         auth-server-url (or auth-server-url (keycloak-auth-server-url protocol host port))
         processed-args {:auth-server-url auth-server-url
                         :login login
