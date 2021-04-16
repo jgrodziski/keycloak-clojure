@@ -3,10 +3,8 @@
 RELEASE_LEVEL=$1
 MODULE_NAME=${PWD##*/}
 
-
-
 echo "Release \"$MODULE_NAME\" with level '$RELEASE_LEVEL'"
-tag=$(clj -Mrelease $RELEASE_LEVEL --spit --output-dir src --formats clj,json --namespace keycloak.meta)
+tag=$(clojure -Mrelease $RELEASE_LEVEL --spit --output-dir src --formats clj,json --namespace keycloak.meta)
 
 if [ $? -eq 0 ]; then
     echo "Successfully released \"$MODULE_NAME\" to $tag"
