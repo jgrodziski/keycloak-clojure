@@ -14,7 +14,6 @@ else
 fi
 
 
-
 ####################################################
 # build jar                                        #
 ####################################################
@@ -31,7 +30,7 @@ ARTIFACT_VERSION=$(cat src/keycloak/meta.json | jq -r '."version"')
 ARTIFACT_TAG=$(cat src/keycloak/meta.json | jq -r '."tag"')
 JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
 
-clj -X:deploy :artifact $JAR_FILENAME
+clj -X:deploy :artifact "$(echo target/$JAR_FILENAME)"
 
 if [ $? -eq 0 ]; then
     echo "Successfully deployed \"$MODULE_NAME\" version $newversion to clojars"
@@ -48,10 +47,10 @@ else
     exit $?
 fi
 
-docker push jgrodziski/keycloak-clojure-starter:$newversion
+docker push jgrodziski/keycloak-clojure-starter:$ARTIFACT_VERSION
 
 if [ $? -eq 0 ]; then
-    echo "Successfully pushed jgrodziski/keycloak-clojure-starter:$newversion to docker hub"
+    echo "Successfully pushed jgrodziski/keycloak-clojure-starter:$ARTIFACT_VERSION to docker hub"
 else
     echo "Fail to push docker image to docker hub!"
     exit $?
