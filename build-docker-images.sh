@@ -5,7 +5,7 @@ ARTIFACT_ID=$(echo "$ARTIFACT_NAME" | cut -f1)
 ARTIFACT_VERSION=$(echo "$ARTIFACT_NAME" | cut -f2)
 JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
 
-source build-graalvm-linux.sh
+clj -X:uberjar
 
 docker build . -t jgrodziski/keycloak-clojure-starter:latest
 

@@ -7,7 +7,7 @@ JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
 
 echo -e "Build \"keycloak-clojure\" jar: target/$JAR_FILENAME"
 
-clj -X:jar :group-id keycloak-clojure :artifact-id $ARTIFACT_ID :version $ARTIFACT_VERSION :jar target/$JAR_FILENAME 2>&1
+clj -X:jar :group-id keycloak-clojure :artifact-id $ARTIFACT_ID :version \"$(echo $ARTIFACT_VERSION)\" :jar target/$JAR_FILENAME 2>&1
 
 if [ $? -eq 0 ]; then
     echo "Successfully built \"keycloak-clojure\"'s artifact: target/$JAR_FILENAME"

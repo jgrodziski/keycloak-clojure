@@ -69,6 +69,10 @@
            :uberjar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.216"}}
                      :exec-fn hf.depstar/uberjar
                      :exec-args {:jar "target/keycloak-clojure.jar" :aot true :main-class keycloak.starter}}
+           :deploy {:extra-deps {slipset/deps-deploy {:git/url "https://github.com/slipset/deps-deploy.git"
+                                                      :sha "b4359c5d67ca002d9ed0c4b41b710d7e5a82e3bf"}}
+                     :exec-fn deps-deploy.deps-deploy/deploy
+                     :exec-args {:installer :remote :sign-releases? true }}
 
            :doc {:extra-paths ["doc/src"]
                  :extra-deps  {codox/codox                         ; {:mvn/version "0.10.7"}
