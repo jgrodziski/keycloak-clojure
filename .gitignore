@@ -7,3 +7,4 @@ target
 .clj-kondo
 doc/site
 doc/codox
+*.asc
