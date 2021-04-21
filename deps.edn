@@ -63,6 +63,12 @@
                                  }}
            :build {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.2"}}
                    :main-opts  ["-m" "cambada.jar"]}
+           :jar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.216"}}
+                 :exec-fn hf.depstar/jar
+                 :exec-args {}}
+           :uberjar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.216"}}
+                     :exec-fn hf.depstar/uberjar
+                     :exec-args {:jar "target/keycloak-clojure.jar" :aot true :main-class keycloak.starter}}
 
            :doc {:extra-paths ["doc/src"]
                  :extra-deps  {codox/codox                         ; {:mvn/version "0.10.7"}
