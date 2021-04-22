@@ -194,11 +194,13 @@
       (println (format "Keycloak init script target %s in env %s with %s realm(s)" auth-server-url (or environment "localhost") (count config-data)))
       (if (map? config-data)
         (do
-          (println (format "Init realm %s" (get-in config-data [:realm :name])))
+          (println (format "Init realm %s with following configuration:" (get-in config-data [:realm :name])))
+          (clojure.pprint/pprint config-data)
           (init! admin-client config-data infra-context secret-export-dir secret-file-without-extension secret-path))
         (when (or (vector? config-data) (seq? config-data))
           (doseq [realm-data config-data]
-            (println (format "Init realm %s" (get-in realm-data [:realm :name])))
+            (println (format "Init realm %s with following configuration:" (get-in realm-data [:realm :name])))
+            (clojure.pprint/pprint config-data)
             (init! admin-client realm-data infra-context secret-export-dir secret-file-without-extension secret-path))))
       (shutdown-agents))))
 
