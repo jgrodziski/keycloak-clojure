@@ -24,6 +24,9 @@
                     (.setFirstName first-name)
                     (.setLastName last-name)
                     (.setEmail email)
+                    (.setCredentials [(hint-typed-doto "org.keycloak.representations.idm.CredentialRepresentation" (CredentialRepresentation.)
+                                                       (.setType CredentialRepresentation/PASSWORD)
+                                                       (.setValue password))])
                     (.setEnabled enabled)
                     ;;setRealmRoles has a bug with the admin REST API and doesn't work
                     ) attributes))
@@ -31,17 +34,10 @@
 (defn user-for-creation
   ([{:keys [username first-name last-name email password attributes] :as person}]
    (when (empty? password) (throw (ex-info "user MUST have a password otherwise the login will throw a NPE" {:person person})))
-   (doto (user-for-update person)
-     (.setCredentials [(hint-typed-doto "org.keycloak.representations.idm.CredentialRepresentation" (CredentialRepresentation.)
-                         (.setType CredentialRepresentation/PASSWORD)
-                         (.setValue password))])))
+   (user-for-update person))
   ([{:keys [username first-name last-name email password attributes] :as person} ^java.util.Collection required-actions]
    (doto (user-for-update person)
-     (.setRequiredActions (java.util.ArrayList. required-actions))
-                                        ;(.setRequiredActions (java.util.ArrayList. ["UPDATE_PASSWORD"]))
-     (.setCredentials [(hint-typed-doto "org.keycloak.representations.idm.CredentialRepresentation" (CredentialRepresentation.)
-                         (.setType CredentialRepresentation/PASSWORD)
-                         (.setValue password))]))))
+     (.setRequiredActions (java.util.ArrayList. required-actions)))))
 
 (defn search-user
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name user-attribute]
