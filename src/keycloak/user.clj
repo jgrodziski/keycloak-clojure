@@ -17,7 +17,7 @@
 
 (defn user-for-update
   ^org.keycloak.representations.idm.UserRepresentation
-  [{:keys [username first-name last-name email enabled attributes] :or {enabled true} :as person}]
+  [{:keys [username first-name last-name email enabled attributes password] :or {enabled true} :as person}]
   (set-attributes ^org.keycloak.representations.idm.UserRepresentation
                   (hint-typed-doto "org.keycloak.representations.idm.UserRepresentation" (UserRepresentation.)
                     (.setUsername username)

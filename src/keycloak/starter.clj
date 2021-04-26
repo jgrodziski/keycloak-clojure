@@ -181,6 +181,10 @@
       (throw (ex-info "Usage: clj -m keycloak.starter <auth-server-url> <login> <password> <environment> <realm-config>" processed-args)))
     processed-args))
 
+(defn dissoc-sensitive-data [config-data]
+  ;remove password entry of all users
+  (update config-data :users (fn [users] (mapv #(update % :password (fn [_] :XXXXXXXX)) users))))
+
 (defn init-cli! [args]
   (let [{:keys [infra-context realm-config secret-export-dir secret-file-without-extension secret-path auth-server-url login password environment color applications]} (process-args args)]
     (let [admin-client (-> (deployment/client-conf auth-server-url "master" "admin-cli")
@@ -195,12 +199,12 @@
       (if (map? config-data)
         (do
           (println (format "Init realm %s with following configuration:" (get-in config-data [:realm :name])))
-          (clojure.pprint/pprint config-data)
+          (clojure.pprint/pprint (dissoc-sensitive-data config-data))
           (init! admin-client config-data infra-context secret-export-dir secret-file-without-extension secret-path))
         (when (or (vector? config-data) (seq? config-data))
           (doseq [realm-data config-data]
             (println (format "Init realm %s with following configuration:" (get-in realm-data [:realm :name])))
-            (clojure.pprint/pprint config-data)
+            (clojure.pprint/pprint (dissoc-sensitive-data config-data))
             (init! admin-client realm-data infra-context secret-export-dir secret-file-without-extension secret-path))))
       (shutdown-agents))))
 

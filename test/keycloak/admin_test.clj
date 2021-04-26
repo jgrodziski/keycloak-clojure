@@ -117,7 +117,7 @@
         _            (assert (keycloak-running? admin-client))
         name   (str "keycloak-clojure-test-" (rand-int 1000))
         realm-rep    (admin/realm-representation-from-map {:name                  name
-                                                           :themes                THEMES 
+                                                           :themes                THEMES
                                                            :login                 LOGIN
                                                            :tokens                TOKENS
                                                            :smtp                  SMTP})]
