@@ -204,7 +204,7 @@
         (when (or (vector? config-data) (seq? config-data))
           (doseq [realm-data config-data]
             (println (format "Init realm %s with following configuration:" (get-in realm-data [:realm :name])))
-            (clojure.pprint/pprint (dissoc-sensitive-data config-data))
+            (clojure.pprint/pprint (dissoc-sensitive-data realm-data))
             (init! admin-client realm-data infra-context secret-export-dir secret-file-without-extension secret-path))))
       (shutdown-agents))))
 
