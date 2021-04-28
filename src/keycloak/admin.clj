@@ -120,9 +120,16 @@
   (-> keycloak-client (.realm realm-name) (.roles) (.list)))
 
 (defn create-role!
+  "Create the realm role `role-name` in realm `realm-name`"
   [^Keycloak keycloak-client realm-name role-name]
   (info "create role" role-name "in realm" realm-name)
   (-> keycloak-client (.realm realm-name) (.roles) (.create (role-representation role-name))))
+
+(defn delete-role!
+  "Delete the realm role `role-name` in realm `realm-name`"
+  [^Keycloak keycloak-client realm-name role-name]
+  (info "delete role" role-name "in realm" realm-name)
+  (-> keycloak-client (.realm realm-name) (.roles) (.deleteRole role-name)))
 
 (defn group-representation "create a GroupRepresentation object" [group-name]
   (doto (GroupRepresentation.)
