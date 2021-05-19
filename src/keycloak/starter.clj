@@ -188,18 +188,18 @@
 
 (defn init-cli! [args]
   (let [{:keys [infra-context realm-config secret-export-dir secret-file-without-extension secret-path auth-server-url login password environment color applications vault-config keycloak]} (process-args args)]
-    (let [admin-client (-> (deployment/client-conf auth-server-url "master" "admin-cli")
-                           (deployment/keycloak-client login password))
-          sci-environment  (sci/new-var 'environment environment)
-          sci-color        (sci/new-var 'color color)
-          sci-applications (sci/new-var 'applications applications)
-          sci-keycloak     (sci/new-var 'keycloak keycloak)
-          sc-infra-context (sci/new-var 'infra-context infra-context)
-          config-data      (sci/eval-string realm-config {:bindings {'environment   sci-environment
-                                                                     'applications  sci-applications
-                                                                     'keycloak      sci-keycloak
-                                                                     'infra-context sci-infra-context
-                                                                     'color         sci-color}})]
+    (let [admin-client (->  (deployment/client-conf auth-server-url "master" "admin-cli")
+                            (deployment/keycloak-client login password))
+          sci-environment   (sci/new-var 'environment environment)
+          sci-color         (sci/new-var 'color color)
+          sci-applications  (sci/new-var 'applications applications)
+          sci-keycloak      (sci/new-var 'keycloak keycloak)
+          sci-infra-context (sci/new-var 'infra-context infra-context)
+          config-data       (sci/eval-string realm-config {:bindings {'environment   sci-environment
+                                                                      'applications  sci-applications
+                                                                      'keycloak      sci-keycloak
+                                                                      'infra-context sci-infra-context
+                                                                      'color         sci-color}})]
       (println (format "Keycloak init script target %s in env %s with %s realm(s)" auth-server-url (or environment "localhost") (count config-data)))
       (if (map? config-data)
         (do
