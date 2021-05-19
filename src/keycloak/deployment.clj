@@ -8,7 +8,7 @@
            [org.keycloak RSATokenVerifier OAuth2Constants]
            [org.jboss.resteasy.client.jaxrs ResteasyClientBuilder]))
 
-(set! *warn-on-reflection* true)
+;(set! *warn-on-reflection* true)
 
 (defn deployment
   "take a keycloak client configuration as EDN and return a KeycloakDeployment object, see [[client-conf]] for getting a proper conf structure"

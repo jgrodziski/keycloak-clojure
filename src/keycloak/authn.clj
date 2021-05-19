@@ -5,7 +5,7 @@
    [cheshire.core :refer [parse-string]]
    [keycloak.deployment :as deployment]))
 
-(set! *warn-on-reflection* true)
+;(set! *warn-on-reflection* true)
 
 (defn oidc-connect-url [auth-server-url realm-name]
   (str auth-server-url "/realms/" realm-name "/protocol/openid-connect/token"))

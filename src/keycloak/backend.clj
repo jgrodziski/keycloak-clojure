@@ -5,7 +5,7 @@
    [keycloak.cookies :refer [parse-cookies]]
    [keycloak.deployment :as keycloak]))
 
-(set! *warn-on-reflection* true)
+;(set! *warn-on-reflection* true)
 
 (defmulti token-from-headers* (fn [headers]
                                 (cond

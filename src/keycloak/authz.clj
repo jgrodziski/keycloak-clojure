@@ -3,7 +3,7 @@
   (:import [org.keycloak.authorization.client AuthzClient]
            [org.keycloak.representations.idm.authorization ResourceRepresentation ScopeRepresentation RolePolicyRepresentation]))
 
-(set! *warn-on-reflection* true)
+;(set! *warn-on-reflection* true)
 
 (defn authz-client
   ^AuthzClient

@@ -8,7 +8,7 @@
   (:import [org.keycloak.representations.idm CredentialRepresentation UserRepresentation RoleRepresentation]
            [javax.ws.rs.core Response]))
 
-(set! *warn-on-reflection* true)
+;(set! *warn-on-reflection* true)
 
 (defn extract-id [^Response resp]
   (when resp

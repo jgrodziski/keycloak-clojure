@@ -29,10 +29,11 @@
 
 (defn access-token
   ([]
-   (access-token USER_LOGIN USER_PWD))
+   (access-token LOGIN PWD))
   ([login password]
    ;(kc-authn/authenticate AUTH_SERVER_URL ADMIN_REALM ADMIN_CLIENT_ID login password)
-   (kc-authn/authenticate AUTH_SERVER_URL USER_REALM USER_CLIENT_ID_PUBLIC login password)
+   ;;TODO define a user realm in the test fixture
+   ;(kc-authn/authenticate AUTH_SERVER_URL USER_REALM USER_CLIENT_ID_PUBLIC login password)
    ))
 
 (defn headers-with-token-as-header

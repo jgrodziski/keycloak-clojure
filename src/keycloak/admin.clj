@@ -12,7 +12,7 @@
            [org.keycloak.admin.client.resource ClientResource]
            [javax.ws.rs.core Response]))
 
-(set! *warn-on-reflection* true)
+;(set! *warn-on-reflection* true)
 
 (defn first-letter-capitalize [s]
   (str (string/upper-case (first s)) (subs s 1)))

@@ -15,7 +15,7 @@
    [keycloak.vault :as vault])
   (:gen-class))
 
-(set! *warn-on-reflection* true)
+;(set! *warn-on-reflection* true)
 
 (defn export-json [export-dir export-file-without-extension client-id path secrets]
   (let [secrets-file (clojure.java.io/file export-dir (str export-file-without-extension ".json"))]
@@ -164,6 +164,7 @@
         auth-server-url (or auth-server-url (keycloak-auth-server-url protocol host port))
         processed-args {:auth-server-url auth-server-url
                         :login login
+                        :keycloak keycloak
                         :password password
                         :environment environment
                         :color color
@@ -186,15 +187,19 @@
   (update config-data :users (fn [users] (mapv #(update % :password (fn [_] :XXXXXXXX)) users))))
 
 (defn init-cli! [args]
-  (let [{:keys [infra-context realm-config secret-export-dir secret-file-without-extension secret-path auth-server-url login password environment color applications]} (process-args args)]
+  (let [{:keys [infra-context realm-config secret-export-dir secret-file-without-extension secret-path auth-server-url login password environment color applications vault-config keycloak]} (process-args args)]
     (let [admin-client (-> (deployment/client-conf auth-server-url "master" "admin-cli")
                            (deployment/keycloak-client login password))
           sci-environment  (sci/new-var 'environment environment)
           sci-color        (sci/new-var 'color color)
           sci-applications (sci/new-var 'applications applications)
-          config-data      (sci/eval-string realm-config {:bindings {'environment  sci-environment
-                                                                     'applications sci-applications
-                                                                     'color        sci-color}})]
+          sci-keycloak     (sci/new-var 'keycloak keycloak)
+          sc-infra-context (sci/new-var 'infra-context infra-context)
+          config-data      (sci/eval-string realm-config {:bindings {'environment   sci-environment
+                                                                     'applications  sci-applications
+                                                                     'keycloak      sci-keycloak
+                                                                     'infra-context sci-infra-context
+                                                                     'color         sci-color}})]
       (println (format "Keycloak init script target %s in env %s with %s realm(s)" auth-server-url (or environment "localhost") (count config-data)))
       (if (map? config-data)
         (do
@@ -305,34 +310,34 @@
   (def admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password))
 
   (def static-realm-data [{:realm {:name "example2",
-             :themes
-             {:defaultLocale "fr",
-              :emailTheme "keycloak",
-              :internationalizationEnabled true,
-              :adminTheme nil,
-              :supportedLocales #{"en" "fr"},
-              :loginTheme "keycloak",
-              :accountTheme "keycloak"},
-             :login {:resetPasswordAllowed true, :bruteForceProtected true, :rememberMe true},
-             :smtp {:starttls true, :password "", :port 587, :auth true, :host "smtp.eu.mailgun.org", :replyTo "example", :from "admin@example.com", :user "postmaster@mg.example.com"},
-             :tokens {:ssoSessionIdleTimeoutRememberMe 172800, :ssoSessionMaxLifespanRememberMe 172800}},
-     :roles #{"org-admin" "example-admin" "group-admin" "api-consumer" "employee" "manager"},
-     :clients [{:name "api-client",
-                :redirect-uris ["https://myapp.staging.example.com/*"],
-                :base-url "https://myapp.staging.example.com",
-                :web-origins ["https://myapp.staging.example.com"],
-                :public? true,
-                :root-url "https://myapp.staging.example.com"}
-               {:name "myfrontend",
-                :redirect-uris ["https://myapp.staging.example.com/*"],
-                :base-url "https://myapp.staging.example.com",
-                :web-origins ["https://myapp.staging.example.com"],
-                :public? true,
-                :root-url "https://myapp.staging.example.com"}
-               {:name "mybackend",
-                :redirect-uris ["http://localhost:3449/*"],
-                :web-origins ["http://localhost:3449"],
-                :public? false}],
+                                   :themes
+                                   {:defaultLocale "fr",
+                                    :emailTheme "keycloak",
+                                    :internationalizationEnabled true,
+                                    :adminTheme nil,
+                                    :supportedLocales #{"en" "fr"},
+                                    :loginTheme "keycloak",
+                                    :accountTheme "keycloak"},
+                                   :login {:resetPasswordAllowed true, :bruteForceProtected true, :rememberMe true},
+                                   :smtp {:starttls true, :password "", :port 587, :auth true, :host "smtp.eu.mailgun.org", :replyTo "example", :from "admin@example.com", :user "postmaster@mg.example.com"},
+                                   :tokens {:ssoSessionIdleTimeoutRememberMe 172800, :ssoSessionMaxLifespanRememberMe 172800}},
+                           :roles #{"org-admin" "example-admin" "group-admin" "api-consumer" "employee" "manager"},
+                           :clients [{:name "api-client",
+                                      :redirect-uris ["https://myapp.staging.example.com/*"],
+                                      :base-url "https://myapp.staging.example.com",
+                                      :web-origins ["https://myapp.staging.example.com"],
+                                      :public? true,
+                                      :root-url "https://myapp.staging.example.com"}
+                                     {:name "myfrontend",
+                                      :redirect-uris ["https://myapp.staging.example.com/*"],
+                                      :base-url "https://myapp.staging.example.com",
+                                      :web-origins ["https://myapp.staging.example.com"],
+                                      :public? true,
+                                      :root-url "https://myapp.staging.example.com"}
+                                     {:name "mybackend",
+                                      :redirect-uris ["http://localhost:3449/*"],
+                                      :web-origins ["http://localhost:3449"],
+                                      :public? false}],
      :generated-users-by-group-and-role 2,
      :groups [{:name "test"} {:name "Example", :subgroups [{:name "IT"} {:name "Sales"} {:name "Logistics"}]}],
      :users [{:email "britt@hotmail.com", :last-name "Britt", :group "Example", :realm-roles ["employee" "manager" "example-admin" "org-admin" "group-admin" "api-consumer"], :password "s0w5roursg3i284", :username "britt", :first-name "James", :attributes {"org-ref" ["Example"]}, :in-subgroups ["IT"]}
@@ -357,11 +362,13 @@
 
   (def base-domain  (sci/new-var 'base-domain "example.com"))
   (def environment  (sci/new-var 'environment "staging"))
+  (def keycloak     (sci/new-var 'keycloak    {:realm "myrealm"}))
   (def applications (sci/new-var 'applications [{:name "diffusion" :version "1.2.3"}]))
   (def color        (sci/new-var 'color       "red"))
 
   (def config-data  (sci/eval-string realm-config {:bindings {'base-domain  base-domain
                                                               'environment  environment
+                                                              'keycloak     keycloak
                                                               'applications applications
                                                               'color        color}}))
   )

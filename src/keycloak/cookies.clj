@@ -4,7 +4,7 @@
    [clojure.string :as str]
    [clojure.tools.logging :as log]))
 
-(set! *warn-on-reflection* true)
+;(set! *warn-on-reflection* true)
 
 (def HTAB [(char 0x09)])
 
