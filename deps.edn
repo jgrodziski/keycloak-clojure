@@ -1,9 +1,9 @@
-{:paths     ["src" "resources"]
+{:paths     ["classes" "src" "resources"]
  :mvn/repos {"central"   {:url "https://repo1.maven.org/maven2/"}
              "clojars"   {:url "https://repo.clojars.org/"}
              "confluent" {:url "https://packages.confluent.io/maven/"}}
 
- :deps {org.clojure/clojure       {:mvn/version "1.10.2"}
+ :deps {org.clojure/clojure       {:mvn/version "1.10.3"}
         org.clojure/tools.logging {:mvn/version "1.1.0"}
         org.clojure/java.data     {:mvn/version "1.0.86"}
 
@@ -61,11 +61,11 @@
                                  ring/ring-mock      {:mvn/version "0.4.0"}
                                  yada/yada           {:mvn/version "1.2.16"}
                                  }}
-           :build {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.2"}}
-                   :main-opts  ["-m" "cambada.jar"]}
            :jar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.216"}}
                  :exec-fn hf.depstar/jar
-                 :exec-args {}}
+                 :exec-args {:jar "target/keycloak-clojure.jar"
+                             :compile-ns :all
+                             :exclude ["potemkin.*" "clj_tuple.*" "vault/.*" "com/stuartsierra/.*" "clj_http/.*" "cheshire/.*" "clj_yaml/.*" "talltale/.*" "me/raynes/.*" "expound/.*" "riddley/.*" "flatland/.*" "sci/.*" "clojure/.*" "slingshot/.*" "jsonista/.*" "cli_matic/.*"  ]}}
            :uberjar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.216"}}
                      :exec-fn hf.depstar/uberjar
                      :exec-args {:jar "target/keycloak-clojure.jar" :aot true :main-class keycloak.starter}}
