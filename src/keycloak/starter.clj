@@ -161,7 +161,9 @@
         {:keys [auth-server-url protocol host port]}         (or keycloak args);either the params are in the keyclaok config file or each params is passed through a direct param
         login           (or (:login keycloak) (:login args))
         password        (or (:password keycloak) (:password args))
-        auth-server-url (or auth-server-url (keycloak-auth-server-url protocol host port))
+        auth-server-url (or (when (not-empty (:auth-server-url args)) (:auth-server-url args))
+                            (:auth-server-url keycloak)
+                            (keycloak-auth-server-url protocol host port))
         processed-args {:auth-server-url auth-server-url
                         :login login
                         :keycloak keycloak
