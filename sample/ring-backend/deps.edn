@@ -1,0 +1,25 @@
+{:paths     ["classes" "src" "resources"]
+ :mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}
+             "clojars" {:url "https://repo.clojars.org/"}}
+
+ :deps {org.clojure/clojure               {:mvn/version "1.10.3"}
+        keycloak-clojure/keycloak-clojure {:mvn/version "1.16.5"}
+        ring/ring                         {:mvn/version "1.9.3"}}
+
+ :aliases {:repl          {:extra-deps {com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
+                           :main-opts  ["-m" "figwheel.main" "-b" "dev" "-r"]}
+           :dev           {}
+           :test          {:extra-paths ["test"]
+                           :extra-deps  {lambdaisland/kaocha {:mvn/version "0.0-554"}
+                                         metosin/testit      {:mvn/version "0.4.0"}
+                                         uwcpdx/bean-dip     {:mvn/version "0.7.6"}
+                                         ring/ring-mock      {:mvn/version "0.4.0"}
+                                         yada/yada           {:mvn/version "1.2.16"}
+                                         }}
+           :artifact-name {:extra-deps {metav/metav {:mvn/version "1.6.7"}}
+                           :main-opts  ["-m" "metav.display"]}
+           :release       {:extra-deps {metav/metav {:mvn/version "1.6.7"}}
+                           :main-opts  ["-m" "metav.release"]}
+           :spit          {:extra-deps {metav/metav {:mvn/version "1.6.7"}}
+                           :main-opts  ["-m" "metav.spit" "--output-dir" "src" "--formats" "clj,json" "--namespace" "keycloak.meta"]}
+           }}
