@@ -9,4 +9,4 @@ docker run -d \
        --name keycloak-dev \
        -p 127.0.0.1:9990:9990 \
        -p 127.0.0.1:8080:8080 \
-       jboss/keycloak:10.0.2
+       jboss/keycloak:11.0.3

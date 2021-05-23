@@ -178,7 +178,7 @@
                         :secret-file-without-extension (or (get-in infra-context [:secret-file :name-without-extension]) (:secret-file-without-extension args))
                         :secret-path       (or (get-in infra-context [:secret-file :path]))
                         }]
-    (when (or (nil? auth-server-url) (nil? password) (nil? login) (nil? realm-config))
+    (when (or (empty? auth-server-url) (empty? password) (empty? login) (nil? realm-config))
 
       (println "Usage: clj -m keycloak.starter <auth-server-url> <login> <password> <environment> <realm-config> <infra-context>" )
       (throw (ex-info "Usage: clj -m keycloak.starter <auth-server-url> <login> <password> <environment> <realm-config>" processed-args)))
@@ -203,6 +203,7 @@
                                                                       'infra-context sci-infra-context
                                                                       'color         sci-color}})]
       (println (format "Keycloak init script target %s in env %s with %s realm(s)" auth-server-url (or environment "localhost") (count config-data)))
+      (println (format "Login to %s realm, clientId %s with username %s" "master" "admin-cli" login))
       (if (map? config-data)
         (do
           (println (format "Init realm %s with following configuration:" (get-in config-data [:realm :name])))

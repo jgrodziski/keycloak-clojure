@@ -61,11 +61,17 @@
                                  ring/ring-mock      {:mvn/version "0.4.0"}
                                  yada/yada           {:mvn/version "1.2.16"}
                                  }}
+           :thin-jar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.216"}}
+                        :exec-fn hf.depstar/jar
+                        :exec-args {:jar "target/keycloak-clojure.jar"
+                                    :sync-pom true
+                                    :exclude [".*.edn" "realm-.*.clj" "logback.xml" "schema.png"]}}
            :jar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.216"}}
                  :exec-fn hf.depstar/jar
-                 :exec-args {:jar "target/keycloak-clojure.jar"
+                 :exec-args {:jar "target/keycloak-clojure-aot.jar"
                              :compile-ns :all
-                             :exclude ["potemkin.*" "clj_tuple.*" "vault/.*" "com/stuartsierra/.*" "clj_http/.*" "cheshire/.*" "clj_yaml/.*" "talltale/.*" "me/raynes/.*" "expound/.*" "riddley/.*" "flatland/.*" "sci/.*" "clojure/.*" "slingshot/.*" "jsonista/.*" "cli_matic/.*"  ]}}
+                             :sync-pom true
+                             :exclude ["clojure/core/.*" "clojure/test/.*" "clojure/java/.*" "clojure/data/.*"]}}
            :uberjar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.216"}}
                      :exec-fn hf.depstar/uberjar
                      :exec-args {:jar "target/keycloak-clojure.jar" :aot true :main-class keycloak.starter}}
