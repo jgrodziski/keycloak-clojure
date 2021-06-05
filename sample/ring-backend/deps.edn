@@ -4,7 +4,8 @@
 
  :deps {org.clojure/clojure               {:mvn/version "1.10.3"}
         keycloak-clojure/keycloak-clojure {:mvn/version "1.16.5"}
-        ring/ring                         {:mvn/version "1.9.3"}}
+        ring/ring                         {:mvn/version "1.9.3"}
+        metosin/reitit                    {:mvn/version "0.5.13"}}
 
  :aliases {:repl          {:extra-deps {com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
                            :main-opts  ["-m" "figwheel.main" "-b" "dev" "-r"]}
