@@ -70,7 +70,7 @@ The keycloak client is created with:
 
 ``` clojure
 (admin/create-client! kc-client "example-realm" (client "myfrontend" true))
-(admin/create-client! kc-client "example-realm" (client "mybackend" true))
+(admin/create-client! kc-client "example-realm" (client "mybackend" false))
 ```
 
 ## Create realm roles
