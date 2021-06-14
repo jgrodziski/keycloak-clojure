@@ -22,8 +22,8 @@
 (require '[keycloak.admin :as admin])
 (admin/create-realm! kc-client "example-realm")
 
-(admin/create-client! kc-client "example-realm" "myfrontend")
-(admin/create-client! kc-client "example-realm" "mybackend")
+(admin/create-client! kc-client "example-realm" (client "myfrontend" true))
+(admin/create-client! kc-client "example-realm" (client "mybackend" true))
 
 (admin/create-role! kc-client "example-realm" "employee")
 (admin/create-role! kc-client "example-realm" "manager")
