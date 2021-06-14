@@ -365,6 +365,8 @@ public
   (-> keycloak-client (.realm realm-name) (.clients) (.get client-id) (.remove)))
 
 (defn create-client!
+  "Creates a client with its 'realm-name' and a [ClientRepresentation](https://www.keycloak.org/docs-api/11.0/javadocs/org/keycloak/representations/idm/ClientRepresentation.html) object, 
+  obtained with 'client' function." 
   (^ClientRepresentation [^Keycloak keycloak-client realm-name ^ClientRepresentation client]
    (info "create client" (.getClientId client) "in realm" realm-name)
    (when-let [retrieved-client (get-client keycloak-client realm-name (.getClientId client))]
