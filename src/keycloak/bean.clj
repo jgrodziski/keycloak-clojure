@@ -1,6 +1,8 @@
 (ns keycloak.bean
   (:require [bean-dip.core :as bean-dip])
-  (:import [org.keycloak.representations.idm ClientRepresentation ProtocolMapperRepresentation RealmRepresentation]))
+  (:import [org.keycloak.representations.idm ClientRepresentation ProtocolMapperRepresentation RealmRepresentation]
+           [org.keycloak.adapters KeycloakDeployment]
+           [org.keycloak.adapters.rotation JWKPublicKeyLocator]))
 
 (extend-type String
   bean-dip/TranslatableToMap
@@ -84,3 +86,13 @@
                                                 :web-authn-policy-rp-id
                                                 :web-authn-policy-signature-algorithms
                                                 :web-authn-policy-user-verification-requirement})
+
+
+(bean-dip/def-translation KeycloakDeployment #{:cors? :public-client? :delegate-bearer-Error-response-sending? :verify-token-audience?
+                                               :principal-attribute :cors-allowed-headers :token-store :auth-server-base-url
+                                               :use-resource-role-mappings? :enable-basic-auth? :adapter-state-cookie-path :realm
+                                               :cors-allowed-methods :client :state-cookie-name :confidential-port :min-time-between-jwks-requests
+                                               :autodetect-bearer-only? :OAuth-query-parameter-enabled? :registerNodeUrl :scope :always-refresh-token?
+                                               :register-node-period :expose-token? :SSL-enabled? :resource-name :turn-off-change-session-id-on-login?
+                                               :token-url :pkce? :cors-exposed-headers :token-minimum-time-to-live :register-node-at-startup?
+                                               :relative-urls :ssl-required :class :not-before :resource-credentials})

@@ -1,7 +1,11 @@
-(ns keycloak.deployment-test
+(ns keycloak.user-test
   (:require
-   [clojure.test :as t :refer [deftest testing is]]
+   [clojure.test :as test :refer [deftest testing is]]
    [clojure.tools.logging :as log]
+   [clojure.java.shell :as shell]
+
+   [testit.core :refer [fact facts =>]]
+
    [keycloak.deployment :as deployment :refer [deployment client-conf deployment-for-realms verify extract]]
    [keycloak.bean :as bean]
    [keycloak.admin :refer :all]
@@ -9,10 +13,18 @@
    [keycloak.user :as user :refer [delete-and-create-user!]]
    ))
 
+
 (def admin-login "admin")
 (def admin-password "secretadmin")
-(def auth-server-url "http://localhost:8090/auth")
 ;(def auth-server-url "http://login.default.minikube.devmachine")
+
+(defn minikube-keycloak-service []
+  (str (clojure.string/replace (:out (shell/sh  "minikube" "service" "--url" "keycloak-service")) "\n" "")
+       "/auth"))
+
+(def auth-server-url (minikube-keycloak-service))
+;(def auth-server-url "http://localhost:8090/auth")
+
 
 (def integration-test-conf (deployment/client-conf auth-server-url "master" "admin-cli"))
 (def admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password))
@@ -27,16 +39,7 @@
                                        :client-id        "bo-backend"
                                        :client-secret    "bc8205af-c056-4be6-97e0-9edc8e2c0eb3"})))
 
-
-
-(def admin-login "admin")
-(def admin-password "secretadmin")
-(def auth-server-url "http://localhost:8090/auth")
-
-(def integration-test-conf
-  (deployment/client-conf auth-server-url "master" "admin-cli"))
-
-(deftest ^:integration deployment-test
+(deftest ^:integration user-creation-test
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)]
     (testing "realm creation "
       (let [realm-name (str "test-realm-" (rand-int 1000))
@@ -66,14 +69,11 @@
                   (let [token (authenticate auth-server-url realm-name client-id username password)
                         access-token (verify deployments realm-name (:access_token token))
                         extracted-token (extract access-token)]
-                    (is (= username (:username extracted-token)))))))))
+                    (is (= username (:username extracted-token)))))
+                (testing "disable user then re-enable it"
+                  (fact (.isEnabled (user/disable-user! admin-client realm-name username)) => false)
+                  (fact (.isEnabled (user/enable-user! admin-client realm-name username)) => true))))))
         (testing "realm deletion"
           (delete-realm! admin-client realm-name)
-          (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name))))))))
-
-(defn delete-realms-except [realms-to-keep]
-  (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)
-        realms (list-realms admin-client)]
-    (doseq [realm realms]
-      (when (not ((set realms-to-keep) (.getId realm)))
-        (delete-realm! admin-client (.getId realm))))))
+          (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name)))
+          )))))

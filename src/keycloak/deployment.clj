@@ -93,11 +93,12 @@
 (defn verify
   "Verify an Access Token given a deployment to check against"
   (^org.keycloak.representations.AccessToken [^KeycloakDeployment deployment ^java.lang.String token]
-   (let [verifier (-> token RSATokenVerifier/create (.realmUrl (.getRealmInfoUrl deployment)))
-         kid (-> verifier (.getHeader) (.getKeyId))
-         public-key (.getPublicKey (.getPublicKeyLocator deployment) kid deployment)]
+   (let [realm-info-url (.getRealmInfoUrl deployment)
+         verifier       (-> token RSATokenVerifier/create (.realmUrl realm-info-url))
+         kid            (-> verifier (.getHeader) (.getKeyId))
+         public-key     (.getPublicKey (.getPublicKeyLocator deployment) kid deployment)]
      (-> verifier (.publicKey public-key) (.verify) (.getToken))))
-  (^org.keycloak.representations.AccessToken [deployments realm-name token]
+  (^org.keycloak.representations.AccessToken [^KeycloakDeployment deployments ^java.lang.String realm-name ^java.lang.String token]
    (when (not (coll? deployments))
      (throw (ex-info "deployments argument must be a coll of KeycloakDeployment object" {:deployments deployments})))
    (when (not (contains? deployments realm-name))

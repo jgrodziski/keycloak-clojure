@@ -31,6 +31,11 @@
                     ;;setRealmRoles has a bug with the admin REST API and doesn't work
                     ) attributes))
 
+(defn user-for-enablement ^org.keycloak.representations.idm.UserRepresentation
+  [enabled?]
+  (hint-typed-doto "org.keycloak.representation.idm.UserRepresentation" (UserRepresentation.)
+                   (.setEnabled enabled?)))
+
 (defn user-for-creation
   ([{:keys [username first-name last-name email password attributes] :as person}]
    (when (empty? password) (throw (ex-info "user MUST have a password otherwise the login will throw a NPE" {:person person})))
@@ -77,7 +82,7 @@
         email-exists? (not (nil? (user-id keycloak-client realm-name (.getEmail user))))]
     (or username-exists? email-exists?)))
 
-(defn- get-user-resource
+(defn get-user-resource
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username]
   (let [user-searched (search-user keycloak-client realm-name username)
         ^org.keycloak.representations.idm.UserRepresentation user (-> user-searched first)
@@ -202,6 +207,14 @@
 (defn update-user! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name user-id {:keys [username first-name last-name email password] :as person}]
   (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.update (user-for-update person)))
   (get-user keycloak-client realm-name user-id))
+
+(defn enable-user! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username]
+  (.update (:user-resource (get-user-resource keycloak-client realm-name username)) (user-for-enablement true))
+  (get-user-by-username keycloak-client realm-name username))
+
+(defn disable-user! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username]
+  (.update (:user-resource (get-user-resource keycloak-client realm-name username)) (user-for-enablement false))
+  (get-user-by-username keycloak-client realm-name username))
 
 (defn create-user!
   ^org.keycloak.representations.idm.UserRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name {:keys [username first-name last-name email password is-manager] :as person}]

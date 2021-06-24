@@ -24,9 +24,6 @@
 (def kc-admin-client (kc-deployment/keycloak-client
                       (kc-deployment/client-conf AUTH_SERVER_URL ADMIN_REALM ADMIN_CLIENT_ID ) LOGIN PWD))
 
-
-
-
 (defn access-token
   ([]
    (access-token LOGIN PWD))
@@ -66,8 +63,8 @@
  :session_state "73830c52-7aa6-4f1f-91fe-11d579e06dfa",
  :scope "email profile"})
 
-(def EXPIRED_TOKEN_GOOD_REALM )
-
+(def EXPIRED_TOKEN_GOOD_REALM "")
+(def EXPIRED_TOKEN "")
 
 (defn yada-test-context-missing-token []
   {:request (yada-test/request-for :get "/protected" {:headers {"content-type" "application/transit+json"
