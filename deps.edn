@@ -16,9 +16,13 @@
 
         uwcpdx/bean-dip {:mvn/version "0.7.6"}
 
-        cli-matic/cli-matic {:mvn/version "0.4.3"}
+        cli-matic/cli-matic {:git/url "https://github.com/l3nz/cli-matic.git"
+                             :sha "3e072260e359be51bf6646e219042c319dd9f5f8"} 
         borkdude/sci        {:mvn/version "0.1.1-alpha.9"}
         camel-snake-kebab/camel-snake-kebab   {:mvn/version "0.4.2"}
+
+        ;;used by starter to extract reliably the env var
+        environ/environ     {:mvn/version "1.2.0"}
 
         ;; used when exporting secrets in json/yaml at init
 
@@ -85,7 +89,6 @@
                                {:local/root "/Users/jeremiegrodziski/sandbox/codox/codox"}
                                codox-theme-rdash/codox-theme-rdash
                                {:local/root "/Users/jeremiegrodziski/sandbox/codox-theme-rdash"}
-                               environ/environ                     {:mvn/version "1.2.0"}
                                com.novemberain/pantomime           {:mvn/version "2.11.0"}
                                clj-commons/fs                      {:mvn/version "1.5.2"}
                                com.cognitect.aws/api               {:mvn/version "0.8.484"},
