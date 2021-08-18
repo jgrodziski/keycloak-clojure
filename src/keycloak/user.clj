@@ -18,18 +18,22 @@
 (defn user-for-update
   ^org.keycloak.representations.idm.UserRepresentation
   [{:keys [username first-name last-name email enabled attributes password] :or {enabled true} :as person}]
-  (set-attributes ^org.keycloak.representations.idm.UserRepresentation
-                  (hint-typed-doto "org.keycloak.representations.idm.UserRepresentation" (UserRepresentation.)
-                    (.setUsername username)
-                    (.setFirstName first-name)
-                    (.setLastName last-name)
-                    (.setEmail email)
-                    (.setCredentials [(hint-typed-doto "org.keycloak.representations.idm.CredentialRepresentation" (CredentialRepresentation.)
-                                                       (.setType CredentialRepresentation/PASSWORD)
-                                                       (.setValue password))])
-                    (.setEnabled enabled)
-                    ;;setRealmRoles has a bug with the admin REST API and doesn't work
-                    ) attributes))
+  (let [user-no-password (set-attributes ^org.keycloak.representations.idm.UserRepresentation
+                           (hint-typed-doto "org.keycloak.representations.idm.UserRepresentation" (UserRepresentation.)
+                                            (.setUsername username)
+                                            (.setFirstName first-name)
+                                            (.setLastName last-name)
+                                            (.setEmail email)
+                                            (.setEnabled enabled)
+                     ;;setRealmRoles has a bug with the admin REST API and doesn't work
+                                            )
+                                          attributes)]
+     (if password
+       (doto user-no-password
+         (.setCredentials [(hint-typed-doto "org.keycloak.representations.idm.CredentialRepresentation" (CredentialRepresentation.)
+                                            (.setType CredentialRepresentation/PASSWORD)
+                                            (.setValue password))]))
+       user-no-password)))
 
 (defn user-for-enablement ^org.keycloak.representations.idm.UserRepresentation
   [enabled?]
