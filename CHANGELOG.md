@@ -4,7 +4,7 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 
 # [1.17.3] - 2021-08-18
 
-Fix NPE with the `user-for-update`` function when no password is provided
+Fix NPE with the `user-for-update` function when no password is provided
 
 # [1.15.0] - 2021-02-24
 

@@ -60,7 +60,7 @@
             (testing "user creation in the realm then join to group"
               (let [username (str "user-" (rand-int 1000))
                     password (str "pass" (rand-int 100))
-                    user (delete-and-create-user! admin-client realm-name {:username username :password password})]
+                    user (user/delete-and-create-user! admin-client realm-name {:username username :password password})]
                 (is (= username (.getUsername user)))
                 (testing "authentication and token verification and extraction"
                   (let [token (authenticate auth-server-url realm-name client-id username password)

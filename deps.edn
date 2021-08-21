@@ -18,6 +18,8 @@
 
         cli-matic/cli-matic {:git/url "https://github.com/l3nz/cli-matic.git"
                              :sha "3e072260e359be51bf6646e219042c319dd9f5f8"} 
+        expound {:mvn/version "0.8.9" :scope "provided"}
+
         borkdude/sci        {:mvn/version "0.1.1-alpha.9"}
         camel-snake-kebab/camel-snake-kebab   {:mvn/version "0.4.2"}
 
