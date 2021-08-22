@@ -27,6 +27,8 @@
         io.forward/yaml           {:mvn/version "1.0.9"        :scope "provided"}
         org.clojure/core.async    {:mvn/version "0.5.527"      :scope "provided"}
         l3nz/planck               {:mvn/version "0.0.0"        :scope "provided"}
+        expound/expound           {:mvn/version "0.8.4"        :scope "provided"}
+
 
         borkdude/sci        {:mvn/version "0.1.1-alpha.9"}
         camel-snake-kebab/camel-snake-kebab   {:mvn/version "0.4.2"}
