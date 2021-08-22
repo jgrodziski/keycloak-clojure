@@ -20,10 +20,14 @@
                              :sha "3e072260e359be51bf6646e219042c319dd9f5f8"
                              :exclusions  [expound/expound]}
         ;;deps below are used by cli-matic, failure with cljdoc analysis job when not included here
-        expound/expound        {:mvn/version "0.8.9"   :scope "provided"}
-        org.clojure/tools.cli  {:mvn/version "0.3.7"   :scope "provided"}
-        org.clojure/spec.alpha {:mvn/version "0.1.143" :scope "provided"}
-        org.clojure/core.async {:mvn/version "0.5.527" :scope "provided"}
+        org.clojure/clojurescript {:mvn/version "1.10.439"     :scope "provided"}
+        org.clojure/spec.alpha    {:mvn/version "0.1.143"      :scope "provided"}
+        org.clojure/tools.cli     {:mvn/version "1.0.194"      :scope "provided"}
+        orchestra/orchestra       {:mvn/version "2019.02.06-1" :scope "provided"}
+        cheshire/cheshire         {:mvn/version "5.10.0"       :scope "provided"}
+        io.forward/yaml           {:mvn/version "1.0.9"        :scope "provided"}
+        org.clojure/core.async    {:mvn/version "0.5.527"      :scope "provided"}
+        l3nz/planck               {:mvn/version "0.0.0"        :scope "provided"}
 
         borkdude/sci        {:mvn/version "0.1.1-alpha.9"}
         camel-snake-kebab/camel-snake-kebab   {:mvn/version "0.4.2"}
