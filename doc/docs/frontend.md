@@ -27,7 +27,7 @@ The frontend needs to performs the following steps to authenticate the user:
   
 The following schema describes the steps and the interactions between the browser, the keycloak server and the API server:
 
-<img src="schema.png" width="700" alt="Schema describing the steps and the interactions between the browser, keycloak server and API server" />
+<img src="https://raw.githubusercontent.com/jgrodziski/keycloak-clojure/master/resources/schema.png" width="700" alt="Schema describing the steps and the interactions between the browser, keycloak server and API server" />
 
 Here are the code for each of those steps (in [security.cljs](https://github.com/jgrodziski/keycloak-clojure/blob/master/frontend/src/cljs/myapp/front/security.cljs)):
 

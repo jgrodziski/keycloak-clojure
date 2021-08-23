@@ -18,7 +18,7 @@
 ## Generic security concepts
 
 The subject of security is very wide and here we only focus on identity, access management and authorization within application. See the following mindmap for a broader view of all the existing security topics. 
-<img src="security-topics.png" width="720" alt="Mindmap listing all security topics" />
+<img src="https://raw.githubusercontent.com/jgrodziski/keycloak-clojure/master/resources/security-topics.png" width="720" alt="Mindmap listing all security topics" />
 
 ### Identification and Authentication
 *Identification* means knowing who is interacting with your application and so you need a repository of identities (the persons or systems that interact with your application). Those identities can be handled by keycloak itself or it can delegates to another "storage" of identity, that's called [User Storage Federation](https://www.keycloak.org/docs/latest/server_admin/index.html#_user-storage-federation)
