@@ -17,13 +17,27 @@
 
 ## Generic security concepts
 
-### Identification and Authentication
-Identification means knowing who is interacting with your application and so you need a repository of identities (the persons or systems that interact with your application). Those identities can be handled by keycloak itself or it can delegates to 
+The subject of security is very wide and here we only focus on identity, access management and authorization within application. See the following mindmap for a broader view of all the existing security topics. 
+<img src="security-topics.png" width="720" alt="Mindmap listing all security topics" />
 
+### Identification and Authentication
+*Identification* means knowing who is interacting with your application and so you need a repository of identities (the persons or systems that interact with your application). Those identities can be handled by keycloak itself or it can delegates to another "storage" of identity, that's called [User Storage Federation](https://www.keycloak.org/docs/latest/server_admin/index.html#_user-storage-federation)
+
+So *Identification* deals with the way users of the application are identified: what’s the identifier? where are they stored? What’s the provisionning of the users?
+Once a user is identified, *Authentication* mechanism assesses whether the person or system is really who’s she said to be. The mechanism to assess a user’s identity is called an authentication factor, we can combine several of them (multi-factor authentication). They are categorized with: 
+
+- what we know (password)
+- what we own (key(s) in software like SSH or [OTP authenticator](https://www.keycloak.org/docs/latest/server_admin/index.html#otp-policies) or hardware like RSA)
+- what we are (biometrics like face recognition or fingerprint)
+- what we’re able to do (Captcha)
 
 ### Authorization
 
-### Confidentiality and integrity
+Once the user is *identified* and *authenticated*, *authorization* mechanisms are concerned with « what can she do? on which data or resources?». There are broadly two granularity of authorization mechanisms:
+
+- Role-based access control – RBAC - is a powerful way to decouple the organizational structure (user in groups) and the assigned roles.
+- Access-Control-List – ACL – is more fine-grained way of asserted whether someone can access a particular object (file, data, etc.)
+
 
 ## OAuth2 / OpenId Connect (OIDC) concepts
 
