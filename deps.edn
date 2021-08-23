@@ -18,17 +18,17 @@
 
         cli-matic/cli-matic {:git/url "https://github.com/l3nz/cli-matic.git"
                              :sha "3e072260e359be51bf6646e219042c319dd9f5f8"
-                             :exclusions  [expound/expound]
+                             :exclusions  [ecom.fasterxml.jackson.jaxrsxpound/expound]
                              :scope "provided"}
         ;;deps below are used by cli-matic, failure with cljdoc analysis job when not included here
-        org.clojure/clojurescript {:mvn/version "1.10.439"     :scope "provided"}
-        org.clojure/spec.alpha    {:mvn/version "0.1.143"      :scope "provided"}
-        org.clojure/tools.cli     {:mvn/version "1.0.194"      :scope "provided"}
-        orchestra/orchestra       {:mvn/version "2019.02.06-1" :scope "provided"}
-        io.forward/yaml           {:mvn/version "1.0.9"        :scope "provided"}
-        org.clojure/core.async    {:mvn/version "0.5.527"      :scope "provided"}
-        l3nz/planck               {:mvn/version "0.0.0"        :scope "provided"}
-        expound/expound           {:mvn/version "0.8.4"        :scope "provided"}
+        ;org.clojure/clojurescript {:mvn/version "1.10.439"     :scope "provided"}
+        ;org.clojure/spec.alpha    {:mvn/version "0.1.143"      :scope "provided"}
+        ;org.clojure/tools.cli     {:mvn/version "1.0.194"      :scope "provided"}
+        ;orchestra/orchestra       {:mvn/version "2019.02.06-1" :scope "provided"}
+        ;io.forward/yaml           {:mvn/version "1.0.9"        :scope "provided"}
+        ;org.clojure/core.async    {:mvn/version "0.5.527"      :scope "provided"}
+        ;l3nz/planck               {:mvn/version "0.0.0"        :scope "provided"}
+        ;expound/expound           {:mvn/version "0.8.4"        :scope "provided"}
 
         ;;used by cljs frontend
         com.taoensso/timbre       {:mvn/version "5.1.2" :scope "provided"}
@@ -56,7 +56,8 @@
 
         ;;all the deps below are for the admin client (don't know why the transitive deps didn't work)
         org.keycloak/keycloak-admin-client                  {:mvn/version "11.0.2"}
-        com.fasterxml.jackson.core/jackson-databind         {:mvn/version "2.10.4"}
+        com.fasterxml.jackson.core/jackson-databind             {:mvn/version "2.10.4"}
+        com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider {:mvn/version "2.10.4"}
         org.jboss.resteasy/resteasy-jackson2-provider       {:mvn/version "3.9.3.Final"}
         org.jboss.resteasy/resteasy-client                  {:mvn/version "3.9.3.Final"}
         org.jboss.resteasy/resteasy-multipart-provider      {:mvn/version "3.9.3.Final"}
@@ -80,18 +81,19 @@
                                  ring/ring-mock      {:mvn/version "0.4.0"}
                                  yada/yada           {:mvn/version "1.2.16"}
                                  }}
-           :thin-jar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.216"}}
+           :thin-jar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.278"}}
                         :exec-fn hf.depstar/jar
                         :exec-args {:jar "target/keycloak-clojure.jar"
                                     :sync-pom true
+                                    :paths-only true
                                     :exclude [".*.edn" "realm-.*.clj" "logback.xml" "schema.png"]}}
-           :jar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.216"}}
+           :jar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.278"}}
                  :exec-fn hf.depstar/jar
                  :exec-args {:jar "target/keycloak-clojure-aot.jar"
                              :compile-ns :all
                              :sync-pom true
                              :exclude ["clojure/core/.*" "clojure/test/.*" "clojure/java/.*" "clojure/data/.*"]}}
-           :uberjar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.216"}}
+           :uberjar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.278"}}
                      :exec-fn hf.depstar/uberjar
                      :exec-args {:jar "target/keycloak-clojure.jar" :aot true :main-class keycloak.starter}}
            :deploy {:extra-deps {slipset/deps-deploy {:git/url "https://github.com/slipset/deps-deploy.git"
