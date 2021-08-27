@@ -17,9 +17,9 @@
         uwcpdx/bean-dip {:mvn/version "0.7.6"}
 
         cli-matic/cli-matic {;:git/url "https://github.com/l3nz/cli-matic.git"
-                             ;:sha "3e072260e359be51bf6646e219042c319dd9f5f8"
+                                        ;:sha "3e072260e359be51bf6646e219042c319dd9f5f8"
                              :mvn/version "0.4.3"
-                             :exclusions  [expound/expound]
+                             ;:exclusions  [expound/expound]
                              }
         ;;deps below are used by cli-matic, failure with cljdoc analysis job when not included here
         ;org.clojure/clojurescript {:mvn/version "1.10.439"     :scope "provided"}
