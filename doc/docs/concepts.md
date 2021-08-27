@@ -42,6 +42,7 @@ Once the user is *identified* and *authenticated*, *authorization* mechanisms ar
 ## OAuth2 / OpenId Connect (OIDC) concepts
 
 The OAuth2 and OIDC concepts are defined below, with the specificities of an application composed of an SPA frontend and an API backend.
+Caution: The names of -almost- the same concept are different between OAuth and OIDC, see the schema at the end of this section.
 
 * **Resource**: the thing you want to protect, your API if you develop a backend for instance.
 * **Resource Owner**: the owner of the identity, data and any actions that can be performed with the identity. if you develop an API, you'll typically include then extract the roles from the access token the backend will receive
@@ -56,6 +57,10 @@ The OAuth2 and OIDC concepts are defined below, with the specificities of an app
 * **Client ID**: This ID is used to identify the Client with the Authorization Server. When you ask for an access token, you'll give the `client-id` on behalf of which you ask permissions. Say you have api client, you can create a specific client in Keycloak for that particular use case.
 * **Client Secret**: This is a secret password that only the Client and Authorization Server know. This allows them to securely share information privately behind the scenes. This is typically for your backend that you materialize as a client. Keycloak expects your backend to be able to holds some confidentiality, therefore holding a secret to prove its identity with Keycloak. 
 * **Authorization Code**: A short-lived temporary code the Client gives the Authorization Server in exchange for an Access Token used during authorization code grant.
+
+The following schema represents the related OAuth and OIDC concepts.
+<img src="https://raw.githubusercontent.com/jgrodziski/keycloak-clojure/master/resources/oauth-oidc-concepts.png" width="720" alt="OAuth and OpenID connect OIDC concepts" />
+
 
 ### Tokens 
 
