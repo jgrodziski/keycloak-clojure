@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.17.15] - 2021-08-28
+
+Add `.close` to Response object that were not closed. See https://github.com/jgrodziski/keycloak-clojure/issues/27
+
+# [1.17.4] to [1.17.14]
+
+All the patch between that two versions are for fixing the issues to make the lib properly integrating in cljdoc (mess with cli-matic and :git/url dep style).
+
 # [1.17.3] - 2021-08-18
 
 Fix NPE with the `user-for-update` function when no password is provided
