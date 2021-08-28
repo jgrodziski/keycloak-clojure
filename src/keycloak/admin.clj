@@ -163,7 +163,7 @@
       (do
         (info "group" group-name "created in realm" realm-name " with group id" group-id)
         (get-group keycloak-client realm-name group-id))
-      (do 
+      (do
         (info "group" group-name "already exist in realm" realm-name " with group id" group-id)
         (first (list-groups keycloak-client realm-name group-name))))))
 
@@ -365,14 +365,16 @@ public
   (-> keycloak-client (.realm realm-name) (.clients) (.get client-id) (.remove)))
 
 (defn create-client!
-  "Creates a client with its 'realm-name' and a [ClientRepresentation](https://www.keycloak.org/docs-api/11.0/javadocs/org/keycloak/representations/idm/ClientRepresentation.html) object, 
-  obtained with 'client' function." 
+  "Creates a client with its 'realm-name' and a [ClientRepresentation](https://www.keycloak.org/docs-api/11.0/javadocs/org/keycloak/representations/idm/ClientRepresentation.html) object,
+  obtained with 'client' function."
   (^ClientRepresentation [^Keycloak keycloak-client realm-name ^ClientRepresentation client]
    (info "create client" (.getClientId client) "in realm" realm-name)
    (when-let [retrieved-client (get-client keycloak-client realm-name (.getClientId client))]
      (delete-client! keycloak-client realm-name (.getId retrieved-client)))
-   (-> keycloak-client (.realm realm-name) (.clients) (.create client))
-   (info "client" (.getClientId client) " created in realm" realm-name)
+   (let[resp (-> keycloak-client (.realm realm-name) (.clients) (.create client))]
+     (info "client" (.getClientId client) " created in realm " realm-name " status " (.getStatus resp))
+     (when resp (.close resp)))
+
    (get-client keycloak-client realm-name (.getClientId client)))
   (^ClientRepresentation [^Keycloak keycloak-client realm-name client-id public?]
    (create-client! keycloak-client realm-name (client {:client-id client-id :public-client public?}))))
@@ -447,6 +449,7 @@ public
             resp (-> client-resource .getProtocolMappers (.createMapper mapper))
             mapper-id (extract-id resp)
             retrieved-mapper (when mapper-id (get-mapper keycloak-client realm-name client-id mapper-id))]
+        (when resp (.close resp))
         retrieved-mapper))))
 
 (comment

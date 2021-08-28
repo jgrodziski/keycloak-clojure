@@ -200,6 +200,7 @@
          _ (if email-exists? (do (delete-user! keycloak-client realm-name email) (Thread/sleep 100)))
          response (-> keycloak-client (.realm realm-name) (.users) (.create (user-for-creation person)))
          user-id (extract-id response)
+         _ (when (response) (.close response))
          _ (check-user-properly-created keycloak-client realm-name username email)]
      (when realm-roles (add-realm-roles! keycloak-client realm-name username realm-roles))
      (when client-roles (add-client-roles! keycloak-client realm-name username client-roles))
