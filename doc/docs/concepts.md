@@ -58,7 +58,7 @@ Caution: The names of -almost- the same concept are different between OAuth and 
 * **Client Secret**: This is a secret password that only the Client and Authorization Server know. This allows them to securely share information privately behind the scenes. This is typically for your backend that you materialize as a client. Keycloak expects your backend to be able to holds some confidentiality, therefore holding a secret to prove its identity with Keycloak. 
 * **Authorization Code**: A short-lived temporary code the Client gives the Authorization Server in exchange for an Access Token used during authorization code grant.
 
-The following schema represents the related OAuth and OIDC concepts.
+The following schema represents the related OAuth and OIDC concepts:
 <img src="https://raw.githubusercontent.com/jgrodziski/keycloak-clojure/master/resources/oauth-oidc-concepts.png" width="720" alt="OAuth and OpenID connect OIDC concepts" />
 
 
@@ -80,9 +80,6 @@ The following schema represents the related OAuth and OIDC concepts.
 
 We choose the Grant type depending on the level of trust we have with the client to handle authorization credentials.
 
-
-### Differences between OAuth2 and OIDC
-
 ## Keycloak concepts
 
 Keycloak comes with many concepts closely related to the OAuth ones:
@@ -92,8 +89,12 @@ Keycloak comes with many concepts closely related to the OAuth ones:
 * **Roles** can also be defined at the *client* level and assigned to specific users. Depending on the *client* type, you may also be able to view and manage *user* *sessions* from the administration console.
 * **Adapters** are keycloak librairies in different technologies used for *client* to communicate with the keycloak servers. Luckily thanks to Clojure and Clojurescript running on hosted platform, respectively the JVM and the JS engine, we can use the [Keycloak Java Adapter](https://www.keycloak.org/docs/latest/securing_apps/index.html#java-adapters) and the [Keycloak Javascript Adapter](https://www.keycloak.org/docs/latest/securing_apps/index.html#_javascript_adapter).
 
-Brokering
-Federation
+The following schema represents the Keycloak concepts:
+<img src="https://raw.githubusercontent.com/jgrodziski/keycloak-clojure/master/resources/keycloak-concepts.png" width="720" alt="Keycloak concepts" />
+
+[Keycloak Identity Brokering](https://www.keycloak.org/docs/latest/server_admin/#_identity_broker) is a feature that allows Keycloak to be an intermediary to other identity providers (given a trust relation is established with that other providers) and then to use the identities in those providers. Those providers can be other OIDC or SAML providers or the famous usual "[Social Identity Providers](https://www.keycloak.org/docs/latest/server_admin/#social-identity-providers)" (Google, Facebook, Github, etc.).
+
+[User Storage Federation](https://www.keycloak.org/docs/latest/server_admin/#_user-storage-federation) is a feature that allows Keycloak to use existing database storing user data (mainly LDAP or Active Directory) instead of its own storage.
 
 [OpenId Connect terminology](http://openid.net/specs/openid-connect-core-1_0.html#Terminology) is implemented by keycloak.
 
