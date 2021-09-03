@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.17.16] - 2021-09-03
+
+- Issue #29 - Fix the keycloak.user/user-id behavior with now an exact match
+
 # [1.17.15] - 2021-08-28
 
 Add `.close` to Response object that were not closed. See https://github.com/jgrodziski/keycloak-clojure/issues/27
