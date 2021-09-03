@@ -74,7 +74,7 @@
 
  :aliases {:repl  {:extra-deps {com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
                    :main-opts  ["-m" "figwheel.main" "-b" "dev" "-r"]}
-           :dev   {}
+           :dev   {:extra-deps {vvvvalvalval/scope-capture {:mvn/version "0.3.2"}}}
            :test  {:extra-paths ["test"]
                    :extra-deps  {lambdaisland/kaocha {:mvn/version "0.0-554"}
                                  metosin/testit      {:mvn/version "0.4.0"}
