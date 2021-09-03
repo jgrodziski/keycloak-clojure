@@ -58,18 +58,37 @@
      (-> keycloak-client (.realm realm-name) (.users) (.search username first-name last-name email (int 0) (int 10)))
      (catch javax.ws.rs.NotFoundException nfe nil))))
 
+(defn- exact-match
+  ([users attr]
+   (some (fn [user]
+           (when (or (= (.getUsername user)  attr)
+                     (= (.getFirstName user) attr)
+                     (= (.getLastName user)  attr)
+                     (= (.getEmail user)     attr)) user)) users))
+  ([users username-in first-name-in last-name-in email-in]
+   (some (fn [user]
+           (when (and (= (.getUsername user)  username-in)
+                      (= (.getFirstName user) first-name-in)
+                      (= (.getLastName user)  last-name-in)
+                      (= (.getEmail user)     email-in)) user)) users)))
+
 (defn user-id
+  "Return a user-id from either one of (username|first-name|last-name|email) attributes that match exactly or all of these attributes to match"
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name user-attribute]
-   (let [search-result (search-user keycloak-client realm-name user-attribute)]
-     (if (and search-result (> (count search-result) 0))
-       (let [^org.keycloak.representations.idm.UserRepresentation user (first search-result)]
-         (.getId user))
+   (let [users (search-user keycloak-client realm-name user-attribute)]
+     (if (and users (> (count users) 0))
+       (let [^org.keycloak.representations.idm.UserRepresentation user (exact-match users user-attribute)]
+         (if user
+           (.getId user)
+           (do (info "user with attribute"user-attribute"not found in realm"realm-name) nil)))
        (do (info "user with attribute"user-attribute"not found in realm"realm-name) nil))))
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name username first-name last-name email]
-   (let [search-result (search-user keycloak-client realm-name username first-name last-name email)]
-     (if (and search-result (> (count search-result) 0))
-       (let [^org.keycloak.representations.idm.UserRepresentation user (first search-result)]
-         (.getId user))
+   (let [users (search-user keycloak-client realm-name username first-name last-name email)]
+     (if (and users (> (count users) 0))
+       (let [^org.keycloak.representations.idm.UserRepresentation user (exact-match users username first-name last-name email)]
+         (if user
+           (.getId user)
+           (do (info "user with attributes username:"username ",first-name" first-name ",last-name:" last-name ",email:" email "not found in realm"realm-name) nil)))
        (do (info "user with attributes username:"username ",first-name" first-name ",last-name:" last-name ",email:" email "not found in realm"realm-name) nil)))))
 
 (defn delete-user!
@@ -195,14 +214,16 @@
                                 :as person} realm-roles client-roles]
    (info "create user" username "in realm" realm-name"with realm roles"realm-roles"client roles"client-roles". If user already exists, delete it and re-create it.")
    (let [username-exists? (not (nil? (user-id keycloak-client realm-name username)))
-         email-exists? (not (nil? (user-id keycloak-client realm-name email)))
-         _ (if username-exists? (do (delete-user! keycloak-client realm-name username) (Thread/sleep 100)))
-         _ (if email-exists? (do (delete-user! keycloak-client realm-name email) (Thread/sleep 100)))
+         email-exists?    (not (nil? (user-id keycloak-client realm-name email)))
+         _                (if username-exists?
+                            (do (delete-user! keycloak-client realm-name username) (Thread/sleep 100)))
+         _                (if email-exists?
+                            (do (delete-user! keycloak-client realm-name email) (Thread/sleep 100)))
          response (-> keycloak-client (.realm realm-name) (.users) (.create (user-for-creation person)))
-         user-id (extract-id response)
-         _ (when (response) (.close response))
-         _ (check-user-properly-created keycloak-client realm-name username email)]
-     (when realm-roles (add-realm-roles! keycloak-client realm-name username realm-roles))
+         user-id  (extract-id response)]
+     (when response (.close response))
+     (check-user-properly-created keycloak-client realm-name username email)
+     (when realm-roles  (add-realm-roles! keycloak-client realm-name username realm-roles))
      (when client-roles (add-client-roles! keycloak-client realm-name username client-roles))
      (if user-id
        (get-user keycloak-client realm-name user-id)
@@ -231,6 +252,9 @@
     (if user-id
       (get-user keycloak-client realm-name user-id)
       (get-user-by-username keycloak-client realm-name username))))
+
+(defn username-exists? [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username]
+  (not (nil? (user-id keycloak-client realm-name username))))
 
 (defn create-or-update-user!
   ^org.keycloak.representations.idm.UserRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name {:keys [username first-name last-name email password] :as person} realm-roles client-roles]

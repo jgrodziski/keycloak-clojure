@@ -324,6 +324,7 @@
                                     :loginTheme "keycloak",
                                     :accountTheme "keycloak"},
                                    :login {:resetPasswordAllowed true, :bruteForceProtected true, :rememberMe true},
+                                   :admin-user {:username "admin" :first-name "John" :last-name "Doe" :email "admin@example.com"}
                                    :smtp {:starttls true, :password "", :port 587, :auth true, :host "smtp.eu.mailgun.org", :replyTo "example", :from "admin@example.com", :user "postmaster@mg.example.com"},
                                    :tokens {:ssoSessionIdleTimeoutRememberMe 172800, :ssoSessionMaxLifespanRememberMe 172800}},
                            :roles #{"org-admin" "example-admin" "group-admin" "api-consumer" "employee" "manager"},
