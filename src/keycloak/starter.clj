@@ -76,7 +76,7 @@
          {:username (apply username-creator-fn role group subgroup idx opts)
           :password "password"}))
 
-(defn init-realm! [^org.keycloak.admin.client.Keycloak admin-client {:keys [name themes login tokens smtp] :as realm-data}]
+(defn init-realm! [^org.keycloak.admin.client.Keycloak admin-client {:keys [name themes login tokens smtp user-admin] :as realm-data}]
   (println (format "Will create realm \"%s\"" name))
   (try (create-realm! admin-client name themes login tokens smtp)
        (println (format "Realm \"%s\" created" name))
@@ -88,7 +88,12 @@
          (update-realm! admin-client name themes login tokens smtp)
          (println (format "Realm \"%s\" updated" name)))
        (catch Exception e (println "Can't create Realm" e)
-              (get-realm admin-client name))))
+              (get-realm admin-client name))
+       (finally
+         (when user-admin
+           (let [user-admin-id (user/user-id admin-client "master" (:username user-admin))]
+             (println (format "Will update the admin user %s (user-id %s) with %s" (:username user-admin) user-admin-id user-admin))
+             (user/update-user! admin-client "master" user-admin-id user-admin))))))
 
 (defn init-clients! [^org.keycloak.admin.client.Keycloak admin-client realm-name clients-data infra-context export-dir secret-file-without-extension secret-path]
   (doseq [{:keys [name public? redirect-uris web-origins] :as client-data} clients-data]
@@ -324,7 +329,7 @@
                                     :loginTheme "keycloak",
                                     :accountTheme "keycloak"},
                                    :login {:resetPasswordAllowed true, :bruteForceProtected true, :rememberMe true},
-                                   :admin-user {:username "admin" :first-name "John" :last-name "Doe" :email "admin@example.com"}
+                                   :user-admin {:username "admin" :firstname "John" :lastname "Doe" :email "admin@example.com"}
                                    :smtp {:starttls true, :password "", :port 587, :auth true, :host "smtp.eu.mailgun.org", :replyTo "example", :from "admin@example.com", :user "postmaster@mg.example.com"},
                                    :tokens {:ssoSessionIdleTimeoutRememberMe 172800, :ssoSessionMaxLifespanRememberMe 172800}},
                            :roles #{"org-admin" "example-admin" "group-admin" "api-consumer" "employee" "manager"},
