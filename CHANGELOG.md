@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.18.0] - 2021-09-08
+
+- [Issue #30](https://github.com/jgrodziski/keycloak-clojure/issues/30) - Add a new option `:user-admin` in `:realm` section of the starter input data structure
+
 # [1.17.16] - 2021-09-03
 
 - [Issue #29](https://github.com/jgrodziski/keycloak-clojure/issues/29) - Fix the keycloak.user/user-id behavior with now an exact match
