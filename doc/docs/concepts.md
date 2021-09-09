@@ -64,7 +64,7 @@ The following schema represents the related OAuth and OIDC concepts:
 
 ### Tokens 
 
-* **Access Token**: An *Access Token * is the key the client use to communicate with the *Resource Server*. This is like a badge or key card that gives the *Client* permission to request data or perform actions with the *Resource Server* on your behalf. Gives permission to the client application to obtain end-user owned resources from a resource server. It is an opaque token that is validated by fetching user claims from userInfo endpoint.
+* **Access Token**: An *Access Token* is the key the client use to communicate with the *Resource Server*. This is like a badge or key card that gives the *Client* permission to request data or perform actions with the *Resource Server* on your behalf. Gives permission to the client application to obtain end-user owned resources from a resource server. It is an opaque token that is validated by fetching user claims from userInfo endpoint. An *Access Token* has a very short lifetime (typically it's by default 5 minutes), so even if the token is stolen its practical usage in the wild by a rogue agent is very limited.
 * **Refresh Token**: *Refresh Token* are used to get a new *Access Token*. They are long lived and kept by the *Authorization Server* that can invalidate them in case of a disclosure. 
 * **ID Token**: Similar to a ID card or passport, it contains many required attributes or claims about the user.
 
@@ -73,10 +73,10 @@ The following schema represents the related OAuth and OIDC concepts:
 *Access Token* can be acquired through different *Grant Types* (aka. methods): 
 
 - **Authorization code**: the client will go to the authorization server to get first an authorization code to exchange for an access token in a second time.
-- **Implicit**: the client get directly an access token only (no refresh token) because of being insecure.
+- **Implicit**: the client get directly an access token only (no refresh token) because of the client being insecure.
 - **Resource owner credentials:** given a username and a password the authorization server returns an access token and a refresh token, for trusted client only. 
 - **Client credentials:** using a client secret to get an access token, suitable for machine-to-machine authentication.
-- **Refresh token:** Access tokens eventually expire; however some grants respond with a refresh token which enables the client to get a new access token without requiring the user to be redirected. Refresh Token is long lived and are stored on the authorization server (and so can be disabled) and are used to refresh the access token periodically.
+- **Refresh token:** Access tokens eventually expire; however some grants respond with a refresh token which enables the client to get a new access token without requiring the user to be redirected. Refresh Token is long lived and are stored on the authorization server (and so can be disabled) and are used to refresh the access token periodically. Of course the *Refresh Token* needs to be stored securely by the client as you can get new *Access Token* with it.
 
 We choose the Grant type depending on the level of trust we have with the client to handle authorization credentials.
 
@@ -92,9 +92,8 @@ Keycloak comes with many concepts closely related to the OAuth ones:
 The following schema represents the Keycloak concepts:
 <img src="https://raw.githubusercontent.com/jgrodziski/keycloak-clojure/master/resources/keycloak-concepts.png" width="720" alt="Keycloak concepts" />
 
-[Keycloak Identity Brokering](https://www.keycloak.org/docs/latest/server_admin/#_identity_broker) is a feature that allows Keycloak to be an intermediary to other identity providers (given a trust relation is established with that other providers) and then to use the identities in those providers. Those providers can be other OIDC or SAML providers or the famous usual "[Social Identity Providers](https://www.keycloak.org/docs/latest/server_admin/#social-identity-providers)" (Google, Facebook, Github, etc.).
-
-[User Storage Federation](https://www.keycloak.org/docs/latest/server_admin/#_user-storage-federation) is a feature that allows Keycloak to use existing database storing user data (mainly LDAP or Active Directory) instead of its own storage.
+* **[Keycloak Identity Brokering](https://www.keycloak.org/docs/latest/server_admin/#_identity_broker)** is a feature that allows Keycloak to be an intermediary to other identity providers (given a trust relation is established with that other providers) and then to use the identities in those providers. Those providers can be other OIDC or SAML providers or the famous usual "[Social Identity Providers](https://www.keycloak.org/docs/latest/server_admin/#social-identity-providers)" (Google, Facebook, Github, etc.).
+* **[User Storage Federation](https://www.keycloak.org/docs/latest/server_admin/#_user-storage-federation)** is a feature that allows Keycloak to use existing database storing user data (mainly LDAP or Active Directory) instead of its own storage.
 
 [OpenId Connect terminology](http://openid.net/specs/openid-connect-core-1_0.html#Terminology) is implemented by keycloak.
 
