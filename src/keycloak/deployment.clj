@@ -94,6 +94,7 @@
   "Verify an Access Token given a deployment to check against"
   (^org.keycloak.representations.AccessToken [^KeycloakDeployment deployment ^java.lang.String token]
    (let [realm-info-url (.getRealmInfoUrl deployment)
+         ;;TODO replace RSATokenVerifier with TokenVerifier (see https://stackoverflow.com/questions/57881996/keycloak-core-deprecate-class-rsatokenverifier-then-what-is-the-replacement)
          verifier       (-> token RSATokenVerifier/create (.realmUrl realm-info-url))
          kid            (-> verifier (.getHeader) (.getKeyId))
          public-key     (.getPublicKey (.getPublicKeyLocator deployment) kid deployment)]
