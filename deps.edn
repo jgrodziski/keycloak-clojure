@@ -9,7 +9,7 @@
 
         talltale/talltale {:mvn/version "0.5.3"}
 
-        clj-commons/fs {:mvn/version "1.5.0"}
+        clj-commons/fs {:mvn/version "1.6.309"}
 
         cheshire/cheshire {:mvn/version "5.10.0"}
         clj-http/clj-http {:mvn/version "3.10.3"}

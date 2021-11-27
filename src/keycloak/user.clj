@@ -141,12 +141,11 @@
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username roles]
   (when roles
     (let [{:keys [user-searched user-id user-resource]} (get-user-resource keycloak-client realm-name username)
-          roles-representations                         (get-realm-roles-representations keycloak-client realm-name roles)]
+          roles-representations-to-add                  (get-realm-roles-representations keycloak-client realm-name roles)]
       (-> ^org.keycloak.admin.client.resource.UserResource user-resource
           (.roles)
           (.realmLevel)
-          (.add (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles-representations))))))))
-
+          (.add (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles-representations-to-add))))))))
 
 (defn remove-realm-roles!
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username roles]
@@ -282,15 +281,20 @@
                    (do (update-user! keycloak-client realm-name user-id person))
                    (do (create-user! keycloak-client realm-name person)))]
         (check-user-properly-created keycloak-client realm-name username email)
-        (add-realm-roles! keycloak-client realm-name username realm-roles)
+        (set-realm-roles! keycloak-client realm-name username realm-roles)
         (add-client-roles! keycloak-client realm-name username client-roles)
         user)
       (catch javax.ws.rs.ClientErrorException cee
         (warn "Exception while creating or updating " person (.getMessage cee))))))
 
-(defn get-users
+(defn count [^org.keycloak.admin.client.Keycloak keycloak-client realm-name]
+  (-> keycloak-client (.realm realm-name) (.users) (.count )))
+
+(defn get-users ^java.util.List
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name]
-   (-> keycloak-client (.realm realm-name) (.users) (.list))))
+   (get-users keycloak-client realm-name (Integer/valueOf 0) (count keycloak-client realm-name)))
+  ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name first result]
+   (-> keycloak-client (.realm realm-name) (.users) (.list (Integer/valueOf first)  (Integer/valueOf result)))))
 
 (defn logout-user!
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name user-id]

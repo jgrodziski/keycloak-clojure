@@ -18,18 +18,24 @@
                                    :host     "localhost"
                                    :port     "8090"
                                    :login    "admin"
-                                   :password "secretadmin"}
-                    :vault        {:protocol "http"
-                                   :host     "localhost"
-                                   :port     "1234"
-                                   :token    "myroot"
-                                   :mount    "secret"
-                                   ;;%1$s is the environment, %2$s is the color, %3$s is the base-domain, %4$s is the client-id (so depends of your realm-config.clj code)
-                                   :path     "/env/%1$s/keycloak/clients/%4$s"}})
+                                   :password "secretadmin"}})
+
+(def hashicorp-vault {:protocol "http"
+                      :host     "localhost"
+                      :port     8200
+                      :token    "myroot"
+                      :mount    "secret"
+                      :vendor   :hashicorp
+                      ;;%1$s is the environment, %2$s is the color, %3$s is the base-domain, %4$s is the client-id (so depends of your realm-config.clj code)
+                      :path     "/env/%1$s/keycloak/clients/%4$s"})
+
+(def google-secret-manager-vault {:project-id  "adixe-1168"
+                                  :vendor      :google
+                                  :secret-id   "KEYCLOAK_CLIENT_SECRET_NAME"
+                                  :replication-policy "automatic"})
 
 (def integration-test-conf (deployment/client-conf (utils/auth-server-url infra-context) "master" "admin-cli"))
 (def admin-client (deployment/keycloak-client integration-test-conf (get-in infra-context [:keycloak :login]) (get-in infra-context [:keycloak :password])))
-
 
 (def static-realm-data [{:realm {:name "example2",
                                  :themes
@@ -81,8 +87,13 @@
                                  {:last-name "Carter", :group "Example", :realm-roles ["employee" "manager" "example-admin"], :password "secretstuff", :username "testaccount", :first-name "Bob", :attributes {"org-ref" ["Example"]}, :in-subgroups ["IT"]}]}])
 
 (deftest ^:integration vault-test
-  (doseq [realm-data static-realm-data]
-    (starter/init-realm! admin-client (:realm realm-data))))
+  (testing "Hashicorp vault"
+
+    )
+  (testing "Google secret manager "
+    ;;this test needs the environment variable GOOGLE_APPLICATION_CREDENTIALS defined with value as the path of the JSON file that contains your service account key.
+    (doseq [realm-data static-realm-data]
+      (starter/init-realm! admin-client (:realm realm-data)))))
 
 
 (deftest config-test

@@ -1,5 +1,7 @@
 (ns keycloak.utils
-  (:require    [clojure.string :as string]))
+  (:require    [clojure.string :as string]
+               [clojure.java.io :as io]
+               [me.raynes.fs :as fs]))
 
 (defn ns-clean
   "Remove all internal mappings from a given name space or the current one if no parameter given."
@@ -52,3 +54,19 @@
    (auth-server-url (get-in infra-config [:keycloak :protocol]) (get-in infra-config [:keycloak :host]) (get-in infra-config [:keycloak :port])))
   ([protocol host port]
    (str protocol "://" host ":" port "/auth")))
+
+(defn parse-path "Given a file return a map with following keys: dir root base name ext, nil if file doesn't exist" [f]
+  (if (fs/exists? f)
+    {:dir  (.toString (fs/parent f))
+     :root (.toString (last (fs/parents f)))
+     :base (fs/base-name f)
+     :name (fs/name f)
+     :ext  (fs/extension f)}
+    (throw (ex-info (format "File %s doesn't exist" f) {:file f}))))
+
+(defn list-files
+  "return a seq of File object given a directory and an optional predicate (see parse-path fn that can help to write the predicate)"
+  ([dir]
+  (file-seq (io/file dir)))
+  ([dir pred]
+   (filter pred (list-files dir))))

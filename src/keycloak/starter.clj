@@ -1,20 +1,27 @@
 (ns keycloak.starter
+  (:gen-class)
   (:require
-   [clojure.string :as str]
-   [me.raynes.fs :as fs]
-   [sci.core :as sci]
    [cli-matic.core :refer [run-cmd]]
    [clj-yaml.core :as yaml]
-   [jsonista.core :as json]
-   [talltale.core :as talltale :refer :all]
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
    [environ.core :as environ]
-
+   [jsonista.core :as json]
    [keycloak.admin :refer :all]
-   [keycloak.user :as user]
-   [keycloak.deployment :as deployment :refer [keycloak-client client-conf]]
+   [keycloak.deployment
+    :as deployment
+    :refer [client-conf keycloak-client]]
    [keycloak.meta :as meta]
-   [keycloak.vault :as vault])
-  (:gen-class))
+   [keycloak.user :as user]
+   [keycloak.utils :as utils :refer [list-files]]
+   [keycloak.vault.hashicorp :as vault]
+   [me.raynes.fs :as fs]
+   [sci.core :as sci]
+   [talltale.core :as talltale :refer :all]
+   [clojure.pprint :as pprint])
+  (:import
+   java.io.PushbackReader))
 
 ;(set! *warn-on-reflection* true)
 
@@ -137,7 +144,7 @@
 (defn init-users! [^org.keycloak.admin.client.Keycloak admin-client realm-name users-data]
   (doseq [{:keys [username] :as user} users-data]
     (let [created-user (user/create-or-update-user! admin-client realm-name user (:realm-roles user) (:client-roles user))]
-      (println (format "User \"%s\" created with realm-roles %s and client-roles %s" username (:realm-roles user) (:client-roles user)))
+      (println (format "User \"%s\" created with realm-roles %s and client-roles %s" username (pr-str (:realm-roles user)) (:client-roles user)))
       (doseq [subgroup-name (:in-subgroups user)]
         (let [subgroup-id (get-subgroup-id admin-client realm-name (get-group-id admin-client realm-name (:group user)) subgroup-name)]
           (println (format "Add user \"%s\" to group \"%s\"" username subgroup-name))
@@ -181,6 +188,7 @@
                         :vault-config vault
                         :realm-config realm-config
                         :infra-context infra-context
+                        :resources-dir (:resources-dir args)
                         :secret-export-dir (or (get-in infra-context [:secret-file :export-dir]) (:secret-export-dir args))
                         :secret-file-without-extension (or (get-in infra-context [:secret-file :name-without-extension]) (:secret-file-without-extension args))
                         :secret-path       (or (get-in infra-context [:secret-file :path]))
@@ -195,8 +203,17 @@
   ;remove password entry of all users
   (update config-data :users (fn [users] (mapv #(update % :password (fn [_] :XXXXXXXX)) users))))
 
+(defn edn-resources-bindings [resources-dir]
+  (when resources-dir
+    (let [edn-files (utils/list-files resources-dir (fn [f] (= ".edn" (:ext (utils/parse-path f)))))]
+      (into {} (map (fn [f]
+                      (when f
+                        (let [{:keys [name ext]} (utils/parse-path f)
+                              edn-content        (edn/read (PushbackReader. (io/reader f)))]
+                          [(symbol name) (sci/new-var (symbol name) edn-content)]))) edn-files)))))
+
 (defn init-cli! [args]
-  (let [{:keys [infra-context realm-config secret-export-dir secret-file-without-extension secret-path auth-server-url login password environment color applications vault-config keycloak]} (process-args args)]
+  (let [{:keys [infra-context resources-dir realm-config secret-export-dir secret-file-without-extension secret-path auth-server-url login password environment color applications vault-config keycloak]} (process-args args)]
     (let [admin-client (->  (deployment/client-conf auth-server-url "master" "admin-cli")
                             (deployment/keycloak-client login password))
           sci-environment   (sci/new-var 'environment environment)
@@ -204,11 +221,15 @@
           sci-applications  (sci/new-var 'applications applications)
           sci-keycloak      (sci/new-var 'keycloak keycloak)
           sci-infra-context (sci/new-var 'infra-context infra-context)
-          config-data       (sci/eval-string realm-config {:bindings {'environment   sci-environment
-                                                                      'applications  sci-applications
-                                                                      'keycloak      sci-keycloak
-                                                                      'infra-context sci-infra-context
-                                                                      'color         sci-color}})]
+          sci-bindings      {:bindings (merge {'environment   sci-environment
+                                               'applications  sci-applications
+                                               'keycloak      sci-keycloak
+                                               'infra-context sci-infra-context
+                                               'color         sci-color}
+                                              (edn-resources-bindings resources-dir))}
+          _                 (println "Execute SCI config with bindings of the resources: " (map str (utils/list-files resources-dir (fn [f] (= ".edn" (:ext (utils/parse-path f)))))))
+          ;_                 (println (pr-str (clojure.pprint/pprint sci-bindings)))
+          config-data       (sci/eval-string realm-config sci-bindings)]
       (println (format "Keycloak init script target %s in env %s with %s realm(s)" auth-server-url (or environment "localhost") (count config-data)))
       (println (format "Login to %s realm, clientId %s with username %s" "master" "admin-cli" login))
       (if (map? config-data)
@@ -256,14 +277,19 @@
          - :applications: a vector of map with :name, :version and clients-uris key, clients-uris is a map with 4 keys: base, root, redirects and origins,, no impact but is passed during evaluation of the realm config file\n
          - :keycloak: a map with :protocol, :host, :port, :login, :password,
          - :secret-file: a map with :export-dir, :name-without-extension, :path a vector of keyword
-         - :vault: a map with :protocol :host :port :token :mount :path\n
+         - :vault: a map with :protocol :host :port :token :mount :path :vendor (with :vendor between hashicorp and google)\n
          if present it overrides all the other options"
     :option "infra-context"
     :type :ednfile}
 
    {:as "A clj file that is evaluated with SCI (https://github.com/borkdude/sci) that must return a map with the keys: realm, clients, roles, groups and users"
     :option "realm-config"
-    :type :slurp}])
+    :type :slurp}
+
+   {:as "Dir where resources are found and injected into the config file"
+    :option "resources-dir"
+    :default "/etc/keycloak"
+    :type :string}])
 
 (def CLI_CONFIG
   {:command "init"
