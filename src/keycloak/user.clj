@@ -1,4 +1,5 @@
 (ns keycloak.user
+  (:refer-clojure :exclude [count])
   (:require [clojure.tools.logging :as log :refer [info warn]]
             [clojure.string :as string :refer [last-index-of]]
             [clojure.java.data :refer [from-java]]
@@ -70,10 +71,10 @@
 (defn- exact-match
   ([users attr]
    (some (fn [user]
-           (when (or (= (.getUsername user)  attr)
-                     (= (.getFirstName user) attr)
-                     (= (.getLastName user)  attr)
-                     (= (.getEmail user)     attr)) user)) users))
+           (when (and attr (or (= (.getUsername user)  attr)
+                               (= (.getFirstName user) attr)
+                               (= (.getLastName user)  attr)
+                               (= (.getEmail user)     attr))) user)) users))
   ([users username-in first-name-in last-name-in email-in]
    (some (fn [user]
            (when (and (= (.getUsername user)  username-in)
@@ -85,7 +86,7 @@
   "Return a user-id from either one of (username|first-name|last-name|email) attributes that match exactly or all of these attributes to match"
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name user-attribute]
    (let [users (search-user keycloak-client realm-name user-attribute)]
-     (if (and users (> (count users) 0))
+     (if (and users (> (clojure.core/count users) 0))
        (let [^org.keycloak.representations.idm.UserRepresentation user (exact-match users user-attribute)]
          (if user
            (.getId user)
@@ -93,7 +94,7 @@
        (do (info "user with attribute"user-attribute"not found in realm"realm-name) nil))))
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name username first-name last-name email]
    (let [users (search-user keycloak-client realm-name username first-name last-name email)]
-     (if (and users (> (count users) 0))
+     (if (and users (> (clojure.core/count users) 0))
        (let [^org.keycloak.representations.idm.UserRepresentation user (exact-match users username first-name last-name email)]
          (if user
            (.getId user)
@@ -236,7 +237,6 @@
      (if user-id
        (get-user keycloak-client realm-name user-id)
        (get-user-by-username keycloak-client realm-name username)))))
-
 
 (defn update-user! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name user-id {:keys [username first-name last-name email password] :as person}]
   (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.update (user-for-update person)))

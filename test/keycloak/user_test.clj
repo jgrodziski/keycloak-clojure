@@ -116,14 +116,14 @@
                         password2 (str "pass" (rand-int 100))
                         user2     (delete-and-create-user! admin-client realm-name {:username username2 :password password2})
                         user2-id  (user/user-id admin-client realm-name username2)]
-                    (sc/spy)
+                    ;(sc/spy)
                     )
                   )
                 #_(testing "disable user then re-enable it"
                   (fact (.isEnabled (user/disable-user! admin-client realm-name username)) => false)
                   (fact (.isEnabled (user/enable-user! admin-client realm-name username)) => true))
                 (testing "Update the user with password provided should be ok"
-                  (sc/spy)
+                  ;(sc/spy)
                   (let [updated-user (user/update-user! admin-client realm-name (.getId user) (merge fake-user {:username username}))]
                     (fact updated-user => truthy)
                     (fact (.getEmail updated-user) => (:email fake-user))))
@@ -131,6 +131,6 @@
                   (let [updated-user (user/update-user! admin-client realm-name (.getId user) (dissoc (merge fake-user {:username username}) :password))]
                     (fact updated-user => truthy)))))))
         (testing "realm deletion"
-          ;(delete-realm! admin-client realm-name)
+          (delete-realm! admin-client realm-name)
           (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name)))
           )))))

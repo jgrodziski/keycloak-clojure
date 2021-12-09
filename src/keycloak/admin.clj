@@ -310,7 +310,7 @@ public
   - `attributes`: map with keys and values as String. Transformed to a `java.util.Map<String, String>`. Some attributes for the client are passed in this map, an attribute of interest is the `access.token.lifespan` that override the _Access Token lifespan_ of the realm for that client.
 
   "
-  (^ClientRepresentation [{:keys [client-id name public-client public? standard-flow-enabled service-accounts-enabled authorization-services-enabled redirect-uris web-origins direct-access-grants-enabled root-url base-url admin-url attributes] :as client}]
+  (^ClientRepresentation [{:keys [client-id name public-client public? standard-flow-enabled service-accounts-enabled authorization-services-enabled redirect-uris web-origins direct-access-grants-enabled root-url base-url admin-url attributes client-authenticator-type] :as client}]
    (let [^ClientRepresentation client-representation (ClientRepresentation.)]
      (-> ((setters {:client-id                      (or client-id name)
                     :name                           name
@@ -323,6 +323,7 @@ public
                     :root-url                       root-url
                     :base-url                       base-url
                     :admin-url                      admin-url
+                    :client-authenticator-type      (or client-authenticator-type "client-secret")
                     :web-origins                    web-origins} "org.keycloak.representations.idm.ClientRepresentation") client-representation)
          (set-attributes ^ClientRepresentation attributes))))
   (^ClientRepresentation [name public? redirect-uris web-origins]
@@ -346,7 +347,9 @@ public
   Second argument is the _Realm_ name as a String.
   "
   ^ClientRepresentation [^Keycloak keycloak-client realm-name client-id]
-  (-> keycloak-client (.realm realm-name) (.clients) (.findByClientId client-id) first))
+  (some (fn client-id-exact-match? [^ClientRepresentation client]
+          (when (= client-id (.getClientId client))
+            client)) (-> keycloak-client (.realm realm-name) (.clients) (.findByClientId client-id))))
 
 (defn get-client-resource
   "Return a [org.keycloak.admin.client.resource.ClientResource](https://www.keycloak.org/docs-api/11.0/javadocs/org/keycloak/admin/client/resource/ClientResource.html)
@@ -364,6 +367,12 @@ public
   (info "Delete client" client-id " in realm" realm-name)
   (-> keycloak-client (.realm realm-name) (.clients) (.get client-id) (.remove)))
 
+(defn regenerate-secret [^Keycloak keycloak-client realm-name id]
+  (let [client-resource (get-client-resource keycloak-client realm-name id)]
+    (.generateNewSecret client-resource)
+    (info "Client secret regenerated for clientId " (.getClientId client) " in realm " realm-name )
+    client-resource))
+
 (defn create-client!
   "Creates a client with its 'realm-name' and a [ClientRepresentation](https://www.keycloak.org/docs-api/11.0/javadocs/org/keycloak/representations/idm/ClientRepresentation.html) object,
   obtained with 'client' function."
@@ -371,11 +380,12 @@ public
    (info "create client" (.getClientId client) "in realm" realm-name)
    (when-let [retrieved-client (get-client keycloak-client realm-name (.getClientId client))]
      (delete-client! keycloak-client realm-name (.getId retrieved-client)))
-   (let[resp (-> keycloak-client (.realm realm-name) (.clients) (.create client))]
+   (let [resp   (-> keycloak-client (.realm realm-name) (.clients) (.create client))
+         client (get-client keycloak-client realm-name (.getClientId client))]
      (info "client" (.getClientId client) " created in realm " realm-name " status " (.getStatus resp))
-     (when resp (.close resp)))
-
-   (get-client keycloak-client realm-name (.getClientId client)))
+     (regenerate-secret keycloak-client realm-name (.getId client))
+     (when resp (.close resp))
+     client))
   (^ClientRepresentation [^Keycloak keycloak-client realm-name client-id public?]
    (create-client! keycloak-client realm-name (client {:client-id client-id :public-client public?}))))
 
@@ -403,9 +413,10 @@ public
 
 (defn get-client-secret
   [^Keycloak keycloak-client realm-name client-id]
-  (let [id (-> (get-client keycloak-client realm-name client-id) (.getId))]
-    ;(println "Get secret for client" client-id)
-    (-> keycloak-client (.realm realm-name) (.clients) (.get id) (.getSecret) (.getValue))))
+  (let [client-id (get-client keycloak-client realm-name client-id)]
+    (when client-id
+      (let [id (.getId client-id)]
+        (-> keycloak-client (.realm realm-name) (.clients) (.get id) (.getSecret) (.getValue))))))
 
 (defn group-membership-mapper [name claim-name]
   (let [config (doto (java.util.HashMap.)
