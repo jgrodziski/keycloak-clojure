@@ -1,4 +1,4 @@
-FROM openjdk:17-slim-bullseye
+FROM openjdk:11.0.13-jre-bullseye
 
 COPY target/keycloak-clojure.jar /keycloak-clojure.jar
 
