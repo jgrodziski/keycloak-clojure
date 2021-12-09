@@ -15,7 +15,9 @@
    [keycloak.meta :as meta]
    [keycloak.user :as user]
    [keycloak.utils :as utils :refer [list-files]]
-   [keycloak.vault.hashicorp :as vault]
+   [keycloak.vault.protocol :as vault :refer [Vault write-secret!]]
+   [keycloak.vault.hashicorp :as hashicorp-vault]
+   [keycloak.vault.google :as google-vault]
    [me.raynes.fs :as fs]
    [sci.core :as sci]
    [talltale.core :as talltale :refer :all]
@@ -61,15 +63,28 @@
     (export-yaml resolved-export-dir secret-file client-id path secrets)
     secrets-file))
 
-(defn export-secret-in-vault!
-  "in infra-context, [:vault :path] is a string with placeholders as: %1$s is the environment, %2$s is the color, %3$s is the base-domains, %4$s is the client-id (client-id depends of your realm-config.clj code)"
-  [^org.keycloak.admin.client.Keycloak keycloak-client {:keys [vault environment color base-domains] :as infra-context} realm-name client-id]
+(defmulti export-secret-in-vault!
+  "take the vendor value to dispatch the call to proper function, other value are specific to vault implementation:
+  - `:hashicorp`: in infra-context, [:vault :path] is a string with placeholders as: %1$s is the environment, %2$s is the color, %3$s is the base-domains, %4$s is the client-id (client-id depends of your realm-config.clj code)
+  - `:gcp-sm`: the vault entry of infra-contect must contains project-id and secret-id, also the GOOGLE_APPLICATION_CREDENTIALS must be properly defined and available at runtime "
+  (fn [_ infra-context _ _] (get-in infra-context [:vault :vendor])))
+
+(defmethod export-secret-in-vault! :hashicorp [^org.keycloak.admin.client.Keycloak keycloak-client {:keys [vault environment color base-domains] :as infra-context} realm-name client-id]
   (let [secret                                  (get-client-secret keycloak-client realm-name client-id)
-        {:keys [protocol host port mount path token]} vault
-        vault-url                               (vault/vault-url protocol host port)
+        {:keys [protocol host port mount path token vendor]} vault
+        vault-url                               (hashicorp-vault/vault-url protocol host port)
+        hashicorp-vault                         (hashicorp-vault/->HashicorpVault vault-url token mount path)
         vault-path                              (format path environment color base-domains client-id)]
     (println (format "Secret of client \"%s\" will be exported in hashicorp vault at url %s and path %s" client-id vault-url vault-path))
-    (vault/write-keycloak-client-secret! vault-url token mount vault-path secret)))
+    (vault/write-secret! hashicorp-vault client-id secret)))
+
+(defmethod export-secret-in-vault! :gcp-sm  [^org.keycloak.admin.client.Keycloak keycloak-client {:keys [vault environment color base-domains] :as infra-context} realm-name client-id]
+  (let [secret                      (get-client-secret keycloak-client realm-name client-id)
+        {:keys [project-id secret-id vendor]} vault
+        secret-name                 (format "realm/%s/client/%s" realm-name client-id)
+        google-secret-manager       (google-vault/->GoogleSecretManager project-id)]
+    (vault/write-secret! google-secret-manager (or secret-id secret-name) secret)
+    (println (format "Secret of client \"%s\" will be exported in google secret-manager for project-id %s and secret-id %s secret %s" client-id project-id (or secret-id secret-name) secret))))
 
 (defn create-mappers! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id]
   (println "Create protocol mappers for client" client-id)
@@ -102,7 +117,7 @@
              (println (format "Will update the admin user %s (user-id %s) with %s" (:username user-admin) user-admin-id user-admin))
              (user/update-user! admin-client "master" user-admin-id user-admin))))))
 
-(defn init-clients! [^org.keycloak.admin.client.Keycloak admin-client realm-name clients-data infra-context export-dir secret-file-without-extension secret-path]
+(defn init-clients! [^org.keycloak.admin.client.Keycloak admin-client realm-name clients-data infra-context]
   (doseq [{:keys [name public? redirect-uris web-origins] :as client-data} clients-data]
     (let [client (client client-data)
           client-id name
@@ -114,7 +129,9 @@
       (when (:secret-file infra-context )
         (export-secret-in-files! admin-client realm-name client-id (:secret-file infra-context)))
       (when (:vault infra-context)
-        (export-secret-in-vault! admin-client infra-context realm-name client-id))))
+        ;;by default we use hashicorp vault (downward compatibility with previous version)
+        (let [infra-context (if (get-in infra-context [:vault :vendor]) infra-context (assoc-in infra-context [:vault :vendor] :hashicorp))]
+          (export-secret-in-vault! admin-client infra-context realm-name client-id)))))
   (println (format "%s Clients created in realm %s" (count clients-data) realm-name)))
 
 (defn init-roles! [^org.keycloak.admin.client.Keycloak admin-client realm-name roles-data]
@@ -154,12 +171,12 @@
   "Create a structure of keycloak objects (realm, clients, roles) and fill it with groups and users"
   ([^org.keycloak.admin.client.Keycloak admin-client data]
    (init! admin-client data nil))
-  ([^org.keycloak.admin.client.Keycloak admin-client data infra-context secret-export-dir export-file-without-extension secret-path]
+  ([^org.keycloak.admin.client.Keycloak admin-client data infra-context]
    (when (or (nil? admin-client) (nil? data))
      (throw (ex-info "Admin client and/or realm config data can't be null")))
    (let [realm-name (get-in data [:realm :name])]
      (init-realm!                admin-client (:realm data))
-     (init-clients!              admin-client realm-name (:clients data) infra-context secret-export-dir export-file-without-extension secret-path)
+     (init-clients!              admin-client realm-name (:clients data) infra-context)
      (init-roles!                admin-client realm-name (:roles data))
      (init-groups-and-gen-users! admin-client realm-name data)
      (init-users!                admin-client realm-name (:users data))
@@ -236,12 +253,12 @@
         (do
           (println (format "Init realm %s with following configuration:" (get-in config-data [:realm :name])))
           (clojure.pprint/pprint (dissoc-sensitive-data config-data))
-          (init! admin-client config-data infra-context secret-export-dir secret-file-without-extension secret-path))
+          (init! admin-client config-data infra-context))
         (when (or (vector? config-data) (seq? config-data))
           (doseq [realm-data config-data]
             (println (format "Init realm %s with following configuration:" (get-in realm-data [:realm :name])))
             (clojure.pprint/pprint (dissoc-sensitive-data realm-data))
-            (init! admin-client realm-data infra-context secret-export-dir secret-file-without-extension secret-path))))
+            (init! admin-client realm-data infra-context))))
       (shutdown-agents))))
 
 (def init-cli-opts

@@ -7,7 +7,13 @@
    [keycloak.admin :refer :all]
    [keycloak.user :as user]
    [keycloak.utils :as utils :refer [auth-server-url]]
-   [keycloak.deployment :as deployment :refer [keycloak-client client-conf]]))
+   [keycloak.deployment :as deployment :refer [keycloak-client client-conf]]
+   [keycloak.vault.protocol :as vault :refer [Vault write-secret! read-secret]]
+   [keycloak.vault.hashicorp :as hashicorp-vault]
+   [keycloak.vault.google :as google-vault]
+
+
+   [clojure.string :as str]))
 
 (def infra-context {:environment "automatedtest"
                     :color       "blue"
@@ -29,10 +35,10 @@
                       ;;%1$s is the environment, %2$s is the color, %3$s is the base-domain, %4$s is the client-id (so depends of your realm-config.clj code)
                       :path     "/env/%1$s/keycloak/clients/%4$s"})
 
-(def google-secret-manager-vault {:project-id  "adixe-1168"
-                                  :vendor      :google
-                                  :secret-id   "KEYCLOAK_CLIENT_SECRET_NAME"
-                                  :replication-policy "automatic"})
+(def google-sm-vault {:project-id  "adixe-1168"
+                      :vendor      :gcp-sm
+                      :secret-id   "secret-name-test"
+                      :replication-policy "automatic"})
 
 (def integration-test-conf (deployment/client-conf (utils/auth-server-url infra-context) "master" "admin-cli"))
 (def admin-client (deployment/keycloak-client integration-test-conf (get-in infra-context [:keycloak :login]) (get-in infra-context [:keycloak :password])))
@@ -88,12 +94,22 @@
 
 (deftest ^:integration vault-test
   (testing "Hashicorp vault"
-
     )
   (testing "Google secret manager "
     ;;this test needs the environment variable GOOGLE_APPLICATION_CREDENTIALS defined with value as the path of the JSON file that contains your service account key.
-    (doseq [realm-data static-realm-data]
-      (starter/init-realm! admin-client (:realm realm-data)))))
+    (let [realm-name (str "test-realm-" (rand-int 1000))]
+      (doseq [realm-data static-realm-data]
+        (starter/init! admin-client (assoc-in realm-data [:realm :name] realm-name) (assoc infra-context :vault google-sm-vault))
+        (let [vault (google-vault/->GoogleSecretManager (:project-id google-sm-vault))]
+          (doseq [{:keys [name public?] :as client} (:clients realm-data)]
+            (let [secret-value (vault/read-secret vault name)]
+              ;(println "secret-value" secret-value)
+              (when (not public?)
+                (fact secret-value => (comp not str/blank?)))))))
+      (testing "realm deletion"
+        (delete-realm! admin-client realm-name)
+        (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name)))
+        ))))
 
 
 (deftest config-test

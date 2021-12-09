@@ -18,13 +18,23 @@
   (let [client (authenticate! (new-client vault-url) token)]
     (vault-kvv2/write-secret! client mount path payload)))
 
-(defn write-keycloak-client-secret! [vault-url token mount path secret]
-  (try
-    (write-secret! vault-url token mount path {:secret secret})
+(defn- read-secret [vault-url token mount path]
+  (let [client (authenticate! (new-client vault-url) token)]
+    (vault-kvv2/read-secret client mount path)))
+
+(defrecord HashicorpVault [client token mount]
+  Vault
+  (write-secret! [vault path payload]
+    (try
+      (write-secret! vault-url token mount path {:secret payload})
     (catch java.lang.Throwable e
       (println (format "Can't write secret to vault at %s with engine %s and path %s because of exception:" vault-url mount path))
-      (.printStackTrace e))))
-
-(defrecord HashicorpVault [client token mount path]
-  Vault
-  (write-secret! [vault payload]))
+      (.printStackTrace e)))
+    )
+  (read-secret [vault path]
+    (try
+      (read-secret vault-url token mount path)
+    (catch java.lang.Throwable e
+      (println (format "Can't read secret to vault at %s with engine %s and path %s because of exception:" vault-url mount path))
+      (.printStackTrace e)))
+    ))
