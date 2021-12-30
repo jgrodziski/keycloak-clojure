@@ -1,6 +1,6 @@
 (ns keycloak.bean
   (:require [bean-dip.core :as bean-dip])
-  (:import [org.keycloak.representations.idm ClientRepresentation ProtocolMapperRepresentation RealmRepresentation]
+  (:import [org.keycloak.representations.idm ClientRepresentation ProtocolMapperRepresentation RealmRepresentation UserRepresentation]
            [org.keycloak.adapters KeycloakDeployment]
            [org.keycloak.adapters.rotation JWKPublicKeyLocator]))
 
@@ -96,3 +96,7 @@
                                                :register-node-period :expose-token? :SSL-enabled? :resource-name :turn-off-change-session-id-on-login?
                                                :token-url :pkce? :cors-exposed-headers :token-minimum-time-to-live :register-node-at-startup?
                                                :relative-urls :ssl-required :class :not-before :resource-credentials})
+
+(bean-dip/def-translation UserRepresentation #{:email :credentials  :username :first-name :client-roles :realm-roles :id
+                                               :last-name :origin :social-links :client-consents :groups :attributes :application-roles
+                                               })
