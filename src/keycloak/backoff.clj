@@ -18,7 +18,7 @@
     - put an error in =error= (will break the loop)
     - put an error which causes a retry in =retry=.
   * the exponential backoff loop can be configured with :get-delay-ms, a function which returns a (potentially infinite) seq of backoff intervals,
-   and :imprecision-ms, a maximim number of milliseconds with which to randomly blurr the backoff intervals.
+   and :imprecision-ms, a maximum number of milliseconds with which to randomly blurr the backoff intervals.
 
   Returns a channel which will receive either the completed result or an error."
   [{:as opts

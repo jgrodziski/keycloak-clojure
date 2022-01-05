@@ -98,5 +98,4 @@
                                                :relative-urls :ssl-required :class :not-before :resource-credentials})
 
 (bean-dip/def-translation UserRepresentation #{:email :credentials  :username :first-name :client-roles :realm-roles :id
-                                               :last-name :origin :social-links :client-consents :groups :attributes :application-roles
-                                               })
+                                               :last-name :origin :social-links :client-consents :groups :attributes :application-roles})

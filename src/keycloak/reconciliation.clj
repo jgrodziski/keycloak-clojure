@@ -33,24 +33,30 @@
   (let [missing-ids (difference (set (map k desired)) (set (map k current)))]
     (filter #(missing-ids (k %)) desired)))
 
-(defn make-plan [k current desired]
-    )
-
-(defn apply-plan [fns plan]
-  ()
-  )
-
-(defn apply-users-plan [keycloak-client realm-name {:keys [updates deletions additions] :as plan}]
-  (let [additions-result (for [addition additions]
-                           (let [user (user/create-user! keycloak-client realm-name addition)]
-                             (println (format "User %s added" (:username addition)))
-                             user))])
-  (doseq [deletion deletions]
-    (user/delete-user! keycloak-client realm-name (:username deletion))
-    (println (format "User %s deleted" (:username deletion))))
-  (doseq [update updates]
-    (user/update-user! keycloak-client realm-name (user/user-id keycloak-client realm-name (:username update)) update)
-    (println (format "User %s updated" (:username update)))))
+(defn apply-users-plan [keycloak-client realm-name plan]
+  (let [config {:user/additions {:apply-fn    (fn [x]
+                                                (let [user (user/create-user! keycloak-client realm-name x)]
+                                                  (println (format "User %s added" (:username x)))
+                                                  (bean/UserRepresentation->map user)))
+                                 :rollback-fn (fn [x] (user/delete-user! keycloak-client realm-name (user/user-id keycloak-client realm-name (:username x))))}
+                :user/updates   {:apply-fn    (fn [x]
+                                                (let [user (user/update-user! keycloak-client realm-name (user/user-id keycloak-client realm-name (:username x)) x)]
+                                                  (println (format "User %s updated" (:username x)))
+                                                  (bean/UserRepresentation->map user)))
+                                 :rollback-fn (fn [x] nil)}
+                :user/deletions {:apply-fn    (fn [x]
+                                                (let [user-id (user/delete-user! keycloak-client realm-name (:username x))]
+                                                  (println (format "User with id %s deleted" user-id))
+                                                  user-id))
+                                 :rollback-fn (fn [x] nil)}}]
+    (into {} (map (fn [steps-key]
+                    (let [apply-fn (get-in config [steps-key :apply-fn])
+                          steps    (get plan steps-key)]
+                      [steps-key (doall (for [step steps]
+                                          (let [_      (println (format "Apply function for key %s and step %s" steps-key step))
+                                                result (apply-fn step)]
+                                            {:result result :success? (not (nil? result)) :error? (nil? result)})
+                                          ))])) (keys config)))))
 
 (defn make-users-plan [keycloak-client realm-name desired-users]
   (let [current-users          (->> (user/get-users keycloak-client realm-name)
@@ -58,8 +64,11 @@
                                     (map #(dissoc % :id)));vector of UserRepresentation
         filtered-desired-users (map #(select-keys % [:username :email :first-name :last-name :attributes]) desired-users)]
     {:user/updates   (find-differents :username current-users filtered-desired-users)
-     :user/deletions (find-deletions  :username current-users filtered-desired-users)
-     :user/additions (find-additions  :username current-users filtered-desired-users)}))
+     :user/deletions (find-deletions  :username current-users desired-users)
+     :user/additions (find-additions  :username current-users desired-users)}))
+
+(defn make-user-roles-plan [keycloak-client realm-name desired-users]
+  )
 
 (defn make-role-mappings-plan [keycloak-client realm-name roles desired-role-mappings]
   (let [current-role-mappings (user/get-users-aggregated-by-roles keycloak-client realm-name roles)]))

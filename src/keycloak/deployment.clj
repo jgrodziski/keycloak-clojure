@@ -3,7 +3,8 @@
             [cheshire.core :as json :refer [encode]]
             [clojure.java.io :as io :refer [input-stream]]
             [keycloak.admin :refer [get-client-secret]])
-  (:import [org.keycloak.adapters KeycloakDeployment KeycloakDeploymentBuilder]
+  (:import [java.util.concurrent TimeUnit]
+           [org.keycloak.adapters KeycloakDeployment KeycloakDeploymentBuilder]
            [org.keycloak.admin.client KeycloakBuilder]
            [org.keycloak RSATokenVerifier OAuth2Constants]
            [org.jboss.resteasy.client.jaxrs ResteasyClientBuilder]))
@@ -46,6 +47,10 @@
   ([auth-server-url realm-name client-id client-secret]
    (io/input-stream (.getBytes (json/encode (client-conf auth-server-url realm-name client-id client-secret))))))
 
+(def REST_CONNECTION_POOL_SIZE 4)
+(def REST_CONNECT_TIMEOUT_SECONDS 2)
+(def REST_READ_TIMEOUT_SECONDS 10)
+
 (defn- base-keycloak-builder
   "returns a org.keycloak.admin.client.KeycloakBuilder with a RestEasy http client (connection pool size of 4) given a [[client-conf]] param"
   ^org.keycloak.admin.client.KeycloakBuilder [client-conf]
@@ -54,7 +59,9 @@
       (.serverUrl (:auth-server-url client-conf))
       (.clientId (:resource client-conf))
       (.resteasyClient (-> (ResteasyClientBuilder.)
-                           (.connectionPoolSize 4)
+                           (.connectionPoolSize REST_CONNECTION_POOL_SIZE)
+                           (.connectTimeout REST_CONNECT_TIMEOUT_SECONDS TimeUnit/SECONDS)
+                           (.readTimeout REST_READ_TIMEOUT_SECONDS TimeUnit/SECONDS)
                            (.build)))))
 
 (defn keycloak-client

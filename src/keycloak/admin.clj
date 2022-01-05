@@ -125,6 +125,13 @@
   (info "create role" role-name "in realm" realm-name)
   (-> keycloak-client (.realm realm-name) (.roles) (.create (role-representation role-name))))
 
+(defn create-roles!
+    "Create the realm roles `role-names`, accept also a seq of role-name in realm `realm-name`"
+  [^Keycloak keycloak-client realm-name role-names]
+  (info "create roles" role-names "in realm" realm-name)
+  (doseq [name role-names]
+      (-> keycloak-client (.realm realm-name) (.roles) (.create (role-representation name))) ))
+
 (defn delete-role!
   "Delete the realm role `role-name` in realm `realm-name`"
   [^Keycloak keycloak-client realm-name role-name]

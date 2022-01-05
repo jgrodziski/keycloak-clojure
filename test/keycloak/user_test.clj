@@ -2,7 +2,6 @@
   (:require
    [clojure.test :as test :refer [deftest testing is]]
    [clojure.tools.logging :as log]
-   [clojure.java.shell :as shell]
 
    [testit.core :refer [fact facts => truthy falsey]]
    [sc.api :as sc]
@@ -12,18 +11,13 @@
    [keycloak.admin :refer :all]
    [keycloak.authn :as authn :refer [authenticate access-token]]
    [keycloak.user :as user :refer [delete-and-create-user!]]
+   [keycloak.utils-test :refer [minikube-keycloak-service-or-localhost]]
    ))
 
 
 (def admin-login "admin")
 (def admin-password "secretadmin")
 ;(def auth-server-url "http://login.default.minikube.devmachine")
-
-(defn minikube-keycloak-service-or-localhost []
-  (let [{:keys [out exit]} (shell/sh  "minikube" "service" "--url" "keycloak-service")]
-    (if (= 0 exit)
-      (str (clojure.string/replace out "\n" "") "/auth")
-      "http://localhost:8090/auth")))
 
 (def auth-server-url (minikube-keycloak-service-or-localhost))
 
@@ -119,7 +113,7 @@
                     ;(sc/spy)
                     )
                   )
-                #_(testing "disable user then re-enable it"
+                (testing "disable user then re-enable it"
                   (fact (.isEnabled (user/disable-user! admin-client realm-name username)) => false)
                   (fact (.isEnabled (user/enable-user! admin-client realm-name username)) => true))
                 (testing "Update the user with password provided should be ok"
