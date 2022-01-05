@@ -7,7 +7,7 @@
         org.clojure/tools.logging {:mvn/version "1.1.0"}
         org.clojure/java.data     {:mvn/version "1.0.86"}
 
-        talltale/talltale {:mvn/version "0.5.3"}
+        talltale/talltale {:mvn/version "0.5.8"}
 
         clj-commons/fs {:mvn/version "1.6.309"}
 
@@ -34,6 +34,9 @@
         ;;used by cljs frontend
         com.taoensso/timbre       {:mvn/version "5.1.2" :scope "provided"}
 
+        ;;diff library used by the reconciliation loop
+        juji/editscript     {:mvn/version "0.5.7"}
+
         borkdude/sci        {:mvn/version "0.1.1-alpha.9"}
         camel-snake-kebab/camel-snake-kebab   {:mvn/version "0.4.2"}
 
@@ -51,15 +54,15 @@
         com.google.cloud/google-cloud-secretmanager {:mvn/version "2.0.4"}
 
         ;; keycloak stuff
-        org.keycloak/keycloak-adapter-core   {:mvn/version "15.0.2"}
-        org.keycloak/keycloak-core           {:mvn/version "15.0.2"}
-        org.keycloak/keycloak-authz-client   {:mvn/version "15.0.2"}
-        org.keycloak/keycloak-adapter-spi    {:mvn/version "15.0.2"}
+        org.keycloak/keycloak-adapter-core   {:mvn/version "16.1.0"}
+        org.keycloak/keycloak-core           {:mvn/version "16.1.0"}
+        org.keycloak/keycloak-authz-client   {:mvn/version "16.1.0"}
+        org.keycloak/keycloak-adapter-spi    {:mvn/version "16.1.0"}
         org.jboss.logging/jboss-logging      {:mvn/version "3.4.1.Final"}
         org.apache.httpcomponents/httpclient {:mvn/version "4.5.13"}
 
         ;;all the deps below are for the admin client (don't know why the transitive deps didn't work)
-        org.keycloak/keycloak-admin-client                      {:mvn/version "15.0.2"}
+        org.keycloak/keycloak-admin-client                      {:mvn/version "16.1.0"}
         com.fasterxml.jackson.core/jackson-databind             {:mvn/version "2.12.1"}
         com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider {:mvn/version "2.12.1"}
         org.jboss.resteasy/resteasy-jackson2-provider       {:mvn/version "3.13.2.Final"}
