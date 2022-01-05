@@ -5,6 +5,8 @@
             [clojure.java.data :refer [from-java]]
             [clojure.java.io :as io]
             [cheshire.core :as json :refer [encode]]
+            [talltale.core :as talltale]
+            [keycloak.bean :as bean]
             [keycloak.utils :as utils :refer [hint-typed-doto set-attributes]])
   (:import [org.keycloak.representations.idm CredentialRepresentation UserRepresentation RoleRepresentation]
            [javax.ws.rs.core Response]))
@@ -56,7 +58,8 @@
    (user-for-update person))
   ([{:keys [username first-name last-name email password attributes] :as person} ^java.util.Collection required-actions]
    (doto (user-for-update person)
-     (.setRequiredActions (java.util.ArrayList. required-actions)))))
+     (.setRequiredActions (java.util.ArrayList. required-actions))))
+  )
 
 (defn search-user
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name user-attribute]
@@ -108,7 +111,8 @@
   (let [user-id (user-id keycloak-client realm-name user-attribute)]
     (if user-id
       (-> keycloak-client (.realm realm-name) (.users) (.delete user-id))
-      (info "user"user-attribute"not found in realm"realm-name))))
+      (info "user"user-attribute"not found in realm"realm-name))
+    user-id))
 
 (defn username-or-email-exists? [^org.keycloak.admin.client.Keycloak keycloak-client realm-name ^org.keycloak.representations.idm.UserRepresentation user]
   (let [username-exists? (not (nil? (user-id keycloak-client realm-name (.getUsername user))))
@@ -117,16 +121,16 @@
 
 (defn get-user-resource
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username]
-  (let [user-searched (search-user keycloak-client realm-name username)
-        ^org.keycloak.representations.idm.UserRepresentation user (-> user-searched first)
+  (let [users (search-user keycloak-client realm-name username)
+        ^org.keycloak.representations.idm.UserRepresentation user (exact-match users username)
         user-id     (.getId user) 
         ^org.keycloak.admin.client.resource.UserResource user-resource (-> keycloak-client (.realm realm-name) (.users) (.get user-id))]
-    {:user-searched user-searched
+    {:user-searched users
      :user-id       user-id
      :user-resource user-resource}))
 
 (defn- get-realm-roles-representations
-  ^org.keycloak.representations.idm.RoleRepresentation
+  ^RoleRepresentation
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name roles]
   (doall (map (fn [role]
                 (try
@@ -151,7 +155,7 @@
 (defn remove-realm-roles!
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username roles]
   (when roles
-    (let [{:keys [user-searched user-id user-resource]} (get-user-resource keycloak-client realm-name username)
+    (let [{:keys [user-resource]} (get-user-resource keycloak-client realm-name username)
           roles-representations                         (get-realm-roles-representations keycloak-client realm-name roles)]
       (-> ^org.keycloak.admin.client.resource.UserResource user-resource
           (.roles)
@@ -161,7 +165,7 @@
 (defn set-realm-roles!
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username roles]
   (when roles
-    (let [{:keys [user-searched user-id user-resource]} (get-user-resource keycloak-client realm-name username)
+    (let [{:keys [user-resource]} (get-user-resource keycloak-client realm-name username)
           roles-representations                         (get-realm-roles-representations keycloak-client realm-name roles)
           role-scope-resource                           (-> ^org.keycloak.admin.client.resource.UserResource user-resource (.roles) (.realmLevel))]
       (.remove role-scope-resource (.listEffective role-scope-resource))
@@ -174,7 +178,7 @@
 
 (defn add-client-roles!
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username client-roles]
-  (let [{:keys [user-searched user-id user-resource]} (get-user-resource keycloak-client realm-name username)]
+  (let [{:keys [user-resource]} (get-user-resource keycloak-client realm-name username)]
     (when (not-empty client-roles) (info (format "Add client roles %s to user %s" (pr-str client-roles ) username)))
     (doseq [[client-id roles] client-roles]
       (let [client (get-client keycloak-client realm-name client-id)
@@ -193,6 +197,8 @@
             (.roles)
             (.clientLevel (.getId client))
             (.add (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles-representations)))))))))
+
+
 
 (defn- check-user-properly-created [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username email]
   (let [user-searched (search-user keycloak-client realm-name username)]
@@ -255,7 +261,7 @@
   (info "create user" username "in realm" realm-name)
   (let [resp (-> keycloak-client (.realm realm-name) (.users) (.create (user-for-creation person)))
         user-id (extract-id resp)]
-    (.close resp)
+    (when resp (.close resp))
     (info "user with username " username "created in realm" realm-name " with id" user-id)
     (if user-id
       (get-user keycloak-client realm-name user-id)
@@ -269,7 +275,7 @@
   (let [_                (info "Create or update user" username "in realm" realm-name "with realm roles" realm-roles "client roles"client-roles)
         username-exists? (not (nil? (user-id keycloak-client realm-name username)))
         email-exists?    (not (nil? (user-id keycloak-client realm-name email)))
-        user-id          (user-id keycloak-client realm-name username first-name last-name email)]
+        user-id          (user-id keycloak-client realm-name username)]
     (if username-exists? (info (str "User already exists with username: " username)))
     (if email-exists? (info (str "User already exists with email: " email)))
     (when (and email-exists? (not username-exists?))
@@ -296,6 +302,18 @@
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name first result]
    (-> keycloak-client (.realm realm-name) (.users) (.list (Integer/valueOf first)  (Integer/valueOf result)))))
 
+(defn get-users-beans [^org.keycloak.admin.client.Keycloak keycloak-client realm-name]
+  (map bean/ClientRepresentation->map (get-users keycloak-client realm-name)))
+
+(defn get-users-with-realm-role
+  "return a list of users as UserRepresentation that have the `role-name` as role mapping"
+  ^java.util.List [^org.keycloak.admin.client.Keycloak keycloak-client realm-name role-name]
+  (-> keycloak-client (.realm realm-name) (.roles) (.get role-name) (.getRoleUserMembers)))
+
+(defn get-users-aggregated-by-roles [^org.keycloak.admin.client.Keycloak keycloak-client realm-name roles]
+  (into {} (map (fn [role]
+                 [role (get-users-with-realm-role keycloak-client realm-name role)]) roles)))
+
 (defn logout-user!
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name user-id]
   (-> keycloak-client
@@ -303,3 +321,24 @@
       (.users)
       (.get user-id)
       (.logout)))
+
+(defn user-representation->person [user-rep]
+  (bean/UserRepresentation->map user-rep))
+
+(defn generate-username
+  ([] (generate-username "fake-user-"))
+  ([prefix]
+   (str prefix (rand-int 1000))))
+
+(defn generate-user
+  ([] (generate-user (generate-username)))
+  ([username]
+   (merge (talltale/person)
+          {:username username
+           :email (talltale/fixed-email username)
+           :password "password"})))
+
+(defn generate-user-representation
+  ([] (generate-user-representation (generate-username)))
+  ([username]
+   (user-for-update (generate-user username))))
