@@ -4,6 +4,12 @@
                [me.raynes.fs :as fs])
   (:import [java.net Socket InetSocketAddress]))
 
+(defn keycloak-running? [keycloak-client]
+  (try
+    (-> keycloak-client (.realm "master") (.toRepresentation) bean)
+    (catch javax.ws.rs.ProcessingException pe false)
+    (catch java.net.ConnectException ce false)))
+
 (defn ns-clean
   "Remove all internal mappings from a given name space or the current one if no parameter given."
   ([] (ns-clean *ns*)) 
@@ -42,6 +48,23 @@
                           `( ~(setter-sym a) ~val)))
                       m)]
     `(fn [obj#] (hint-typed-doto ~type obj# ~@expanded))))
+
+(defmacro map->HashMap
+  "Take a clojure map and return a java HashMap with all the keys/values put"
+  [m]
+  (if (symbol? m)
+    `(do (let [hashmap# (java.util.HashMap.)]
+           (doseq [[k# v#] ~m]
+             (.put hashmap# k# v#))
+           hashmap#))
+    `(doto (java.util.HashMap.)
+       ~@(map (fn [[k v]] `(.put ~k ~v)) ~m))))
+
+(defmacro letdef [bindings]
+  (let [pairs (partition 2 bindings)]
+    `(do
+       ~@(map (fn [[symbol expr]]
+              `(def ~symbol ~expr)) pairs))))
 
 (defn set-attributes
   "call setAttributes(Map<String,String>) method on representation object with a clojure map"

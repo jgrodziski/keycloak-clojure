@@ -7,7 +7,8 @@
    [keycloak.admin :as admin]
    [keycloak.bean :as bean]
    [keycloak.user :as user]
-   [keycloak.deployment :as deployment :refer [keycloak-client client-conf]])
+   [keycloak.deployment :as deployment :refer [keycloak-client client-conf]]
+   [keycloak.utils :as utils :refer [keycloak-running? letdef]])
   (:import [org.keycloak.representations.idm ClientRepresentation ProtocolMapperRepresentation]))
 
 
@@ -106,11 +107,6 @@
       (admin/delete-realm! admin-client realm-name)
       (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
 
-(defn keycloak-running? [keycloak-client]
-  (try
-    (-> keycloak-client (.realm "master") (.toRepresentation) bean)
-    (catch javax.ws.rs.ProcessingException pe false)
-    (catch java.net.ConnectException ce false)))
 
 (deftest test-realm-representation []
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)
@@ -179,7 +175,6 @@
       (admin/delete-realm! admin-client realm-name)
       (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
 
-
 (deftest ^:integration test-create-or-update-client
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)
         _            (assert (keycloak-running? admin-client))
@@ -192,6 +187,8 @@
                            (admin/create-or-update-client! admin-client realm-name)
                            (bean/ClientRepresentation->map))]
         (fact client =in=> {:client-id client-id :name client-id :public-client? false})))
+    (testing "the mappers creation"
+      )
     (testing "realm deletion"
       (admin/delete-realm! admin-client realm-name)
       (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
