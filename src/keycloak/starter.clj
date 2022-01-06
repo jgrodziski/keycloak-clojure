@@ -21,7 +21,8 @@
    [me.raynes.fs :as fs]
    [sci.core :as sci]
    [talltale.core :as talltale :refer :all]
-   [clojure.pprint :as pprint])
+   [clojure.pprint :as pprint]
+   [keycloak.admin :as admin])
   (:import
    java.io.PushbackReader))
 
@@ -86,13 +87,6 @@
     (vault/write-secret! google-secret-manager (or secret-id secret-name) secret)
     (println (format "Secret of client \"%s\" will be exported in google secret-manager for project-id %s and secret-id %s secret %s" client-id project-id (or secret-id secret-name) secret))))
 
-(defn create-mappers! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id]
-  (println "Create protocol mappers for client" client-id)
-  (create-protocol-mapper! keycloak-client realm-name client-id
-                           (group-membership-mapper "group-mapper" "group"))
-  (create-protocol-mapper! keycloak-client realm-name client-id
-                           (user-attribute-mapper "org-ref-mapper" "org-ref" "org-ref" "String")))
-
 (defn generate-user [username-creator-fn role group subgroup idx & opts]
   (merge (talltale/person)
          {:username (apply username-creator-fn role group subgroup idx opts)
@@ -117,15 +111,22 @@
              (println (format "Will update the admin user %s (user-id %s) with %s" (:username user-admin) user-admin-id user-admin))
              (user/update-user! admin-client "master" user-admin-id user-admin))))))
 
+(defn create-mappers! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id mappers]
+  (when (and mappers (not (empty? mappers)))
+    (println "Create protocol mappers for client" client-id)
+    (for [{:keys [name type config] :as mapper} mappers]
+      (do (println (format "  Create protocol mapper for client%s: name %s type %s config %s" client-id name type config))
+          (create-protocol-mapper! keycloak-client realm-name client-id (admin/mapper name type config))))))
+
 (defn init-clients! [^org.keycloak.admin.client.Keycloak admin-client realm-name clients-data infra-context]
-  (doseq [{:keys [name public? redirect-uris web-origins] :as client-data} clients-data]
+  (doseq [{:keys [name public? redirect-uris web-origins mappers] :as client-data} clients-data]
     (let [client (client client-data)
           client-id name
           _ (println (format "Create client \"%s\" in realm %s and client data %s" client-id realm-name client-data))
           created-client (create-or-update-client! admin-client realm-name client)]
       (if (not created-client) (throw (Exception. (format "Client %s not created in realm %s" client-id realm-name))))
       (println (format "Client with Id \"%s\" and clientId \"%s\" created in realm %s" (.getId created-client) (.getClientId created-client) realm-name))
-      (create-mappers! admin-client realm-name name)
+      (create-mappers! admin-client realm-name client-id mappers)
       (when (:secret-file infra-context )
         (export-secret-in-files! admin-client realm-name client-id (:secret-file infra-context)))
       (when (:vault infra-context)
