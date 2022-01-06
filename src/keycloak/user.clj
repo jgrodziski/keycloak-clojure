@@ -121,8 +121,8 @@
 (defn get-user-resource
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username]
   (let [user-id     (user-id keycloak-client realm-name username)
-        ^org.keycloak.admin.client.resource.UserResource user-resource (-> keycloak-client (.realm realm-name) (.users) (.get user-id))]
-    (if user-resource
+        ^org.keycloak.admin.client.resource.UserResource user-resource (when user-id (-> keycloak-client (.realm realm-name) (.users) (.get user-id)))]
+    (if (and user-id user-resource)
       {:user-id       user-id
        :user-resource user-resource}
       (throw (ex-info (format "User %s in realm %s not found! (user-id %s)" username realm-name user-id) {:username username :realm-name realm-name :user-id user-id})))))
