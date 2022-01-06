@@ -425,6 +425,48 @@ public
       (let [id (.getId client-id)]
         (-> keycloak-client (.realm realm-name) (.clients) (.get id) (.getSecret) (.getValue))))))
 
+(def oidc-usersessionmodel-note-mapper  "oidc-usersessionmodel-note-mapper")
+(def oidc-group-membership-mapper       "oidc-group-membership-mapper")
+(def oidc-usermodel-attribute-mapper    "oidc-usermodel-attribute-mapper")
+(def oidc-usermodel-realm-role-mapper   "oidc-usermodel-realm-role-mapper")
+(def oidc-audience-mapper               "oidc-audience-mapper")
+(def oidc-usermodel-property-mapper     "oidc-usermodel-property-mapper")
+(def oidc-hardcoded-claim-mapper        "oidc-hardcoded-claim-mapper")
+(def oidc-hardcoded-role-mapper         "oidc-hardcoded-role-mapper")
+(def oidc-allowed-origins-mapper        "oidc-allowed-origins-mapper")
+(def oidc-audience-resolve-mapper       "oidc-audience-resolve-mapper")
+(def oidc-claims-param-token-mapper     "oidc-claims-param-token-mapper")
+(def oidc-usermodel-client-role-mapper  "oidc-usermodel-client-role-mapper")
+(def oidc-full-name-mapper              "oidc-full-name-mapper")
+(def oidc-address-mapper                "oidc-address-mapper")
+(def oidc-role-name-mapper              "oidc-role-name-mapper")
+
+(def protocol-mappers-default-config {"oidc-usersessionmodel-note-mapper" {"id.token.claim" "true" "access.token.claim" "true" "access.tokenResponse.claim" "false"}
+                                      "oidc-group-membership-mapper"      {"full.path" "true", "id.token.claim" "true", "access.token.claim" "true", "userinfo.token.claim" "true"}
+                                      "oidc-usermodel-attribute-mapper"   {"id.token.claim" "true", "access.token.claim" "true", "userinfo.token.claim" "true"}
+                                      "oidc-usermodel-realm-role-mapper"  {"id.token.claim" "true", "access.token.claim" "true", "multivalued" "true", "userinfo.token.claim" "true"}
+                                      "oidc-audience-mapper"              {"id.token.claim" "false", "access.token.claim" "true"}
+                                      "oidc-usermodel-property-mapper"    {"id.token.claim" "true", "access.token.claim" "true", "userinfo.token.claim" "true"}
+                                      "oidc-hardcoded-claim-mapper"       {"id.token.claim" "true", "access.token.claim" "true", "userinfo.token.claim" "true", "access.tokenResponse.claim" "false"}
+                                      "oidc-hardcoded-role-mapper"        {}
+                                      "oidc-allowed-origins-mapper"       {}
+                                      "oidc-audience-resolve-mapper"      {}
+                                      "oidc-claims-param-token-mapper"    {"id.token.claim" "true", "userinfo.token.claim" "true"}
+                                      "oidc-usermodel-client-role-mapper" {"id.token.claim" "true", "access.token.claim" "true", "multivalued" "true", "userinfo.token.claim" "true"}
+                                      "oidc-full-name-mapper"             {"id.token.claim" "true", "access.token.claim" "true", "userinfo.token.claim" "true"}
+                                      "oidc-address-mapper"               {"user.attribute.formatted" "formatted", "user.attribute.country" "country", "user.attribute.postal_code" "postal_code", "userinfo.token.claim" "true", "user.attribute.street" "street", "id.token.claim" "true", "user.attribute.region" "region", "access.token.claim" "true", "user.attribute.locality" "locality"}
+                                      "oidc-role-name-mapper"             {}})
+
+(defn mapper "Create a mapper with name and mapper among the one provided" [name mapper custom-config]
+  (let [default-config (get protocol-mappers-default-config mapper)
+        config         (merge default-config custom-config)]
+    (doto (ProtocolMapperRepresentation.)
+      (.setProtocol "openid-connect")
+      (.setProtocolMapper mapper)
+      (.setName name)
+      (.setConfig (utils/map->HashMap config)))))
+
+
 (defn group-membership-mapper [name claim-name]
   (let [config (doto (java.util.HashMap.)
                  (.put "full.path" "true")
@@ -474,6 +516,10 @@ public
   (def integration-test-conf (keycloak.deployment/client-conf "http://localhost:8090/auth" "master" "admin-cli"))
   (def admin-client (keycloak.deployment/keycloak-client integration-test-conf "admin" "secretadmin"))
 
+  (def group-mapper (mapper "group-mapper"   oidc-group-membership-mapper {"claim.name" "yo"}))
+  (def attr-mapper  (mapper "org-ref-mapper" oidc-usermodel-attribute-mapper {"user.attribute" "org-ref"
+                                                                              "claim.name" "org-ref"
+                                                                              "jsonType.label" "String"} ))
 
   (create-protocol-mapper! c "electre" "diffusion-frontend"
                            (group-membership-mapper "testjs" "group"))
