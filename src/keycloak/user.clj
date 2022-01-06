@@ -58,8 +58,7 @@
    (user-for-update person))
   ([{:keys [username first-name last-name email password attributes] :as person} ^java.util.Collection required-actions]
    (doto (user-for-update person)
-     (.setRequiredActions (java.util.ArrayList. required-actions))))
-  )
+     (.setRequiredActions (java.util.ArrayList. required-actions)))))
 
 (defn search-user
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name user-attribute]
@@ -116,22 +115,19 @@
 
 (defn username-or-email-exists? [^org.keycloak.admin.client.Keycloak keycloak-client realm-name ^org.keycloak.representations.idm.UserRepresentation user]
   (let [username-exists? (not (nil? (user-id keycloak-client realm-name (.getUsername user))))
-        email-exists? (not (nil? (user-id keycloak-client realm-name (.getEmail user))))]
+        email-exists?    (not (nil? (user-id keycloak-client realm-name (.getEmail user))))]
     (or username-exists? email-exists?)))
 
 (defn get-user-resource
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username]
-  (let [users (search-user keycloak-client realm-name username)
-        ^org.keycloak.representations.idm.UserRepresentation user (exact-match users username)
-        user-id     (.getId user) 
+  (let [user-id     (user-id keycloak-client realm-name username)
         ^org.keycloak.admin.client.resource.UserResource user-resource (-> keycloak-client (.realm realm-name) (.users) (.get user-id))]
-    {:user-searched users
-     :user-id       user-id
-     :user-resource user-resource}))
+    (if user-resource
+      {:user-id       user-id
+       :user-resource user-resource}
+      (throw (ex-info (format "User %s in realm %s not found! (user-id %s)" username realm-name user-id) {:username username :realm-name realm-name :user-id user-id})))))
 
-(defn- get-realm-roles-representations
-  ^RoleRepresentation
-  [^org.keycloak.admin.client.Keycloak keycloak-client realm-name roles]
+(defn- get-realm-roles-representations ^RoleRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name roles]
   (doall (map (fn [role]
                 (try
                   (-> keycloak-client
@@ -145,8 +141,8 @@
 (defn add-realm-roles!
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username roles]
   (when roles
-    (let [{:keys [user-searched user-id user-resource]} (get-user-resource keycloak-client realm-name username)
-          roles-representations-to-add                  (get-realm-roles-representations keycloak-client realm-name roles)]
+    (let [{:keys [user-resource]}      (get-user-resource keycloak-client realm-name username)
+          roles-representations-to-add (get-realm-roles-representations keycloak-client realm-name roles)]
       (-> ^org.keycloak.admin.client.resource.UserResource user-resource
           (.roles)
           (.realmLevel)
@@ -156,7 +152,7 @@
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username roles]
   (when roles
     (let [{:keys [user-resource]} (get-user-resource keycloak-client realm-name username)
-          roles-representations                         (get-realm-roles-representations keycloak-client realm-name roles)]
+          roles-representations   (get-realm-roles-representations keycloak-client realm-name roles)]
       (-> ^org.keycloak.admin.client.resource.UserResource user-resource
           (.roles)
           (.realmLevel)
@@ -166,8 +162,8 @@
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username roles]
   (when roles
     (let [{:keys [user-resource]} (get-user-resource keycloak-client realm-name username)
-          roles-representations                         (get-realm-roles-representations keycloak-client realm-name roles)
-          role-scope-resource                           (-> ^org.keycloak.admin.client.resource.UserResource user-resource (.roles) (.realmLevel))]
+          roles-representations   (get-realm-roles-representations keycloak-client realm-name roles)
+          role-scope-resource     (-> ^org.keycloak.admin.client.resource.UserResource user-resource (.roles) (.realmLevel))]
       (.remove role-scope-resource (.listEffective role-scope-resource))
       (.add role-scope-resource (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles-representations)))))))
 
