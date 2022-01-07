@@ -117,4 +117,7 @@
       (ppr/pprint x w))))
 
 (defn pprint-to-stdout [x]
-  (pprint-to-file *out* x))
+  (binding [ppr/*print-right-margin* 600]
+    ;;dont close stdout..
+    (let [w (io/writer *out* :append false)]
+      (ppr/pprint x w))))
