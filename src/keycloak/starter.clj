@@ -250,6 +250,7 @@
           ;_                 (println (pr-str (clojure.pprint/pprint sci-bindings)))
           config-data       (sci/eval-string realm-config sci-bindings)]
       (when dry-run?
+        (println "Dry run execution of Keycloak-clojure-starter!")
         (println "Infra-context used is:")
         (println infra-context)
         (println "Keycloak configuration data resulting of script evaluation is:")
@@ -299,7 +300,7 @@
    {:as "Dry run - print configuration data after evaluating realm-config with supplied realm-config and EDN files in resources-dir"
     :option "dry-run"
     :default false
-    :type flag}
+    :type :flag}
 
    {:as "An EDN file containing the following keys:
          - :environment: a string of the target environment, no impact but is passed during evaluation of the realm config file\n
