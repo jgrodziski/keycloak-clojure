@@ -67,15 +67,19 @@
      :user/deletions (find-deletions  :username current-users desired-users)
      :user/additions (find-additions  :username current-users desired-users)}))
 
-
-(defn aggregate-by-role [username->roles]
-  (reduce (fn [roles->username [username roles]]
-            (reduce (fn [roles->username role]
-                      (let [usernames-for-this-role (if (contains? roles->username role)
-                                                      (get roles->username role)
-                                                      (transient []))]
-                        (assoc roles->username role (conj! usernames-for-this-role username)))) roles->username roles)) {} username->roles)
-  )
+(defn aggregate-by-role
+  "From a map of user with values their roles, aggregate the users by role instead.
+  `(aggregate-by-role {:user1 [:a :b :c] :user2 [:b] :user3 [:a :b :c]})` => `{:a [:user1 :user3] :b [:user1 :user2 :user3] :c [:user1 :user3]}`"
+  [username->roles]
+  (let [role->usernames (reduce (fn [role->usernames [username roles]]
+                                  (reduce (fn [role->usernames role]
+                                            (let [usernames-for-this-role (if (contains? role->usernames role)
+                                                                            (get role->usernames role)
+                                                                            (transient []))]
+                                              (assoc! role->usernames role (conj! usernames-for-this-role username)))) role->usernames roles)) (transient {}) username->roles)]
+    ;;use transient data structures for performance reason as user count can be large
+    (into {} (map (fn [[k v]]
+                    [k (persistent! v)]) (persistent! role->usernames) ))))
 
 (defn make-role-mappings-plan
   "Make a role plan, all considered roles must be given as input and the desired role-mappings as {\"username\" {:realm-roles [\"role1\"]
@@ -112,5 +116,6 @@
   (user/create-user! keycloak-client realm-name (user/generate-user "user-that-will-be-deleted"))
   ;(def users (fetch-current-users-state keycloak-client realm-name))
 
+  (aggregate-by-role {"user1" [:a :b :c] "user2" [:b] "user3" [:a :b :c]})
 
 )

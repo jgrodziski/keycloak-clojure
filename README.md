@@ -6,7 +6,7 @@ __[Keycloak](http://www.keycloak.org) is an open source Identity and Access Mana
 [![Clojars Project](https://img.shields.io/clojars/v/keycloak-clojure.svg)](https://clojars.org/keycloak-clojure)
 
 ```clojure
-keycloak-clojure {:mvn/version "1.18.0"}
+keycloak-clojure {:mvn/version "1.22.2"}
 ```
 
 The [reference documentation is available on cljdoc](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure).

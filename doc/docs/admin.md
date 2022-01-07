@@ -270,6 +270,7 @@ The `keycloak-clojure-starter` CLI executable has the following arguments:
 * `--password` password of a user with admin role in the master realm
 * `--environment` Name of the environment for which the init is done, has no impact but is passed during evaluation of the config file
 * `--secret-export-dir` Path to a directory, if present clients secret will be exported in `keycloak-secrets.edn|json|yml` files for downstream usage.
+* `--dry-run` A boolean flag that indicates that only the evaluation and print of the realm config (as --realm-config file) result will be executed, not applying the resulting Keycloak configuration. The boolean flag  recognizes "Y", "Yes", "On", "T", "True", and "1" as true values and "N", "No", "Off", "F", "False", and "0" as false values
 * `--infra-context` Path to an EDN file. If the file is present it overrides the previous config parameters. The file contains the following keys, 
     - `:environment`: a string of the target environment, no impact but is passed during evaluation of the realm config file
     - `:color`: a string of a \"color\" for discriminating the target (can be omitted), no impact but is passed during evaluation of the realm config file
@@ -332,7 +333,7 @@ keycloak.clojure {:mvn/version "1.14.1"}
 ```
 
 ```clojure
-clj -m keycloak.starter --infra-context resources/keycloak-config.edn --realm-config resources/realm-config.clj
+clj -m keycloak.starter --infra-context resources/keycloak-config.edn --realm-config resources/realm-config.clj --dry-run=Y
 ```
 
 ### Native CLI
@@ -346,9 +347,11 @@ You can use the [`keycloak-clojure-starter` docker image](https://hub.docker.com
 Then you use the image by running it and mounting the config files like:
 ```bash
 docker run -d \
+       --mount type=bind,source=$WORKDIR/resources,destination=/etc/keycloak \
        --mount type=bind,source=/Users/yourusername/keycloak-clojure/resources/keycloak-config.edn,destination=/etc/keycloak/keycloak-config.edn \
        --mount type=bind,source=/Users/yourusername/keycloak-clojure/resources/realm-config.clj,destination=/etc/keycloak/realm-config.clj \
-       jgrodziski/keycloak-clojure-starter:latest
+       --env DRY_RUN=Yes \
+       jgrodziski/keycloak-clojure-starter:1.22.1
 
 ```
 

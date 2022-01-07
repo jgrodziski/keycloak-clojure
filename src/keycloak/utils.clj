@@ -1,6 +1,7 @@
 (ns keycloak.utils
   (:require    [clojure.string :as string]
                [clojure.java.io :as io]
+               [clojure.pprint :as ppr]
                [me.raynes.fs :as fs])
   (:import [java.net Socket InetSocketAddress]))
 
@@ -109,3 +110,12 @@
           (.connect socket (InetSocketAddress. host port) timeout-ms))
         (catch Exception e
           (throw (ex-info (format "Host %s at port %s is not listening! (timeout was %d ms)" host port timeout-ms) {:host host :port port :timeout-ms timeout-ms}))))))
+
+(defn pprint-to-stdout [x]
+  (pprint-to-file *out* x)
+  )
+
+(defn pprint-to-file [f x]
+  (binding [ppr/*print-right-margin* 600]
+    (with-open [w (io/writer f :append false)]
+      (ppr/pprint x w))))

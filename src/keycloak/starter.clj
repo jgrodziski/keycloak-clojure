@@ -252,9 +252,9 @@
       (when dry-run?
         (println "Dry run execution of Keycloak-clojure-starter!")
         (println "Infra-context used is:")
-        (println infra-context)
+        (utils/pprint-to-stdout infra-context)
         (println "Keycloak configuration data resulting of script evaluation is:")
-        (println config-data))
+        (utils/pprint-to-stdout config-data))
       (when (not dry-run?)
         (println (format "Keycloak init script target %s in env %s with %s realm(s)" auth-server-url (or environment "localhost") (count config-data)))
         (println (format "Login to %s realm, clientId %s with username %s" "master" "admin-cli" login))
