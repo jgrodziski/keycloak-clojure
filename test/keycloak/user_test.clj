@@ -24,7 +24,6 @@
 (def integration-test-conf (deployment/client-conf auth-server-url "master" "admin-cli"))
 (def admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password))
 
-
 (def fake-user {:last-name "Carter", :email "bobcarter@acme.org" :group "Example", :realm-roles ["employee" "manager" "example-admin"], :password "secretstuff", :username "bcarter", :first-name "Bob", :attributes {"org-ref" ["Example"]}, :in-subgroups ["IT"]})
 (def fake-user-2 {:last-name "Reagan", :email "ronalreagan@acme.org" :group "Example", :realm-roles ["employee" "manager" "example-admin"], :password "secretstuff", :username "rreagan", :first-name "Ronald", :attributes {"org-ref" ["Example"]}, :in-subgroups ["IT"]})
 

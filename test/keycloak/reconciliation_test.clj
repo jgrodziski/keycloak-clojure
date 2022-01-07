@@ -2,6 +2,7 @@
   (:require
    [clojure.test :as t :refer :all]
    [clojure.tools.logging :as log :refer [info]]
+   [testit.core :refer :all]
 
    [keycloak.admin :as admin]
    [keycloak.user :as user]
@@ -137,7 +138,6 @@
                                                                     to-be-modified-2))]
             (is (= 2 (count (:user/updates plan))))
             (is (= "to-be-modified-1" (:username (first (:user/updates plan)))))
-            (prn plan)
             (testing "Apply plan with updates"
               (let [report (apply-users-plan admin-client realm-name plan)
                     users  (utils/associate-by :username (user/get-users-beans admin-client realm-name))
@@ -158,9 +158,14 @@
             roles           #{"role1" "role2" "role3" "role4"}
             _               (admin/create-roles! admin-client realm-name roles)
             _               (do  (log/info "realm created"))
-            generated-users-1 (generate-and-create-users admin-client realm-name roles 2)]
+            generated-users (generate-and-create-users-with-usernames admin-client realm-name #{"role1" "role2"} #{"user1" "user2"})]
         (is (= realm-name (.getRealm realm)))
-
+        (testing "roles addition to users"
+          (let [plan (make-role-mappings-plan admin-client realm-name roles {"user1" {:realm-roles ["role1" "role2" "role3"]}
+                                                                             "user2" {:realm-roles ["role1" "role2"]}})]
+            (prn plan)
+            (fact plan => {:role-mappings/additions {"user1" {:realm-roles ["role3"]}}})
+            ))
         (testing "realm deletion"
           (admin/delete-realm! admin-client realm-name)
           (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name)))))))

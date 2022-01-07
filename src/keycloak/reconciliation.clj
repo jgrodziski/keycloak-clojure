@@ -67,11 +67,24 @@
      :user/deletions (find-deletions  :username current-users desired-users)
      :user/additions (find-additions  :username current-users desired-users)}))
 
-(defn make-user-roles-plan [keycloak-client realm-name desired-users]
+
+(defn aggregate-by-role [username->roles]
+  (reduce (fn [roles->username [username roles]]
+            (reduce (fn [roles->username role]
+                      (let [usernames-for-this-role (if (contains? roles->username role)
+                                                      (get roles->username role)
+                                                      (transient []))]
+                        (assoc roles->username role (conj! usernames-for-this-role username)))) roles->username roles)) {} username->roles)
   )
 
-(defn make-role-mappings-plan [keycloak-client realm-name roles desired-role-mappings]
-  (let [current-role-mappings (user/get-users-aggregated-by-roles keycloak-client realm-name roles)]))
+(defn make-role-mappings-plan
+  "Make a role plan, all considered roles must be given as input and the desired role-mappings as {\"username\" {:realm-roles [\"role1\"]
+                                                                                                                 :client-roles [\"role2\"]}} "
+  [keycloak-client realm-name roles desired-role-mappings]
+  (let [current-role-mappings (user/get-users-aggregated-by-roles keycloak-client realm-name roles)]
+
+    {:role-mappings/additions (find-additions identity )}
+    ))
 
 (comment
   (def admin-login "admin")

@@ -196,6 +196,7 @@
                             (:auth-server-url keycloak)
                             (environ/env :auth-server-url)
                             (keycloak-auth-server-url protocol host port))
+        dry-run?       (or (:dry-run args) (environ/env :dry-run))
         processed-args {:auth-server-url auth-server-url
                         :login login
                         :keycloak keycloak
@@ -206,13 +207,13 @@
                         :vault-config vault
                         :realm-config realm-config
                         :infra-context infra-context
+                        :dry-run?      dry-run?
                         :resources-dir (:resources-dir args)
                         :secret-export-dir (or (get-in infra-context [:secret-file :export-dir]) (:secret-export-dir args))
                         :secret-file-without-extension (or (get-in infra-context [:secret-file :name-without-extension]) (:secret-file-without-extension args))
                         :secret-path       (or (get-in infra-context [:secret-file :path]))
                         }]
     (when (or (empty? auth-server-url) (empty? password) (empty? login) (nil? realm-config))
-
       (println "Usage: clj -m keycloak.starter <auth-server-url> <login> <password> <environment> <realm-config> <infra-context>" )
       (throw (ex-info "Usage: clj -m keycloak.starter <auth-server-url> <login> <password> <environment> <realm-config>" processed-args)))
     processed-args))
@@ -231,7 +232,7 @@
                           [(symbol name) (sci/new-var (symbol name) edn-content)]))) edn-files)))))
 
 (defn init-cli! [args]
-  (let [{:keys [infra-context resources-dir realm-config secret-export-dir secret-file-without-extension secret-path auth-server-url login password environment color applications vault-config keycloak]} (process-args args)]
+  (let [{:keys [infra-context resources-dir realm-config secret-export-dir secret-file-without-extension secret-path auth-server-url login password environment color applications vault-config keycloak dry-run?]} (process-args args)]
     (let [admin-client (->  (deployment/client-conf auth-server-url "master" "admin-cli")
                             (deployment/keycloak-client login password))
           sci-environment   (sci/new-var 'environment environment)
@@ -248,18 +249,24 @@
           _                 (println "Execute SCI config with bindings of the resources: " (map str (utils/list-files resources-dir (fn [f] (= ".edn" (:ext (utils/parse-path f)))))))
           ;_                 (println (pr-str (clojure.pprint/pprint sci-bindings)))
           config-data       (sci/eval-string realm-config sci-bindings)]
-      (println (format "Keycloak init script target %s in env %s with %s realm(s)" auth-server-url (or environment "localhost") (count config-data)))
-      (println (format "Login to %s realm, clientId %s with username %s" "master" "admin-cli" login))
-      (if (map? config-data)
-        (do
-          (println (format "Init realm %s with following configuration:" (get-in config-data [:realm :name])))
-          (clojure.pprint/pprint (dissoc-sensitive-data config-data))
-          (init! admin-client config-data infra-context))
-        (when (or (vector? config-data) (seq? config-data))
-          (doseq [realm-data config-data]
-            (println (format "Init realm %s with following configuration:" (get-in realm-data [:realm :name])))
-            (clojure.pprint/pprint (dissoc-sensitive-data realm-data))
-            (init! admin-client realm-data infra-context))))
+      (when dry-run?
+        (println "Infra-context used is:")
+        (println infra-context)
+        (println "Keycloak configuration data resulting of script evaluation is:")
+        (println config-data))
+      (when (not dry-run?)
+        (println (format "Keycloak init script target %s in env %s with %s realm(s)" auth-server-url (or environment "localhost") (count config-data)))
+        (println (format "Login to %s realm, clientId %s with username %s" "master" "admin-cli" login))
+        (if (map? config-data)
+          (do
+            (println (format "Init realm %s with following configuration:" (get-in config-data [:realm :name])))
+            (clojure.pprint/pprint (dissoc-sensitive-data config-data))
+            (init! admin-client config-data infra-context))
+          (when (or (vector? config-data) (seq? config-data))
+            (doseq [realm-data config-data]
+              (println (format "Init realm %s with following configuration:" (get-in realm-data [:realm :name])))
+              (clojure.pprint/pprint (dissoc-sensitive-data realm-data))
+              (init! admin-client realm-data infra-context)))))
       (shutdown-agents))))
 
 (def init-cli-opts
@@ -288,6 +295,11 @@
     :option "secret-file-without-extension"
     :default ".keycloak-secrets"
     :type :string}
+
+   {:as "Dry run - print configuration data after evaluating realm-config with supplied realm-config and EDN files in resources-dir"
+    :option "dry-run"
+    :default false
+    :type flag}
 
    {:as "An EDN file containing the following keys:
          - :environment: a string of the target environment, no impact but is passed during evaluation of the realm config file\n
