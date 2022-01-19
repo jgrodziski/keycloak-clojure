@@ -276,7 +276,7 @@ The `keycloak-clojure-starter` CLI executable has the following arguments:
     - `:color`: a string of a \"color\" for discriminating the target (can be omitted), no impact but is passed during evaluation of the realm config file
     - `:applications`: a vector of map with `:name`, `:version` and `clients-uris` keys, `clients-uris` being a vector of map with `client-id`, `:redirects`, `:base`, `:origins`, `:root` keys no impact but is passed during evaluation of the realm config file
     - `:keycloak`: a map with `:protocol`, `:host`, `:port`, `:login`, `:password`, `:base-domain`, `:secret-export-dir`
-    - `:vault`: a map with :protocol :host :port :token :mount :path
+    - `:vault`: a map with `:protocol`, `:host`, `:port`, `:token`, `:mount`, `:path`
 * `--realm-config` A path to a clj file that is evaluated with SCI (https://github.com/borkdude/sci), the code must return a vector of map with a realm config (keys: realm, clients, roles see section [Declarative Setup](#declarative-setup))
 
 ### Infrastructure context 
