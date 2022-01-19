@@ -1,6 +1,6 @@
 (ns keycloak.bean
   (:require [bean-dip.core :as bean-dip])
-  (:import [org.keycloak.representations.idm ClientRepresentation ProtocolMapperRepresentation RealmRepresentation UserRepresentation]
+  (:import [org.keycloak.representations.idm ClientRepresentation ProtocolMapperRepresentation RealmRepresentation UserRepresentation RoleRepresentation GroupRepresentation]
            [org.keycloak.adapters KeycloakDeployment]
            [org.keycloak.adapters.rotation JWKPublicKeyLocator]))
 
@@ -99,3 +99,8 @@
 
 (bean-dip/def-translation UserRepresentation #{:email :credentials  :username :first-name :client-roles :realm-roles :id
                                                :last-name :origin :social-links :client-consents :groups :attributes :application-roles})
+
+(bean-dip/def-translation RoleRepresentation #{:description :composite? :name :containerId :clientRole :composites :id :attributes :scopeParamRequired?})
+
+
+(bean-dip/def-translation GroupRepresentation #{:name :path :subGroups :clientRoles :realmRoles :id :access :attributes})

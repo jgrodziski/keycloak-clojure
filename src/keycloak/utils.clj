@@ -101,6 +101,22 @@
   [f coll]
   (into {} (map (juxt f identity)) coll))
 
+(defn aggregate-keys-by-values
+  "From a map of key with value a vector of values, aggregate the key by the values found in the vector.
+  `(aggregate-keys-by-values {:k1 [:v1 :v2 :v3] :k2 [:v2] :k3 [:v1 :v2 :v3]})` => `{:v1 [:k1 :k3] :v2 [:k1 :k2 :k3] :v3 [:k1 :k3]}`"
+  [m]
+  (let [v->ks (reduce (fn [v->ks [k vs]]
+                                  (reduce (fn [v->ks v]
+                                            (let [ks-for-this-v (if (contains? v->ks v)
+                                                                  (get v->ks v)
+                                                                  (transient []))]
+                                              (assoc! v->ks v (conj! ks-for-this-v k)))) v->ks vs)) (transient {}) m)]
+    ;;use transient data structures for performance reason as user count can be large
+    (into {} (map (fn [[k v]]
+                    [k (persistent! v)]) (persistent! v->ks)))))
+(aggregate-keys-by-values {:a [1 2] :b [1]})
+
+
 (defn server-listening?
   "Check if a given host is listening on a given port in the limit of timeout-ms (default 500 ms)"
   ([host port]

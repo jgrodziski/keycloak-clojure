@@ -97,14 +97,17 @@
   (try (create-realm! admin-client name themes login tokens smtp)
        (println (format "Realm \"%s\" created" name))
        (catch javax.ws.rs.ClientErrorException cee
+         (println "Can't create realm " cee)
          (when (= (-> cee (.getResponse) (.getStatus)) 409)
            (update-realm! admin-client name themes login tokens smtp)
            (println (format "Realm \"%s\" updated" name))))
        (catch javax.ws.rs.InternalServerErrorException isee
+         (println "Can't create realm " isee)
          (update-realm! admin-client name themes login tokens smtp)
          (println (format "Realm \"%s\" updated" name)))
-       (catch Exception e (println "Can't create Realm" e)
-              (get-realm admin-client name))
+       (catch Exception e
+         (println "Can't create Realm" e)
+         (get-realm admin-client name))
        (finally
          (when user-admin
            (let [user-admin-id (user/user-id admin-client "master" (:username user-admin))]

@@ -142,6 +142,9 @@
   (doto (GroupRepresentation.)
     (.setName group-name)))
 
+(defn count-groups [^Keycloak keycloak-client realm-name]
+  (-> keycloak-client (.realm realm-name) (.groups) (.count) (.get "count")))
+
 (defn list-groups
   (^java.util.List [^Keycloak keycloak-client realm-name]
    (info "list the groups representation objects of realm" realm-name)
@@ -150,11 +153,18 @@
    (info "list the groups representation objects of realm " realm-name "with name" s)
    (-> keycloak-client (.realm realm-name) (.groups) (.groups s (int 0) (int 1000)))))
 
+(defn- group-name-match? [group-name ^GroupRepresentation group]
+  (when (= group-name (.getName group)) group))
+
 (defn get-group-id
   [^Keycloak keycloak-client realm-name group-name]
-  (some (fn group-name-match? [^GroupRepresentation group]
-          (when (= group-name (.getName group))
-            (.getId group))) (list-groups keycloak-client realm-name)))
+  (some (fn [^GroupRepresentation group]
+          (prn "group" (.getName group))
+          (let [group (group-name-match? group-name group)]
+            (prn "test" group-name group)
+            (when group
+              (prn "match!" group-name group)
+              (.getId group)))) (list-groups keycloak-client realm-name)))
 
 (defn get-group
   [^Keycloak keycloak-client realm-name group-id]
@@ -172,7 +182,11 @@
         (get-group keycloak-client realm-name group-id))
       (do
         (info "group" group-name "already exist in realm" realm-name " with group id" group-id)
-        (first (list-groups keycloak-client realm-name group-name))))))
+        (some (partial group-name-match? group-name) (list-groups keycloak-client realm-name group-name))))))
+
+(defn create-groups! [^Keycloak keycloak-client realm-name group-names]
+  (doall (for [group-name group-names]
+           (create-group! keycloak-client realm-name group-name))))
 
 (defn delete-group!
   [^Keycloak keycloak-client realm-name group-id]
@@ -192,7 +206,8 @@
 (defn list-subgroups
   [^Keycloak keycloak-client realm-name group-id]
   (info "List all subgroups of group" group-id "in realm " realm-name)
-  (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.toRepresentation) (.getSubGroups)))
+  (when group-id
+    (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.toRepresentation) (.getSubGroups))))
 
 (defn get-subgroup-id
   [^Keycloak keycloak-client realm-name group-id subgroup-name]
@@ -215,7 +230,7 @@
          (get-group keycloak-client realm-name subgroup-id))
        (do
          (info "subgroup" subgroup-name "already exist in group" group-id "in realm" realm-name)
-         (first (list-groups keycloak-client realm-name subgroup-name)))))))
+         (some (partial group-name-match? subgroup-name) (list-groups keycloak-client realm-name subgroup-name)))))))
 
 (defn find-users
   ^java.util.List [^Keycloak keycloak-client realm-name s]
@@ -224,7 +239,7 @@
 
 (defn get-user-by-username
   ^UserRepresentation [^Keycloak keycloak-client realm-name username]
-  (first (find-users keycloak-client realm-name username)))
+  (some (fn [^UserRepresentation user] (= username (.getUsername user))) (find-users keycloak-client realm-name username)))
 
 (defn add-user-to-group!
   "Make the user join group, return the group"
@@ -413,7 +428,7 @@ public
 (defn create-or-update-client!
   ^ClientRepresentation [^Keycloak keycloak-client realm-name ^ClientRepresentation client]
   (let [existing-client (or (get-client keycloak-client realm-name (.getClientId client))
-                            (first (find-client keycloak-client realm-name (.getName client))))]
+                            (some (fn [^ClientRepresentation client-rep] (= (.getName client) (.getName client-rep))) (find-client keycloak-client realm-name (.getName client))))]
     (if existing-client
       (update-client! keycloak-client realm-name client)
       (create-client! keycloak-client realm-name client))))

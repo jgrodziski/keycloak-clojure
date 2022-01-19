@@ -9,6 +9,8 @@
             [keycloak.bean :as bean]
             [keycloak.utils :as utils :refer [hint-typed-doto set-attributes]])
   (:import [org.keycloak.representations.idm CredentialRepresentation UserRepresentation RoleRepresentation]
+           [org.keycloak.admin.client.resource ClientResource]
+           [org.keycloak.admin.client Keycloak]
            [javax.ws.rs.core Response]))
 
 ;(set! *warn-on-reflection* true)
@@ -127,6 +129,13 @@
        :user-resource user-resource}
       (throw (ex-info (format "User %s in realm %s not found! (user-id %s)" username realm-name user-id) {:username username :realm-name realm-name :user-id user-id})))))
 
+(defn get-user-realm-roles [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username]
+  (map bean/RoleRepresentation->map (-> (get-user-resource keycloak-client realm-name username)
+                                        :user-resource
+                                        (.roles)
+                                        (.realmLevel)
+                                        (.listAll))))
+
 (defn- get-realm-roles-representations ^RoleRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name roles]
   (doall (map (fn [role]
                 (try
@@ -138,25 +147,29 @@
                   (catch javax.ws.rs.NotFoundException nfe
                     (warn "Realm role" role "not found in realm" realm-name)))) (map name roles))))
 
+(def memoized-get-realm-roles-representations (memoize get-realm-roles-representations))
+
 (defn add-realm-roles!
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username roles]
   (when roles
     (let [{:keys [user-resource]}      (get-user-resource keycloak-client realm-name username)
-          roles-representations-to-add (get-realm-roles-representations keycloak-client realm-name roles)]
+          roles-representations-to-add (memoized-get-realm-roles-representations keycloak-client realm-name roles)]
       (-> ^org.keycloak.admin.client.resource.UserResource user-resource
           (.roles)
           (.realmLevel)
-          (.add (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles-representations-to-add))))))))
+          (.add (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles-representations-to-add)))))
+      roles)))
 
 (defn remove-realm-roles!
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username roles]
   (when roles
     (let [{:keys [user-resource]} (get-user-resource keycloak-client realm-name username)
-          roles-representations   (get-realm-roles-representations keycloak-client realm-name roles)]
+          roles-representations   (memoized-get-realm-roles-representations keycloak-client realm-name roles)]
       (-> ^org.keycloak.admin.client.resource.UserResource user-resource
           (.roles)
           (.realmLevel)
-          (.remove (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles-representations))))))))
+          (.remove (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles-representations)))))
+      roles)))
 
 (defn set-realm-roles!
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username roles]
@@ -165,7 +178,8 @@
           roles-representations   (get-realm-roles-representations keycloak-client realm-name roles)
           role-scope-resource     (-> ^org.keycloak.admin.client.resource.UserResource user-resource (.roles) (.realmLevel))]
       (.remove role-scope-resource (.listEffective role-scope-resource))
-      (.add role-scope-resource (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles-representations)))))))
+      (.add role-scope-resource (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles-representations))))
+      roles)))
 
 (defn get-client
   ^org.keycloak.representations.idm.ClientRepresentation
@@ -306,9 +320,24 @@
   ^java.util.List [^org.keycloak.admin.client.Keycloak keycloak-client realm-name role-name]
   (-> keycloak-client (.realm realm-name) (.roles) (.get role-name) (.getRoleUserMembers)))
 
-(defn get-users-aggregated-by-roles [^org.keycloak.admin.client.Keycloak keycloak-client realm-name roles]
+(defn get-users-aggregated-by-realm-roles [^org.keycloak.admin.client.Keycloak keycloak-client realm-name roles]
   (into {} (map (fn [role]
                  [role (get-users-with-realm-role keycloak-client realm-name role)]) roles)))
+
+(defn get-client-resource
+  "Return a [org.keycloak.admin.client.resource.ClientResource](https://www.keycloak.org/docs-api/11.0/javadocs/org/keycloak/admin/client/resource/ClientResource.html)
+  given a `keycloak-client`, `realm-name` and `id`. Be careful the id is the UUID attributed by Keycloak during the creation of the client and not the `clientId` given by the user"
+  ^ClientResource [^Keycloak keycloak-client realm-name client-id]
+  (-> keycloak-client (.realm realm-name) (.clients) (.get client-id)))
+
+(defn get-users-with-client-role
+  "return a list of users as UserRepresentation that have the `role-name` as role mapping"
+  ^java.util.List [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id role-name]
+  (-> (get-client-resource keycloak-client realm-name client-id) (.roles) (.get role-name) (.getRoleUserMembers)))
+
+(defn get-users-aggregated-by-client-roles [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id roles]
+  (into {} (map (fn [role]
+                 [role (get-users-with-client-role keycloak-client realm-name client-id role)]) roles)))
 
 (defn logout-user!
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name user-id]
