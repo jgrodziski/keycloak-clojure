@@ -74,9 +74,10 @@
   (let [secret                                  (get-client-secret keycloak-client realm-name client-id)
         {:keys [protocol host port mount path token vendor]} vault
         vault-url                               (hashicorp-vault/vault-url protocol host port)
-        hashicorp-vault                         (hashicorp-vault/->HashicorpVault vault-url token mount)
+        vault-client                            (hashicorp-vault/client vault-url)
+        hashicorp-vault                         (hashicorp-vault/->HashicorpVault vault-client token mount)
         vault-path                              (format path environment color base-domains client-id)]
-    (println (format "Secret of client \"%s\" will be exported in hashicorp vault at url %s and path %s" client-id vault-url vault-path))
+    (println (format "Secret of client \"%s\" will be exported in hashicorp vault at url %s, mount %s and path %s" client-id vault-url mount vault-path))
     (vault/write-secret! hashicorp-vault vault-path secret)))
 
 (defmethod export-secret-in-vault! :gcp-sm  [^org.keycloak.admin.client.Keycloak keycloak-client {:keys [vault environment color base-domains] :as infra-context} realm-name client-id]
