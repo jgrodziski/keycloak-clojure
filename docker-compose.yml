@@ -33,7 +33,7 @@ services:
       VAULT_DEV_ROOT_TOKEN_ID: myroot
 
   keycloak:
-    image: jgrodziski/keycloak:15.0.2
+    image: jgrodziski/keycloak:16.1.0
     platform: linux/arm64
     depends_on:
       - postgres
