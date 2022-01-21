@@ -9,3 +9,4 @@ target
 doc/site
 doc/codox
 *.asc
+resources/config-init-realm.edn

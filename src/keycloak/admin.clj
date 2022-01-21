@@ -159,11 +159,8 @@
 (defn get-group-id
   [^Keycloak keycloak-client realm-name group-name]
   (some (fn [^GroupRepresentation group]
-          (prn "group" (.getName group))
           (let [group (group-name-match? group-name group)]
-            (prn "test" group-name group)
             (when group
-              (prn "match!" group-name group)
               (.getId group)))) (list-groups keycloak-client realm-name)))
 
 (defn get-group
@@ -191,7 +188,8 @@
 (defn delete-group!
   [^Keycloak keycloak-client realm-name group-id]
   (info "delete group [id=" group-id "] in realm" realm-name)
-  (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.remove)))
+  (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.remove))
+  true)
 
 (defn get-subgroup
   [^Keycloak keycloak-client realm-name group-id subgroup-id]

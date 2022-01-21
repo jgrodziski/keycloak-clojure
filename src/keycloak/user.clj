@@ -350,6 +350,9 @@
 (defn user-representation->person [user-rep]
   (bean/UserRepresentation->map user-rep))
 
+(defn rand-str [len]
+  (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))
+
 (defn generate-username
   ([] (generate-username "fake-user-"))
   ([prefix]
@@ -361,6 +364,7 @@
    (merge (talltale/person)
           {:username username
            :email (talltale/fixed-email username)
+           :attributes {"testattr1" [(rand-str 16)]}
            :password "password"})))
 
 (defn generate-user-representation
