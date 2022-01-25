@@ -119,7 +119,13 @@
               (let [report (apply-users-plan! admin-client realm-name plan)
                     users  (utils/associate-by :username (user/get-users-beans admin-client realm-name))]
                 (is (= 7 (count users)))
-                (is (get users "to-be-added-1") user-in-addition)))))
+                (is (get users "to-be-added-1") user-in-addition)))
+            (testing "Plan application should makes an empty plan afterwards"
+              (let [empty-plan (users-plan admin-client realm-name (conj generated-users-3 user-in-addition))]
+                (facts
+                 (get empty-plan :users/additions) => empty?
+                 (get empty-plan :users/updates)   => empty?
+                 (get empty-plan :users/deletions) => empty?)))))
         (testing "make plan with deletions"
           (let [plan (users-plan admin-client realm-name generated-users-2)]
             (is (= 3 (count (:user/deletions plan))))
@@ -129,7 +135,13 @@
                 (is (= 4 (count users)))
                 (is (nil? (get users "to-be-deleted-1")))
                 (is (nil? (get users "to-be-deleted-2")))
-                (is (nil? (get users "to-be-added-1")))))))
+                (is (nil? (get users "to-be-added-1"))))
+              (testing "Plan application should makes an empty plan afterwards"
+                (let [empty-plan (users-plan admin-client realm-name generated-users-2)]
+                  (facts
+                   (get empty-plan :users/additions) => empty?
+                   (get empty-plan :users/updates)   => empty?
+                   (get empty-plan :users/deletions) => empty?))))))
         (testing "make plan with updates"
           (let [to-be-modified-1 (user/generate-user "to-be-modified-1")
                 to-be-modified-2 (user/generate-user "to-be-modified-2")
@@ -138,11 +150,17 @@
             (is (= "to-be-modified-1" (:username (first (:user/updates plan)))))
             (testing "Apply plan with updates"
               (let [report (apply-users-plan! admin-client realm-name plan)
-                    users  (utils/associate-by :username (user/get-users-beans admin-client realm-name))]
+                    users  (utils/associate-by :username (conj generated-users-1 to-be-modified-1 to-be-modified-2))]
                 (is (= 4 (count users)))
                 (facts
                  (get users "to-be-modified-1") =in=> (select-keys to-be-modified-1 [:username :first-name :last-name :email])
-                 (get users "to-be-modified-2") =in=> (select-keys to-be-modified-2 [:username :first-name :last-name :email]))))))
+                 (get users "to-be-modified-2") =in=> (select-keys to-be-modified-2 [:username :first-name :last-name :email]))))
+            (testing "Plan application should makes an empty plan afterwards"
+                (let [empty-plan (users-plan admin-client realm-name generated-users-2)]
+                  (facts
+                   (get empty-plan :users/additions) => empty?
+                   (get empty-plan :users/updates)   => empty?
+                   (get empty-plan :users/deletions) => empty?)))))
         (testing "realm deletion"
           (admin/delete-realm! admin-client realm-name)
           (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))))
@@ -163,26 +181,43 @@
         (is (= realm-name (.getRealm realm)))
         (is (= 2 (count (get-in roles->users ["role1"]))))
         (is (= 2 (count (get-in roles->users ["role2"]))))
+        (fact (map bean/RoleRepresentation->map (admin/list-roles admin-client realm-name)) =in=> ^:in-any-order [{:name "role1"} {:name "role2"} {:name "role3"} {:name "role4"}])
         (testing "roles addition to users with a plan"
-          (let [plan (role-mappings-plan admin-client realm-name roles {"user1" {:realm-roles ["role1" "role2" "role3"]}
-                                                                        "user2" {:realm-roles ["role1" "role2"]}})]
-            (fact plan =in=> {:realm-role-mappings/additions {"user1" ["role3"]}})
+          (let [desired-state {"user1" {:realm-roles ["role1" "role2" "role3"]} "user2" {:realm-roles ["role1" "role2"]} "user3" {:realm-roles ["role1" "role2" "role4"]}}
+                plan (role-mappings-plan admin-client realm-name roles desired-state)]
+            (is (= [{:username "user3" :realm-roles ["role1" "role4" "role2"]}
+                    {:username "user1" :realm-roles ["role3"]}] (get plan :realm-role-mappings/additions)))
             (testing "then plan is applied with role additions"
-              (let [report (apply-role-mappings-plan! admin-client realm-name plan)
+              (let [;;user must be created in the realm before trying to apply a role mapping to it
+                    user4        (generate-and-create-users-with-usernames admin-client realm-name #{"role1" "role2" "role4"} #{"user3"})
+                    report       (apply-role-mappings-plan! admin-client realm-name plan)
                     roles->users (get-roles->users admin-client realm-name roles)]
-                (is (= 2 (count (get-in roles->users ["role1"]))))
-                (is (= 2 (count (get-in roles->users ["role2"]))))
+                (is (= 3 (count (get-in roles->users ["role1"]))))
+                (is (= 3 (count (get-in roles->users ["role2"]))))
                 (is (= 1 (count (get-in roles->users ["role3"]))))
-                (is (= "user1" (get-in roles->users ["role3" 0 :username])))))))
+                (is (= "user3"  (get-in roles->users ["role4" 0 :username])))
+                (is (= "user1" (get-in roles->users ["role3" 0 :username])))))
+            (testing "Plan application should makes an empty plan afterwards"
+                (let [empty-plan (role-mappings-plan admin-client realm-name roles desired-state)]
+                  (facts
+                   (get empty-plan :realm-role-mappings/additions) => empty?
+                   (get empty-plan :realm-role-mappings/deletions) => empty?)))))
         (testing "roles deletions to users with a plan"
-          (let [plan (role-mappings-plan admin-client realm-name roles {"user1" {:realm-roles ["role1"]}
-                                                                        "user2" {:realm-roles ["role1" "role2"]}})]
-            (fact plan =in=> {:realm-role-mappings/deletions {"user1" ["role2"]}})
+          (let [desired-state {"user1" {:realm-roles ["role1"]}
+                               "user2" {:realm-roles ["role1" "role2"]}}
+                plan (role-mappings-plan admin-client realm-name roles desired-state)]
+            (is (= [{:username "user3" :realm-roles ["role1" "role4" "role2"]}
+                    {:username "user1" :realm-roles ["role3" "role2"]}] (get plan :realm-role-mappings/deletions)))
             (testing "then plan is applied with role deletions"
-              (let [report (apply-role-mappings-plan! admin-client realm-name plan {:apply-deletions? true})
+              (let [report       (apply-role-mappings-plan! admin-client realm-name plan {:apply-deletions? true})
                     roles->users (get-roles->users admin-client realm-name roles)]
                 (is (= 1 (count (get-in roles->users ["role2"]))))
-                (is (= 2 (count (get-in roles->users ["role1"]))))))))
+                (is (= 2 (count (get-in roles->users ["role1"]))))))
+            (testing "Plan application should makes an empty plan afterwards"
+                (let [empty-plan (role-mappings-plan admin-client realm-name roles desired-state)]
+                  (facts
+                   (get empty-plan :realm-role-mappings/additions) => empty?
+                   (get empty-plan :realm-role-mappings/deletions) => empty?)))))
         (testing " finally realm is deleted"
           (admin/delete-realm! admin-client realm-name)
           (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))))
@@ -202,13 +237,14 @@
                (count created-groups) => 4
                (-> created-groups first :subGroups count) => 1)
         (testing "add new group and subgroups"
-          (let [plan (groups-plan admin-client realm-name [{:name "group1" :subgroups [{:name "subgroup1a"} {:name "subgroup1b"}]};new subgroup to existing group with already existing subgroup and a remvoed one "subgroup1b"
+          (let [desired-state [{:name "group1" :subgroups [{:name "subgroup1a"} {:name "subgroup1b"}]};new subgroup to existing group with already existing subgroup and a remvoed one "subgroup1b"
                                                            {:name "group2" :subgroups [{:name "subgroup2a"}]};existing group and subgroup should not move
                                                            {:name "group3" :subgroups [{:name "subgroup3a"}]};new subgroup to existing group with no subgroups
                                                            {:name "group4"}
                                                            {:name "group5"}                                  ;new group
                                                            {:name "group6" :subgroups [{:name "subgroup6a"}]};new group with new subgroup
-                                                           ])]
+                                                          ]
+                plan (groups-plan admin-client realm-name desired-state)]
             (facts plan                                      =in=> {:groups/additions [{:name "group5"}
                                                                                        {:name "group6" :subgroups [{:name "subgroup6a"}]}]}
                    (:subgroups/additions plan)               =in=> [{:name "subgroup1b"}
@@ -220,14 +256,20 @@
                 (facts (count groups) => 6
                        (-> groups first :subGroups count) => 2
                        (-> groups first :subGroups)       =in=> ^:in-any-order [{:name "subgroup1b"} {:name "subgroup1a"}]
-                       (-> groups (nth 2) :subGroups)     =in=> [{:name "subgroup3a"}])))))
+                       (-> groups (nth 2) :subGroups)     =in=> [{:name "subgroup3a"}])))
+            (testing "Plan application should makes an empty plan afterwards"
+                (let [empty-plan (groups-plan admin-client realm-name desired-state)]
+                  (facts
+                   (get empty-plan :groups/additions) => empty?
+                   (get empty-plan :groups/deletions) => empty?)))))
         (testing "group deletions"
-          (let [plan (groups-plan admin-client realm-name [{:name "group1" :subgroups [{:name "subgroup1b"}] };subgroup1a shoud be deleted
+          (let [desired-state [{:name "group1" :subgroups [{:name "subgroup1b"}] };subgroup1a shoud be deleted
                                                            {:name "group2"};;subgroup should be deleted
                                                            {:name "group3"}
                                                            ;;group 4 should be deleted
                                                            {:name "group5"}
-                                                           {:name "group6" :subgroups [{:name "subgroup6a"}]}])]
+                                                           {:name "group6" :subgroups [{:name "subgroup6a"}]}]
+                plan (groups-plan admin-client realm-name desired-state)]
             (facts (-> plan :groups/deletions)          =in=>                [{:name "group4"}]
                    (-> plan :subgroups/additions count) => 0
                    (-> plan :subgroups/deletions)       =in=> ^:in-any-order [{:name "subgroup1a"} {:name "subgroup2a"}])
@@ -237,7 +279,12 @@
                 (facts (count groups) => 5
                        groups =in=> ^:in-any-order [{:name "group1"} {:name "group2"} {:name "group3"}{:name "group5"}{:name "group6"}]
                        (-> groups first :subGroups) =in=> [{:name "subgroup1b"}]
-                       (-> groups last :subGroups) =in=> [{:name "subgroup6a"}])))))
+                       (-> groups last :subGroups) =in=> [{:name "subgroup6a"}])))
+            (testing "Plan application should makes an empty plan afterwards"
+                (let [empty-plan (groups-plan admin-client realm-name desired-state)]
+                  (facts
+                   (get empty-plan :groups/additions) => empty?
+                   (get empty-plan :groups/deletions) => empty?)))))
         (testing " finally realm is deleted"
           (admin/delete-realm! admin-client realm-name)
           (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))))

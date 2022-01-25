@@ -101,6 +101,12 @@
   ([dir pred]
    (filter pred (list-files dir))))
 
+(defn file-exists? [f]
+          (fs/exists? f))
+
+(defn file-not-empty? [f]
+  (> (.length (io/file f)) 0))
+
 (defn associate-by
   "takes a vector of map and group all the map by the key in it that should be unique"
   [f coll]

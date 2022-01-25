@@ -88,7 +88,8 @@
   [keycloak-client realm-name roles desired-role-mappings]
   (let [current-realm-role-mappings  (into {} (map (fn [[role user-reps]]
                                                      [role (map #(.getUsername %) user-reps)]) (user/get-users-aggregated-by-realm-roles keycloak-client realm-name roles)))
-        desired-realm-role-mappings  (utils/aggregate-keys-by-values (into {} (map (fn [[user role-mappings]] [user (:realm-roles role-mappings)]) desired-role-mappings)))
+        desired-realm-role-mappings  (merge (into {} (map (fn [role] [role nil]) roles));to take into account avery roles in the realm, even the ones not in the desired states for proper deletions
+                                            (utils/aggregate-keys-by-values (into {} (map (fn [[user role-mappings]] [user (:realm-roles role-mappings)]) desired-role-mappings))))
         ;;TODO Handle client roles
         ;;current-client-role-mappings (map (fn [[role user-reps]]
         ;;desired-client-role-mappings (utils/aggregate-keys-by-values (map (fn [[user role-mappings]] [user (:client-roles role-mappings)]) desired-role-mappings))
@@ -96,25 +97,40 @@
         ;_ (pp/pprint current-realm-role-mappings)
         ;_ (println "desired realm-role-mappings")
         ;_ (pp/pprint desired-realm-role-mappings)
-        additions (into {} (map (fn [[role users]]
-                                  [role (find-additions identity (get current-realm-role-mappings role) users)]) desired-realm-role-mappings))
-        deletions (into {} (map (fn [[role users]]
-                                  [role (find-deletions identity (get current-realm-role-mappings role) users)]) desired-realm-role-mappings))]
-    {:realm-role-mappings/additions (utils/aggregate-keys-by-values additions)
-     :realm-role-mappings/deletions (utils/aggregate-keys-by-values deletions)}))
+        _ (pp/pprint current-realm-role-mappings)
+        additions (->> desired-realm-role-mappings
+                       (map (fn [[role desired-users]]
+                                  (let [current-users-for-role   (get current-realm-role-mappings role)
+                                        existing-users-additions (find-additions identity current-users-for-role desired-users)]
+                                    (when role
+                                      [role existing-users-additions]))))
+                       (into {})
+                       (utils/aggregate-keys-by-values)
+                       (map (fn [[username realm-roles]] {:username username :realm-roles realm-roles}))
+                       vec)
+        deletions (->> desired-realm-role-mappings
+                       (map (fn [[role users]]
+                              (when role
+                                [role (find-deletions identity (get current-realm-role-mappings role) users)])))
+                       (into {})
+                       (utils/aggregate-keys-by-values)
+                       (map (fn [[username realm-roles]] {:username username :realm-roles realm-roles}))
+                       vec)]
+    {:realm-role-mappings/additions additions
+     :realm-role-mappings/deletions deletions}))
 
 (defn apply-role-mappings-plan! [keycloak-client realm-name plan & [opts]]
   (let [apply-deletions? (or (:apply-deletions? opts) false)
-        config {:realm-role-mappings/additions {:apply-fn    (fn [[username roles-to-add]]
-                                                               (let [roles-added (user/add-realm-roles! keycloak-client realm-name username roles-to-add)]
-                                                                 (println (format "Roles \"%s\" added to user \"%s\"" roles-to-add username))
+        config {:realm-role-mappings/additions {:apply-fn    (fn [{:keys [username realm-roles]}]
+                                                               (let [roles-added (user/add-realm-roles! keycloak-client realm-name username realm-roles)]
+                                                                 (println (format "Roles \"%s\" added to user \"%s\"" realm-roles username))
                                                                  {username roles-added}))
-                                                :rollback-fn (fn [[username roles-to-add]]
-                                                               (user/remove-realm-roles! keycloak-client realm-name username roles-to-add))}
-                :realm-role-mappings/deletions {:apply-fn    (fn [[username roles-to-delete]]
+                                                :rollback-fn (fn [{:keys [username realm-roles]}]
+                                                               (user/remove-realm-roles! keycloak-client realm-name username realm-roles))}
+                :realm-role-mappings/deletions {:apply-fn    (fn [{:keys [username realm-roles]}]
                                                                (when apply-deletions?
-                                                                 (let [roles-deleted (user/remove-realm-roles! keycloak-client realm-name username roles-to-delete)]
-                                                                   (println (format "Roles \"%s\" deleted from user \"%s\"" roles-to-delete username))
+                                                                 (let [roles-deleted (user/remove-realm-roles! keycloak-client realm-name username realm-roles)]
+                                                                   (println (format "Roles \"%s\" deleted from user \"%s\"" realm-roles username))
                                                                    {username roles-deleted})))
                                                 :rollback-fn (fn [x] nil)}}]
     (apply-plan keycloak-client realm-name config plan)))
@@ -174,35 +190,36 @@
     (apply-plan keycloak-client realm-name config plan)))
 
 (defn reconciliate-users! [^org.keycloak.admin.client.Keycloak admin-client realm-name users & [opts]]
-  (println "Will reconciliate users, dry-run?" (:dry-run? opts))
-  (let [dry-run? (or (:dry-run? opts) false)
-        plan     (users-plan admin-client realm-name users)
-        _        (do (println "Users reconciliation plan is:") (clojure.pprint/pprint plan))
-        report   (when (not dry-run?)
-                 (println "Will apply the previous Users reconciliation plan! apply-deletions?" (:apply-deletions? opts))
-                 (apply-users-plan! admin-client realm-name plan opts))]
+  (println (format "Will reconciliate users of realm %s, dry-run? %s" realm-name (:dry-run? opts)))
+  (let [dry-run?     (or (:dry-run? opts) false)
+        plan         (users-plan admin-client realm-name users)
+        _            (do (println "Users reconciliation plan is:") (clojure.pprint/pprint plan))
+        report       (when (not dry-run?)
+                   (println "Will apply the previous Users reconciliation plan! apply-deletions?" (:apply-deletions? opts))
+                   (apply-users-plan! admin-client realm-name plan opts))]
     (when report
       (clojure.pprint/pprint report))))
 
-(defn reconciliate-role-mappings! [^org.keycloak.admin.client.Keycloak admin-client realm-name users & [opts]]
-  (println "will reconciliate users roles mappings, dry-run?"(:dry-run? opts))
-  (let [dry-run? (or (:dry-run? opts) false)
-        plan     (role-mappings-plan admin-client realm-name users)
-        _        (do (println "User Role Mappings reconciliation plan is:") (clojure.pprint/pprint plan))
-        report   (when (not dry-run?)
-                 (println "Will apply the previous User-Role Mappings reconciliation plan! apply-deletions?" (:apply-deletions? opts) )
-                 (apply-role-mappings-plan! admin-client realm-name plan opts))]
+(defn reconciliate-role-mappings! [^org.keycloak.admin.client.Keycloak admin-client realm-name roles users & [opts]]
+  (println (format "will reconciliate users roles mappings of realm %s, dry-run? %s" realm-name (:dry-run? opts)))
+  (let [dry-run?     (or (:dry-run? opts) false)
+        users->roles (utils/associate-by :username users)
+        plan         (role-mappings-plan admin-client realm-name roles users->roles)
+        _            (do (println "User Role Mappings reconciliation plan is:") (clojure.pprint/pprint plan))
+        report       (when (not dry-run?)
+                   (println "Will apply the previous User-Role Mappings reconciliation plan! apply-deletions?" (:apply-deletions? opts) )
+                   (apply-role-mappings-plan! admin-client realm-name plan opts))]
     (when report
       (clojure.pprint/pprint report))))
 
 (defn reconciliate-groups! [^org.keycloak.admin.client.Keycloak admin-client realm-name groups & [opts]]
-  (println "Will reconciliate Groups and Subgroups, dry-run?" (:dry-run? opts))
+  (println (format "Will reconciliate Groups and Subgroups of realm %s, dry-run? %s" realm-name (:dry-run? opts)))
   (let [dry-run? (or (:dry-run? opts) false)
         plan     (groups-plan admin-client realm-name groups)
         _        (do (println "Groups reconciliation plan is:") (clojure.pprint/pprint plan))
         report   (when (not dry-run?)
-                 (println "Will apply the previous Groups reconciliation plan! apply-deletions?" (:apply-deletions? opts))
-                 (apply-groups-plan! admin-client realm-name plan opts))]
+                   (println "Will apply the previous Groups reconciliation plan! apply-deletions?" (:apply-deletions? opts))
+                   (apply-groups-plan! admin-client realm-name plan opts))]
     (when report
       (clojure.pprint/pprint report))))
 

@@ -154,10 +154,11 @@
   (when roles
     (let [{:keys [user-resource]}      (get-user-resource keycloak-client realm-name username)
           roles-representations-to-add (memoized-get-realm-roles-representations keycloak-client realm-name roles)]
-      (-> ^org.keycloak.admin.client.resource.UserResource user-resource
-          (.roles)
-          (.realmLevel)
-          (.add (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles-representations-to-add)))))
+      (when user-resource
+        (-> ^org.keycloak.admin.client.resource.UserResource user-resource
+            (.roles)
+            (.realmLevel)
+            (.add (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles-representations-to-add))))))
       roles)))
 
 (defn remove-realm-roles!

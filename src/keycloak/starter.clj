@@ -97,10 +97,11 @@
   (try (create-realm! admin-client name themes login tokens smtp)
        (println (format "Realm \"%s\" created" name))
        (catch javax.ws.rs.ClientErrorException cee
-         (println "Can't create realm " cee)
-         (when (= (-> cee (.getResponse) (.getStatus)) 409)
-           (update-realm! admin-client name themes login tokens smtp)
-           (println (format "Realm \"%s\" updated" name))))
+         (if (= (-> cee (.getResponse) (.getStatus)) 409)
+           (do
+             (update-realm! admin-client name themes login tokens smtp)
+             (println (format "Realm \"%s\" updated" name)))
+           (println "Can't create realm " name ", " cee)))
        (catch javax.ws.rs.InternalServerErrorException isee
          (println "Can't create realm " isee)
          (update-realm! admin-client name themes login tokens smtp)
@@ -145,7 +146,7 @@
          (catch Exception e (get-role admin-client realm-name role)))))
 
 (defn gen-users! [^org.keycloak.admin.client.Keycloak admin-client realm-name {:keys [groups] :as data}]
-  (when (:generated-users-by-group-and-role data)
+  (when (and (:generated-users-by-group-and-role data) (> 0 (:generated-users-by-group-and-role data)))
     (doseq [{:keys [name subgroups]} groups]
       (let [^org.keycloak.representations.idm.GroupRepresentation group (admin/get-group admin-client realm-name (get-group-id admin-client realm-name name))]
         (doseq [[idx {subgroup-name :name attributes :attributes}] (map-indexed vector subgroups)]
@@ -181,9 +182,9 @@
      (gen-users!    admin-client realm-name data)
      (reconciliation/reconciliate-groups!        admin-client realm-name (:groups data) processed-args)
      (reconciliation/reconciliate-users!         admin-client realm-name (:users data)  processed-args)
-     (reconciliation/reconciliate-role-mappings! admin-client realm-name (:user data)   processed-args)
+     (reconciliation/reconciliate-role-mappings! admin-client realm-name (:roles data)  (:users data) processed-args)
      ;(init-users!   admin-client realm-name (:users data))
-     (println (format "Keycloak realm \"%s\" initialized" realm-name))
+     (println (format "Keycloak realm \"%s\" synchronized" realm-name))
      data)))
 
 (defn keycloak-auth-server-url [protocol host port]
@@ -232,8 +233,10 @@
       (into {} (map (fn [f]
                       (when f
                         (let [{:keys [name ext]} (utils/parse-path f)
-                              edn-content        (edn/read (PushbackReader. (io/reader f)))]
-                          [(symbol name) (sci/new-var (symbol name) edn-content)]))) edn-files)))))
+                              edn-content  (when (and (utils/file-exists? f) (utils/file-not-empty? f))
+                                             (edn/read (PushbackReader. (io/reader f))))]
+                          (when edn-content
+                            [(symbol name) (sci/new-var (symbol name) edn-content)])))) edn-files)))))
 
 (defn init-cli! [args]
   (let [{:keys [infra-context resources-dir realm-config secret-export-dir secret-file-without-extension secret-path auth-server-url
