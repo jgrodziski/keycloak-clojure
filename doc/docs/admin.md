@@ -271,12 +271,16 @@ The `keycloak-clojure-starter` CLI executable has the following arguments:
 * `--environment` Name of the environment for which the init is done, has no impact but is passed during evaluation of the config file
 * `--secret-export-dir` Path to a directory, if present clients secret will be exported in `keycloak-secrets.edn|json|yml` files for downstream usage.
 * `--dry-run` A boolean flag that indicates that only the evaluation and print of the realm config (as --realm-config file) result will be executed, not applying the resulting Keycloak configuration. The boolean flag  recognizes "Y", "Yes", "On", "T", "True", and "1" as true values and "N", "No", "Off", "F", "False", and "0" as false values
+* `--apply-deletions` A boolean flag that indicates that no deletions steps are applied, only additions and updates, then any existing objets in Keycloak would remains after invocation of the init. The boolean flag  recognizes "Y", "Yes", "On", "T", "True", and "1" as true values and "N", "No", "Off", "F", "False", and "0" as false values
 * `--infra-context` Path to an EDN file. If the file is present it overrides the previous config parameters. The file contains the following keys, 
     - `:environment`: a string of the target environment, no impact but is passed during evaluation of the realm config file
     - `:color`: a string of a \"color\" for discriminating the target (can be omitted), no impact but is passed during evaluation of the realm config file
     - `:applications`: a vector of map with `:name`, `:version` and `clients-uris` keys, `clients-uris` being a vector of map with `client-id`, `:redirects`, `:base`, `:origins`, `:root` keys no impact but is passed during evaluation of the realm config file
     - `:keycloak`: a map with `:protocol`, `:host`, `:port`, `:login`, `:password`, `:base-domain`, `:secret-export-dir`
-    - `:vault`: a map with `:protocol`, `:host`, `:port`, `:token`, `:mount`, `:path`
+    - `:vault`: a map with the following entries:
+      - `:vendor`: with value being `:hashicorp` or `:gcp-sm`
+      - `:protocol`, `:host`, `:port`, `:token`, `:mount`, `:path` are keys that must be present if vendor is `:hashicorp`
+      - `:project-id` and `:secret-id` if vendor is `:gcp-sm` also the `GOOGLE_APPLICATION_CREDENTIALS` environment variable must be properly defined and available at runtime "
 * `--realm-config` A path to a clj file that is evaluated with SCI (https://github.com/borkdude/sci), the code must return a vector of map with a realm config (keys: realm, clients, roles see section [Declarative Setup](#declarative-setup))
 
 ### Infrastructure context 

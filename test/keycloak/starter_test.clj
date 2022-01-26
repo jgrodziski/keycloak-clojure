@@ -1,8 +1,12 @@
 (ns keycloak.starter-test
   (:require
+   [clojure.test :as t :refer :all]
+   [clojure.string :as str]
+   [clojure.pprint :as pp]
+
    [sci.core :as sci]
    [testit.core :refer :all]
-   [clojure.test :as t :refer :all]
+
    [keycloak.starter :as starter]
    [keycloak.admin :refer :all]
    [keycloak.user :as user]
@@ -11,9 +15,8 @@
    [keycloak.vault.protocol :as vault :refer [Vault write-secret! read-secret]]
    [keycloak.vault.hashicorp :as hashicorp-vault]
    [keycloak.vault.google :as google-vault]
-
-
-   [clojure.string :as str]))
+   [keycloak.reconciliation :as reconciliation]
+   [clojure.pprint :as pp]))
 
 (def infra-context {:environment "automatedtest"
                     :color       "blue"
@@ -93,7 +96,7 @@
                                  {:last-name "Carter", :group "Example", :realm-roles ["employee" "manager" "example-admin"], :password "secretstuff", :username "testaccount", :first-name "Bob", :attributes {"org-ref" ["Example"]}, :in-subgroups ["IT"]}]}])
 
 (deftest ^:integration vault-test
-  (testing "Hashicorp vault"
+   (testing "Hashicorp vault"
     )
   (testing "Google secret manager "
     ;;this test needs the environment variable GOOGLE_APPLICATION_CREDENTIALS defined with value as the path of the JSON file that contains your service account key.
@@ -111,6 +114,29 @@
         (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name)))
         ))))
 
+(deftest ^:integration starter-reconciliation-test
+  (testing "Applying a full configuration to an empty realm"
+    (let [realm-name (str "reconciliation-test-realm" (rand-int 1000))
+          config     (first (clojure.edn/read-string (slurp "resources/config-init-realm.edn")))]
+      (starter/init! admin-client (assoc-in config [:realm :name] realm-name) infra-context {:dry-run? false :apply-deletions? true})
+      (println "roles")
+      (pp/pprint (:roles config))
+      (testing "Getting a plan should now be empty"
+        (let [users-plan         (reconciliation/users-plan admin-client realm-name (:users config))
+              groups-plan        (reconciliation/groups-plan admin-client realm-name (:groups config))
+              role-mappings-plan (reconciliation/role-mappings-plan admin-client realm-name (:roles config) (utils/associate-by :username (:users config)))]
+          (facts (get users-plan :users/additions) => empty?
+                 (get users-plan :users/deletions) => empty?
+                 (get users-plan :users/updates)   => empty?
+                 (get groups-plan :groups/additions) => empty?
+                 (get groups-plan :groups/deletions) => empty?
+                 (get role-mappings-plan :realm-role-mappings/additions) => empty?
+                 (get role-mappings-plan :realm-role-mappings/deletions) => empty?)))
+      (testing "apply again the same configuration"
+        (starter/init! admin-client (assoc-in config [:realm :name] realm-name) infra-context {:dry-run? true :apply-deletions? true}))
+      (testing "realm deletion"
+        (delete-realm! admin-client realm-name)
+        (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name)))))))
 
 (deftest config-test
   (let [environment  (sci/new-var 'environment  "staging")

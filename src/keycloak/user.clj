@@ -154,6 +154,7 @@
   (when roles
     (let [{:keys [user-resource]}      (get-user-resource keycloak-client realm-name username)
           roles-representations-to-add (memoized-get-realm-roles-representations keycloak-client realm-name roles)]
+      (println "user and roles" username user-resource roles-representations-to-add)
       (when user-resource
         (-> ^org.keycloak.admin.client.resource.UserResource user-resource
             (.roles)
@@ -319,7 +320,7 @@
 (defn get-users-with-realm-role
   "return a list of users as UserRepresentation that have the `role-name` as role mapping"
   ^java.util.List [^org.keycloak.admin.client.Keycloak keycloak-client realm-name role-name]
-  (-> keycloak-client (.realm realm-name) (.roles) (.get role-name) (.getRoleUserMembers)))
+  (-> keycloak-client (.realm realm-name) (.roles) (.get role-name) (.getRoleUserMembers (Integer. 0) (Integer/MAX_VALUE))))
 
 (defn get-users-aggregated-by-realm-roles [^org.keycloak.admin.client.Keycloak keycloak-client realm-name roles]
   (into {} (map (fn [role]

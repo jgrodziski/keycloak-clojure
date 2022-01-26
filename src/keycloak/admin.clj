@@ -56,6 +56,11 @@
                         realm-rep))
     realm-rep))
 
+(defn map-values-Long-to-Integer [m]
+  (into {} (mapv (fn [[k v]] (if (instance? java.lang.Long v)
+                              [k (java.lang.Integer. v)]
+                              [k v])) m)))
+
 (defn realm-representation
   (^RealmRepresentation [realm-name]
    (doto (RealmRepresentation.) (.setEnabled true) (.setRealm realm-name) (.setId realm-name)))
@@ -64,7 +69,7 @@
      (cond-> realm-rep
              themes (set-all! themes)
              login  (set-all! login)
-             tokens (set-all! tokens))
+             tokens (set-all! (map-values-Long-to-Integer tokens)))
      (when smtp
        (.setSmtpServer realm-rep (ks->str smtp)))
      realm-rep)))

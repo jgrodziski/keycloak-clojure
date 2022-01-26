@@ -66,7 +66,7 @@
 (defmulti export-secret-in-vault!
   "take the vendor value to dispatch the call to proper function, other value are specific to vault implementation:
   - `:hashicorp`: in infra-context, [:vault :path] is a string with placeholders as: %1$s is the environment, %2$s is the color, %3$s is the base-domains, %4$s is the client-id (client-id depends of your realm-config.clj code)
-  - `:gcp-sm`: the vault entry of infra-contect must contains project-id and secret-id, also the GOOGLE_APPLICATION_CREDENTIALS must be properly defined and available at runtime "
+  - `:gcp-sm`: the vault entry of infra-contect must contains project-id and secret-id, also the google_application_credentials must be properly defined and available at runtime "
   (fn [_ infra-context _ _] (get-in infra-context [:vault :vendor])))
 
 (defmethod export-secret-in-vault! :hashicorp [^org.keycloak.admin.client.Keycloak keycloak-client {:keys [vault environment color base-domains] :as infra-context} realm-name client-id]
@@ -96,24 +96,30 @@
   (println (format "Will create realm \"%s\"" name))
   (try (create-realm! admin-client name themes login tokens smtp)
        (println (format "Realm \"%s\" created" name))
+       (if-let [user-admin-id (when user-admin (user/user-id admin-client "master" (:username user-admin)))]
+         (do
+           (println (format "Will update the admin user %s (user-id %s) with %s" (:username user-admin) user-admin-id user-admin))
+           (user/update-user! admin-client "master" user-admin-id user-admin))
+         (do
+           (println (format "Will create the admin users %s with data as %s" (:username user-admin) user-admin))
+           (user/create-user! admin-client "master" user-admin)))
+
        (catch javax.ws.rs.ClientErrorException cee
          (if (= (-> cee (.getResponse) (.getStatus)) 409)
            (do
              (update-realm! admin-client name themes login tokens smtp)
              (println (format "Realm \"%s\" updated" name)))
-           (println "Can't create realm " name ", " cee)))
+           (println "Can't create realm " name ", " cee))
+         realm-data)
        (catch javax.ws.rs.InternalServerErrorException isee
          (println "Can't create realm " isee)
          (update-realm! admin-client name themes login tokens smtp)
-         (println (format "Realm \"%s\" updated" name)))
+         (println (format "Realm \"%s\" updated" name))
+         realm-data)
        (catch Exception e
          (println "Can't create Realm" e)
-         (get-realm admin-client name))
-       (finally
-         (when user-admin
-           (let [user-admin-id (user/user-id admin-client "master" (:username user-admin))]
-             (println (format "Will update the admin user %s (user-id %s) with %s" (:username user-admin) user-admin-id user-admin))
-             (user/update-user! admin-client "master" user-admin-id user-admin))))))
+         (get-realm admin-client name)
+         realm-data)))
 
 (defn create-mappers! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id mappers]
   (when (and mappers (not (empty? mappers)))
@@ -169,20 +175,23 @@
           (add-user-to-group! admin-client realm-name subgroup-id (.getId created-user)))))))
 
 (defn init!
-  "Create a structure of keycloak objects (realm, clients, roles) and fill it with groups and users"
-  ([^org.keycloak.admin.client.Keycloak admin-client data]
-   (init! admin-client data nil))
-  ([^org.keycloak.admin.client.Keycloak admin-client data infra-context processed-args]
+  "Create a structure of keycloak entities (realm, clients, roles) and fill it with groups and users. Arguments are:
+  * `admin-client`: [admin client's _Keycloak_ object](https://www.keycloak.org/docs-api/11.0/javadocs/org/keycloak/admin/client/Keycloak.html) obtained with:  `(keycloak.deployment/keycloak-client (keycloak.deployment/client-conf \"http://localhost:8090\" \"master\"  \"admin-cli\") admin-login admin-password)`
+  * `data`: the configuration data with keys `realm`, `roles`, `groups` and `users` (see the documentation for more details https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/1.18.0/doc/administrative-tasks#declarative-creation-of-keycloak-objects)
+  * `infra-context`: a description of the keycloak infrastructure, the keys needed here is the :vault for secret export during clients creation
+  * `opts`: with two boolean entries `dry-run?` and `apply-deletions?`, respectively not applying the detected steps for attaining the desired state in `data` and whether the steps should delete the entities in Keycloak not in that state (sort of a very strict mode)
+  "
+([^org.keycloak.admin.client.Keycloak admin-client data infra-context & [opts]]
    (when (or (nil? admin-client) (nil? data))
      (throw (ex-info "Admin client and/or realm config data can't be null")))
-   (let [realm-name (get-in data [:realm :name])]
+ (let [realm-name       (get-in data [:realm :name])]
      (init-realm!   admin-client (:realm data))
      (init-clients! admin-client realm-name (:clients data) infra-context)
      (init-roles!   admin-client realm-name (:roles data))
      (gen-users!    admin-client realm-name data)
-     (reconciliation/reconciliate-groups!        admin-client realm-name (:groups data) processed-args)
-     (reconciliation/reconciliate-users!         admin-client realm-name (:users data)  processed-args)
-     (reconciliation/reconciliate-role-mappings! admin-client realm-name (:roles data)  (:users data) processed-args)
+     (reconciliation/reconciliate-groups!        admin-client realm-name (:groups data) opts)
+     (reconciliation/reconciliate-users!         admin-client realm-name (:users data)  opts)
+     (reconciliation/reconciliate-role-mappings! admin-client realm-name (:roles data)  (:users data) opts)
      ;(init-users!   admin-client realm-name (:users data))
      (println (format "Keycloak realm \"%s\" synchronized" realm-name))
      data)))
