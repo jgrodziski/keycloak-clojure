@@ -185,7 +185,7 @@
  (when (or (nil? admin-client) (nil? data))
    (throw (ex-info "Admin client and/or realm config data can't be null")))
  (let [realm-name (get-in data [:realm :name])
-       dry-run?   (:dry-run opts)]
+       dry-run?   (:dry-run? opts)]
    (when (not dry-run?)
      (init-realm!   admin-client (:realm data))
      (init-clients! admin-client realm-name (:clients data) infra-context)

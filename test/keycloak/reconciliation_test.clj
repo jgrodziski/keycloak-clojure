@@ -249,7 +249,7 @@
                                                                                        {:name "group6" :subgroups [{:name "subgroup6a"}]}]}
                    (:subgroups/additions plan)               =in=> [{:name "subgroup1b"}
                                                                     {:name "subgroup3a"}]
-                   (-> plan :subgroups/additions first keys) => (list :name :parent-group-id :parent-group-name))
+                   (-> plan :subgroups/additions first keys) => (list :name :path :parent-group-id :parent-group-name))
             (testing "then plan is applied with group additions"
               (let [report (apply-groups-plan! admin-client realm-name plan)
                     groups (map bean/GroupRepresentation->map (admin/list-groups admin-client realm-name))]
