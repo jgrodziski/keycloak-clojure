@@ -22,7 +22,8 @@
    [keycloak.vault.protocol :as vault :refer [Vault write-secret!]]
    [keycloak.vault.hashicorp :as hashicorp-vault]
    [keycloak.vault.google :as google-vault]
-   [keycloak.reconciliation :as reconciliation])
+   [keycloak.reconciliation :as reconciliation]
+   [clojure.pprint :as pp])
   (:import java.io.PushbackReader))
 
 ;(set! *warn-on-reflection* true)
@@ -103,7 +104,6 @@
          (do
            (println (format "Will create the admin users %s with data as %s" (:username user-admin) user-admin))
            (user/create-user! admin-client "master" user-admin)))
-
        (catch javax.ws.rs.ClientErrorException cee
          (if (= (-> cee (.getResponse) (.getStatus)) 409)
            (do
@@ -117,8 +117,8 @@
          (println (format "Realm \"%s\" updated" name))
          realm-data)
        (catch Exception e
-         (println "Can't create Realm" e)
-         (get-realm admin-client name)
+         (println (format "Can't create Realm, exception message %s and realm data:" (.getMessage e)))
+         (pp/pprint realm-data)
          realm-data)))
 
 (defn create-mappers! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id mappers]
@@ -182,19 +182,22 @@
   * `opts`: with two boolean entries `dry-run?` and `apply-deletions?`, respectively not applying the detected steps for attaining the desired state in `data` and whether the steps should delete the entities in Keycloak not in that state (sort of a very strict mode)
   "
 ([^org.keycloak.admin.client.Keycloak admin-client data infra-context & [opts]]
-   (when (or (nil? admin-client) (nil? data))
-     (throw (ex-info "Admin client and/or realm config data can't be null")))
- (let [realm-name       (get-in data [:realm :name])]
+ (when (or (nil? admin-client) (nil? data))
+   (throw (ex-info "Admin client and/or realm config data can't be null")))
+ (let [realm-name (get-in data [:realm :name])
+       dry-run?   (:dry-run opts)]
+   (when (not dry-run?)
      (init-realm!   admin-client (:realm data))
      (init-clients! admin-client realm-name (:clients data) infra-context)
      (init-roles!   admin-client realm-name (:roles data))
-     (gen-users!    admin-client realm-name data)
-     (reconciliation/reconciliate-groups!        admin-client realm-name (:groups data) opts)
-     (reconciliation/reconciliate-users!         admin-client realm-name (:users data)  opts)
-     (reconciliation/reconciliate-role-mappings! admin-client realm-name (:roles data)  (:users data) opts)
+     (gen-users!    admin-client realm-name data))
+   (reconciliation/reconciliate-groups!        admin-client realm-name (:groups data) opts)
+   (reconciliation/reconciliate-users!         admin-client realm-name (:users data)  opts)
+   (reconciliation/reconciliate-role-mappings! admin-client realm-name (:roles data)  (:users data) opts)
      ;(init-users!   admin-client realm-name (:users data))
-     (println (format "Keycloak realm \"%s\" synchronized" realm-name))
-     data)))
+   (when (not dry-run?)
+     (println (format "Keycloak realm \"%s\" synchronized" realm-name)))
+   data)))
 
 (defn keycloak-auth-server-url [protocol host port]
   (str protocol "://" host ":" port "/auth"))
