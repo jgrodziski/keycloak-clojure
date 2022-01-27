@@ -194,7 +194,7 @@
    (reconciliation/reconciliate-groups!        admin-client realm-name (:groups data) opts)
    (reconciliation/reconciliate-users!         admin-client realm-name (:users data)  opts)
    (reconciliation/reconciliate-role-mappings! admin-client realm-name (:roles data)  (:users data) opts)
-     ;(init-users!   admin-client realm-name (:users data))
+   ;(init-users!   admin-client realm-name (:users data))
    (when (not dry-run?)
      (println (format "Keycloak realm \"%s\" synchronized" realm-name)))
    data)))
