@@ -11,10 +11,6 @@
     (catch javax.ws.rs.ProcessingException pe false)
     (catch java.net.ConnectException ce false)))
 
-(defn pprint-to-file [f x]
-  (binding [ppr/*print-right-margin* 600]
-    (with-open [w (io/writer f :append false)]
-      (ppr/pprint x w))))
 
 (defn ns-clean
   "Remove all internal mappings from a given name space or the current one if no parameter given."
@@ -142,6 +138,14 @@
   (binding [ppr/*print-right-margin* 600]
     (with-open [w (io/writer f :append false)]
       (ppr/pprint x w))))
+
+(defn pprint-to-temp-file [prefix x]
+  (let [f (-> (java.nio.file.Paths/get "/" (into-array String ["tmp" "keycloak-clojure-starter"]))
+              (java.nio.file.Files/createDirectory (into-array java.nio.file.attribute.FileAttribute []))
+              (java.nio.file.Files/createTempFile prefix ".edn" (into-array java.nio.file.attribute.FileAttribute []))
+              (.toFile))]
+    (pprint-to-file f x)
+    f))
 
 (defn pprint-to-stdout [x]
   (binding [ppr/*print-right-margin* 600]
