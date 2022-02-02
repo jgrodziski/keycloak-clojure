@@ -150,7 +150,7 @@
                                         (map (fn [subgroup-to-add]
                                                (-> subgroup-to-add
                                                    (assoc :parent-group-id group-id)
-                                                   (assoc :parent-group-name name))) (find-additions :name current-subgroups (map (partial subgroup-path name) subgroups)))))) desired-groups)
+                                                   (assoc :parent-group-name name))) (find-additions :path current-subgroups (map (partial subgroup-path name) subgroups)))))) desired-groups)
      :subgroups/deletions (mapcat (fn [{:keys [name subgroups] :as desired-group}]
                                     (let [group-id          (admin/get-group-id keycloak-client realm-name name)
                                           current-subgroups (map bean/GroupRepresentation->map (admin/list-subgroups keycloak-client realm-name group-id))]
@@ -198,12 +198,12 @@
   (let [dry-run?     (or (:dry-run? opts) false)
         plan         (users-plan admin-client realm-name users)
         _            (do (println "Users reconciliation plan is:") (clojure.pprint/pprint plan)
-                         (utils/pprint-to-temp-file "users-reconciliation-plan" plan))
+                         (utils/pprint-to-temp-file (str realm-name "-users-reconciliation-plan-") plan))
         report       (when (not dry-run?)
                        (println "Will apply the previous Users reconciliation plan! apply-deletions?" (:apply-deletions? opts))
                        (apply-users-plan! admin-client realm-name plan opts))]
     (when report
-      (utils/pprint-to-temp-file "users-reconciliation-report" report)
+      (utils/pprint-to-temp-file (str realm-name "-users-reconciliation-report-") report)
       (clojure.pprint/pprint report))))
 
 (defn reconciliate-role-mappings! [^org.keycloak.admin.client.Keycloak admin-client realm-name roles users & [opts]]
@@ -212,12 +212,12 @@
         users->roles (utils/associate-by :username users)
         plan         (role-mappings-plan admin-client realm-name roles users->roles)
         _            (do (println "User Role Mappings reconciliation plan is:") (clojure.pprint/pprint plan)
-                         (utils/pprint-to-temp-file "role-mappings-reconciliation-plan" plan))
+                         (utils/pprint-to-temp-file (str realm-name "-role-mappings-reconciliation-plan-") plan))
         report       (when (not dry-run?)
                        (println "Will apply the previous User-Role Mappings reconciliation plan! apply-deletions?" (:apply-deletions? opts) )
                        (apply-role-mappings-plan! admin-client realm-name plan opts))]
     (when report
-      (utils/pprint-to-temp-file "role-mappings-reconciliation-report" report)
+      (utils/pprint-to-temp-file (str realm-name "-role-mappings-reconciliation-report-") report)
       (clojure.pprint/pprint report))))
 
 (defn reconciliate-groups! [^org.keycloak.admin.client.Keycloak admin-client realm-name groups & [opts]]
@@ -225,12 +225,12 @@
   (let [dry-run? (or (:dry-run? opts) false)
         plan     (groups-plan admin-client realm-name groups)
         _        (do (println "Groups reconciliation plan is:") (clojure.pprint/pprint plan)
-                     (utils/pprint-to-temp-file "groups-reconciliation-plan" plan))
+                     (utils/pprint-to-temp-file (str realm-name "-groups-reconciliation-plan-") plan))
         report   (when (not dry-run?)
                    (println "Will apply the previous Groups reconciliation plan! apply-deletions?" (:apply-deletions? opts))
                    (apply-groups-plan! admin-client realm-name plan opts))]
     (when report
-      (utils/pprint-to-temp-file "groups-reconciliation-report" report)
+      (utils/pprint-to-temp-file (str realm-name "-groups-reconciliation-report-") report)
       (clojure.pprint/pprint report))))
 
 (defn plan [^org.keycloak.admin.client.Keycloak admin-client realm-name desired-state & [opts]]

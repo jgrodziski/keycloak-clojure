@@ -140,10 +140,11 @@
       (ppr/pprint x w))))
 
 (defn pprint-to-temp-file [prefix x]
-  (let [f (-> (java.nio.file.Paths/get "/" (into-array String ["tmp" "keycloak-clojure-starter"]))
-              (java.nio.file.Files/createDirectory (into-array java.nio.file.attribute.FileAttribute []))
-              (java.nio.file.Files/createTempFile prefix ".edn" (into-array java.nio.file.attribute.FileAttribute []))
-              (.toFile))]
+  (let [tmp-path (java.nio.file.Paths/get "/" (into-array String ["tmp" "keycloak-clojure-starter"]))
+        dir      (if (java.nio.file.Files/notExists tmp-path (into-array java.nio.file.LinkOption []))
+                   (java.nio.file.Files/createDirectory tmp-path (into-array java.nio.file.attribute.FileAttribute []))
+                   tmp-path)
+        f        (.toFile (java.nio.file.Files/createTempFile dir prefix ".edn" (into-array java.nio.file.attribute.FileAttribute [])))]
     (pprint-to-file f x)
     f))
 
