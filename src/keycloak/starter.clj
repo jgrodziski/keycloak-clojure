@@ -289,7 +289,6 @@
           (init! admin-client config-data infra-context processed-args))
         (when (or (vector? config-data) (seq? config-data))
           (doseq [realm-data config-data]
-            (println (format "Sync realm %s with following configuration:" (get-in realm-data [:realm :name])))
             ;(clojure.pprint/pprint (dissoc-sensitive-data realm-data))
             (init! admin-client realm-data infra-context processed-args))))
       (shutdown-agents))))
