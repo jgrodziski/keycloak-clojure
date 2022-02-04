@@ -55,7 +55,7 @@
                                     (map bean/UserRepresentation->map)
                                     (map #(dissoc % :id)));vector of UserRepresentation
         filtered-desired-users (map #(select-keys % [:username :email :first-name :last-name :attributes]) desired-users)]
-    (utils/pprint-to-file "/tmp/current-users.edn" current-users)
+    (utils/pprint-to-file (str "/tmp/" realm-name "-current-users.edn") current-users)
     {:user/updates   (find-differents :username current-users filtered-desired-users [:username :first-name :last-name :email :attributes])
      :user/deletions (find-deletions  :username current-users desired-users)
      :user/additions (find-additions  :username current-users desired-users)}))

@@ -184,10 +184,13 @@
 ([^org.keycloak.admin.client.Keycloak admin-client data infra-context & [opts]]
  (when (or (nil? admin-client) (nil? data))
    (throw (ex-info "Admin client and/or realm config data can't be null")))
- (let [realm-name (get-in data [:realm :name])
-       dry-run?   (:dry-run? opts)]
-   (utils/pprint-to-temp-file (str realm-name "-config-data-") data)
-   (utils/pprint-to-temp-file (str realm-name "-infra-context-") infra-context)
+ (let [realm-name         (get-in data [:realm :name])
+       dry-run?           (:dry-run? opts)
+       _                   (println (format "Sync realm %s (dry-run? %s)" realm-name dry-run?))
+       config-data-file   (utils/pprint-to-temp-file (str realm-name "-config-data-") data)
+       infra-context-file (utils/pprint-to-temp-file (str realm-name "-infra-context-") infra-context)]
+   (println (format "Configuration data can be found at %s" (str config-data-file)))
+   (println (format "Infra context can be found at %s" (str infra-context-file)))
    (when (not dry-run?)
      (init-realm!   admin-client (:realm data))
      (init-clients! admin-client realm-name (:clients data) infra-context)
@@ -282,8 +285,7 @@
       (println (format "Login to %s realm, clientId %s with username %s" "master" "admin-cli" login))
       (if (map? config-data)
         (do
-          (println (format "Sync realm %s with following configuration:" (get-in config-data [:realm :name])))
-          ;(clojure.pprint/pprint (dissoc-sensitive-data config-data))
+                                        ;(clojure.pprint/pprint (dissoc-sensitive-data config-data))
           (init! admin-client config-data infra-context processed-args))
         (when (or (vector? config-data) (seq? config-data))
           (doseq [realm-data config-data]
