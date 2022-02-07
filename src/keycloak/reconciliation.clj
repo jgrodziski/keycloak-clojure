@@ -68,8 +68,7 @@
                                                   (bean/UserRepresentation->map user)))
                                  :rollback-fn (fn [x] (user/delete-user! keycloak-client realm-name (user/user-id keycloak-client realm-name (:username x))))}
                 :user/updates   {:apply-fn    (fn [x]
-                                                ;;TODO take into account the group/subgroup join when updating the user
-                                                (let [user (user/update-user! keycloak-client realm-name (user/user-id keycloak-client realm-name (:username x)) x)]
+                                                (let [user (admin/update-user! keycloak-client realm-name (user/user-id keycloak-client realm-name (:username x)) x)]
                                                   (println (format "User \"%s\" updated" (:username x)))
                                                   (bean/UserRepresentation->map user)))
                                  :rollback-fn (fn [x] nil)}

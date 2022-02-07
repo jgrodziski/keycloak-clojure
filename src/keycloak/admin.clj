@@ -307,6 +307,17 @@
        (get-user keycloak-client realm-name user-id)
        (get-user-by-username keycloak-client realm-name username)))))
 
+(defn update-user! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name user-id {:keys [username first-name last-name email password group in-subgroups] :as person}]
+  (info "update user" username "in realm" realm-name)
+  (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.update (user/user-for-update person)))
+  (when (and group (seq in-subgroups) user-id)
+       (doseq [subgroup-name in-subgroups]
+         (let [parent-group-id (get-group-id keycloak-client realm-name group)
+               subgroup-id     (get-subgroup-id keycloak-client realm-name parent-group-id subgroup-name)]
+           (println (format "Add user \"%s\" to group \"%s\"" username subgroup-name))
+           (add-user-to-group! keycloak-client realm-name subgroup-id user-id))))
+  (get-user keycloak-client realm-name user-id))
+
 (defn add-user-to-group-by-username!
   [^Keycloak keycloak-client realm-name group-id username]
   (info "add user" username "in group" group-id "of realm" realm-name)
