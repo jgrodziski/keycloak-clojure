@@ -289,8 +289,23 @@
   (-> keycloak-client (.realm realm-name) (.users) (.get user-id) (.toRepresentation)))
 
 (defn create-user!
-  [^Keycloak keycloak-client realm-name username password]
-  (user/create-user! keycloak-client realm-name {:username username :password  password}))
+  ([^Keycloak keycloak-client realm-name username password]
+   (create-user! keycloak-client realm-name {:username username :password  password}))
+  (^org.keycloak.representations.idm.UserRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name {:keys [username first-name last-name email password is-manager group in-subgroups] :as person}]
+   (info "create user" username "in realm" realm-name)
+   (let [resp    (-> keycloak-client (.realm realm-name) (.users) (.create (user/user-for-creation person)))
+         user-id (extract-id resp)]
+     (when resp (.close resp))
+     (info "user with username " username "created in realm" realm-name " with id" user-id)
+     (when (and group (seq in-subgroups) user-id)
+       (doseq [subgroup-name in-subgroups]
+         (let [parent-group-id (get-group-id keycloak-client realm-name group)
+               subgroup-id     (get-subgroup-id keycloak-client realm-name parent-group-id subgroup-name)]
+           (println (format "Add user \"%s\" to group \"%s\"" username subgroup-name))
+           (add-user-to-group! keycloak-client realm-name subgroup-id user-id))))
+     (if user-id
+       (get-user keycloak-client realm-name user-id)
+       (get-user-by-username keycloak-client realm-name username)))))
 
 (defn add-user-to-group-by-username!
   [^Keycloak keycloak-client realm-name group-id username]

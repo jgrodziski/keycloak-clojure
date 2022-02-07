@@ -269,9 +269,9 @@
   (get-user-by-username keycloak-client realm-name username))
 
 (defn create-user!
-  ^org.keycloak.representations.idm.UserRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name {:keys [username first-name last-name email password is-manager] :as person}]
+  ^org.keycloak.representations.idm.UserRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name {:keys [username first-name last-name email password is-manager group in-subgroups] :as person}]
   (info "create user" username "in realm" realm-name)
-  (let [resp (-> keycloak-client (.realm realm-name) (.users) (.create (user-for-creation person)))
+  (let [resp    (-> keycloak-client (.realm realm-name) (.users) (.create (user-for-creation person)))
         user-id (extract-id resp)]
     (when resp (.close resp))
     (info "user with username " username "created in realm" realm-name " with id" user-id)

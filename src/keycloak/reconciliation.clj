@@ -63,11 +63,12 @@
 (defn apply-users-plan! [keycloak-client realm-name plan & [opts]]
   (let [apply-deletions? (or (:apply-deletions? opts) false)
         config {:user/additions {:apply-fn    (fn [x]
-                                                (let [user (user/create-user! keycloak-client realm-name x)]
+                                                (let [user (admin/create-user! keycloak-client realm-name x)]
                                                   (println (format "User \"%s\" added" (:username x)))
                                                   (bean/UserRepresentation->map user)))
                                  :rollback-fn (fn [x] (user/delete-user! keycloak-client realm-name (user/user-id keycloak-client realm-name (:username x))))}
                 :user/updates   {:apply-fn    (fn [x]
+                                                ;;TODO take into account the group/subgroup join when updating the user
                                                 (let [user (user/update-user! keycloak-client realm-name (user/user-id keycloak-client realm-name (:username x)) x)]
                                                   (println (format "User \"%s\" updated" (:username x)))
                                                   (bean/UserRepresentation->map user)))
