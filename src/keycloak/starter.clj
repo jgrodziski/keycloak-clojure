@@ -188,7 +188,7 @@
        dry-run?           (:dry-run? opts)
        _                   (println (format "Sync realm %s (dry-run? %s)" realm-name dry-run?))
        config-data-file   (utils/pprint-to-temp-file (str realm-name "-config-data-") data)
-       infra-context-file (utils/pprint-to-temp-file (str realm-name "-infra-context-") infra-context)]
+       infra-context-file (utils/pprint-to-temp-file (str realm-name "-infra-context-") (update infra-context :keycloak dissoc :password))]
    (println (format "Configuration data can be found at %s" (str config-data-file)))
    (println (format "Infra context can be found at %s" (str infra-context-file)))
    (when (not dry-run?)

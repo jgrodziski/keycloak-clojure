@@ -83,12 +83,17 @@
         config {:user/additions {:apply-fn    (fn [x]
                                                 (let [user (admin/create-user! keycloak-client realm-name x)]
                                                   (println (format "User \"%s\" added" (:username x)))
-                                                  (bean/UserRepresentation->map user)))
+                                                  (when user
+                                                    ;;sometimes the user creation transaction is not committed when we get the user (we re-issue a read after the creation in the create-user! fn)
+                                                    (try (bean/UserRepresentation->map user)
+                                                         (catch Exception e
+                                                           (println "Can't map the Java object to a map" user))))))
                                  :rollback-fn (fn [x] (user/delete-user! keycloak-client realm-name (user/user-id keycloak-client realm-name (:username x))))}
                 :user/updates   {:apply-fn    (fn [x]
                                                 (let [user (admin/update-user! keycloak-client realm-name (user/user-id keycloak-client realm-name (:username x)) x)]
                                                   (println (format "User \"%s\" updated" (:username x)))
-                                                  (bean/UserRepresentation->map user)))
+                                                  (when user
+                                                    (bean/UserRepresentation->map user))))
                                  :rollback-fn (fn [x] nil)}
                 :user/deletions {:apply-fn    (fn [x]
                                                 (when apply-deletions?
