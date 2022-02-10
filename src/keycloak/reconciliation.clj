@@ -1,6 +1,7 @@
 (ns keycloak.reconciliation
   (:require
    [clojure.set :refer [difference]]
+   [clojure.pprint :as pp]
    [editscript.core :as e]
 
    [keycloak.utils :as utils]
@@ -8,10 +9,11 @@
    [keycloak.admin :as admin]
    [keycloak.bean :as bean]
    [keycloak.deployment :as deployment]
-   [clojure.pprint :as pp]))
+   ))
 
-(defn remove-blank-value-entries [m]
-  (into {} (filter (fn [[k v]] (not (and (string? v) (clojure.string/blank? v)))) m)))
+(defn remove-blank-or-empty-value-entries [m]
+  (into {} (filter (fn [[k v]] (not (or (and (string? v) (clojure.string/blank? v))
+                                       (and (seq? v) (empty? v))))) m)))
 
 (defn find-differents
   "find items in current coll that are different from the ones in the desired coll using the optional keys in keyseq to check equality only on these keys"
@@ -22,8 +24,8 @@
      (reduce (fn [acc desired-x]
                (let [k-current (k desired-x)
                      current-x (get current-by-k k-current)]
-                 (if (and current-x (or (not= desired-x (remove-blank-value-entries current-x))
-                                        (and (seq keyseq) (not= (select-keys desired-x keyseq) (select-keys (remove-blank-value-entries current-x) keyseq)))))
+                 ;;get the current item by its key and compare its keyseq values with the desired values
+                 (if (and current-x (and (seq keyseq) (not= (select-keys desired-x keyseq) (select-keys (remove-blank-or-empty-value-entries current-x) keyseq))))
                    (do (println "Caution - not equals!: current:" current-x ", desired:" desired-x)
                        (conj acc desired-x))
                    acc))) (list) desired))))
@@ -50,13 +52,29 @@
                                             {:result result :success? (not (nil? result)) :error? (nil? result)})
                                           ))])) (keys config))))
 
+
+
 (defn users-plan [keycloak-client realm-name desired-users]
-  (let [current-users          (->> (user/get-users keycloak-client realm-name)
+  (let [current-users          (->> (user/get-users keycloak-client realm-name);vector of UserRepresentation
                                     (map bean/UserRepresentation->map)
-                                    (map #(dissoc % :id)));vector of UserRepresentation
-        filtered-desired-users (map #(select-keys % [:username :email :first-name :last-name :attributes]) desired-users)]
+                                    ;;now retrieve the user groups in a separate call
+                                    (map (fn [user]
+                                           (when (:id user)
+                                             (let [groups (admin/get-user-groups keycloak-client realm-name (:id user))]
+                                               (when groups
+                                                 (assoc user :groups (map #(select-keys (bean/GroupRepresentation->map %) [:path]) groups)))))))
+                                    (map #(dissoc % :id)))
+        filtered-desired-users (->> desired-users
+                                    (map (fn [user]
+                                           (if (and (not (:groups user)) (:group user) (:in-subgroups user))
+                                             (assoc user :groups (map (fn [subgroup] (str "/" (:group user) "/" subgroup))(:in-subgroups user)))
+                                             user))))]
     (utils/pprint-to-file (str "/tmp/" realm-name "-current-users.edn") current-users)
-    {:user/updates   (find-differents :username current-users filtered-desired-users [:username :first-name :last-name :email :attributes])
+    ;; (println "current-users")
+    ;; (pp/pprint current-users)
+    ;; (println "desired-users")
+    ;; (pp/pprint filtered-desired-users)
+    {:user/updates   (find-differents :username current-users filtered-desired-users [:username :first-name :last-name :email :attributes :groups])
      :user/deletions (find-deletions  :username current-users desired-users)
      :user/additions (find-additions  :username current-users desired-users)}))
 

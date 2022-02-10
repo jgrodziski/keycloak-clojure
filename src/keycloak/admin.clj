@@ -184,11 +184,12 @@
         (get-group keycloak-client realm-name group-id))
       (do
         (info "group" group-name "already exist in realm" realm-name " with group id" group-id)
-        (some (partial group-name-match? group-name) (list-groups keycloak-client realm-name group-name))))))
+        (some (partial group-name-match? group-name)
+              (list-groups keycloak-client realm-name group-name))))))
 
 (defn create-groups! [^Keycloak keycloak-client realm-name group-names]
-  (doall (for [group-name group-names]
-           (create-group! keycloak-client realm-name group-name))))
+  (for [group-name group-names]
+    (create-group! keycloak-client realm-name group-name)))
 
 (defn delete-group!
   [^Keycloak keycloak-client realm-name group-id]

@@ -48,17 +48,25 @@
 
 (defn generate-and-create-users [keycloak-client realm-name roles n]
   (doall (for [i (range n)]
-           (let [user (user/generate-user)]
-             (user/create-user! keycloak-client realm-name user)
+           (let [user         (user/generate-user)
+                 created-user (user/create-user! keycloak-client realm-name user)]
              (user/set-realm-roles! keycloak-client realm-name (:username user) roles)
-             user))))
+             (assoc user :id (.getId created-user))))))
 
 (defn generate-and-create-users-with-usernames [keycloak-client realm-name roles usernames]
   (doall (for [username usernames]
-           (let [user (user/generate-user username)]
-             (user/create-user! keycloak-client realm-name user)
+           (let [user         (user/generate-user username)
+                 created-user (user/create-user! keycloak-client realm-name user)]
              (user/set-realm-roles! keycloak-client realm-name username roles)
-             user))))
+             (assoc user :id (.getId created-user))))))
+
+(defn create-groups! [keycloak-client realm-name groups]
+  (mapv bean/GroupRepresentation->map (admin/create-groups! keycloak-client realm-name groups)))
+
+(defn join-groups [keycloak-client realm-name users groups]
+  (doall (for [user  users
+               group groups]
+           (admin/add-user-to-group! keycloak-client realm-name (:id group) (:id user)))))
 
 (deftest ^:integration users-plan-test
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)]
@@ -66,12 +74,18 @@
       (let [realm-name      (str "test-realm-" (rand-int 1000))
             realm           (admin/create-realm! admin-client {:name realm-name})
             roles           #{"role1" "role2" "role3" "role4"}
+            groups          (create-groups! admin-client realm-name #{"group1" "group2" "group3"})
             _               (admin/create-roles! admin-client realm-name roles)
             _               (do  (log/info "realm created"))
             generated-users-1 (generate-and-create-users admin-client realm-name roles 2)
-            generated-users-2 (concat generated-users-1 (generate-and-create-users-with-usernames admin-client realm-name roles #{"to-be-modified-1" "to-be-modified-2"}))
-            to-be-modified2   (second generated-users-2)
+            to-be-modified    (generate-and-create-users-with-usernames admin-client realm-name roles #{"to-be-modified-1" "to-be-modified-2"})
+            generated-users-2 (concat generated-users-1 to-be-modified)
+            to-be-modified2   (second to-be-modified)
             generated-users-3 (concat generated-users-2 (generate-and-create-users-with-usernames admin-client realm-name roles #{"to-be-deleted-1"  "to-be-deleted-2"}))]
+        (join-groups admin-client realm-name generated-users-1 (take 1 groups))
+        (join-groups admin-client realm-name to-be-modified    [(second groups)])
+        ;(join-groups admin-client realm-name to-be-modified2   [(nth groups 2)])
+        (fact (count (admin/list-groups admin-client realm-name)) => 3)
         (is (= realm-name (.getRealm realm)))
         ;(Thread/sleep 8000)
         ;(prn (user/get-users admin-client realm-name))
@@ -82,12 +96,11 @@
             (is (= "to-be-added-1" (:username (first (:user/additions plan)))))))
         (testing "make plan with deletion"
           (let [plan (users-plan admin-client realm-name generated-users-2)]
-            (pp/pprint plan)
             (is (= 2 (count (:user/deletions plan))))
-            (is (= "to-be-deleted-1" (:username (first (:user/deletions plan)))))
+            (is (= "to-be-deleted-1" (:username (first  (:user/deletions plan)))))
             (is (= "to-be-deleted-2" (:username (second (:user/deletions plan)))))))
         (testing "make plan with updates"
-          (let [plan (users-plan admin-client realm-name [(user/generate-user "to-be-modified-1") to-be-modified2])]
+          (let [plan (users-plan admin-client realm-name [(user/generate-user "to-be-modified-1") (assoc (second to-be-modified) :groups [{:path "/group2"}])])]
             (is (= 1 (count (:user/updates plan))))
             (is (= "to-be-modified-1" (:username (first (:user/updates plan)))))))
         (testing "realm deletion"
@@ -99,68 +112,81 @@
 
 (deftest ^:integration users-plan-apply-test
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)]
-    (testing "realm, roles and generated users creation for"
-      (let [realm-name      (str "test-realm-" (rand-int 1000))
-            realm           (admin/create-realm! admin-client {:name realm-name})
-            roles           #{"role1" "role2" "role3" "role4"}
-            _               (admin/create-roles! admin-client realm-name roles)
-            _               (do  (log/info "realm created"))
-            generated-users-1 (generate-and-create-users admin-client realm-name roles 2)
-            generated-users-2 (concat generated-users-1 (generate-and-create-users-with-usernames admin-client realm-name roles #{"to-be-modified-1" "to-be-modified-2"}))
-            generated-users-3 (concat generated-users-2 (generate-and-create-users-with-usernames admin-client realm-name roles #{"to-be-deleted-1"  "to-be-deleted-2"}))]
+    (testing "Given a realm, roles and generated users"
+      (let [realm-name           (str "test-realm-" (rand-int 1000))
+            realm                (admin/create-realm! admin-client {:name realm-name})
+            roles                #{"role1" "role2" "role3" "role4"}
+            groups               (create-groups! admin-client realm-name #{"group1" "group2" "group3"})
+            _                    (admin/create-roles! admin-client realm-name roles)
+            _                    (do  (log/info "realm created"))
+            generated-users-1    (generate-and-create-users admin-client realm-name roles 2)
+            to-be-modified-users (generate-and-create-users-with-usernames admin-client realm-name roles #{"to-be-modified-1" "to-be-modified-2"})
+            generated-users-2    (concat generated-users-1 to-be-modified-users)
+            generated-users-3    (concat generated-users-2 (generate-and-create-users-with-usernames admin-client realm-name roles #{"to-be-deleted-1"  "to-be-deleted-2"}))]
         (is (= realm-name (.getRealm realm)))
-        (testing "make plan with additions"
+        (fact (count (admin/list-groups admin-client realm-name)) => 3)
+        (testing "when making plan with additions"
           (let [user-in-addition (user/generate-user "to-be-added-1")
                 desired-state    (conj generated-users-3 user-in-addition)
                 plan             (users-plan admin-client realm-name desired-state)]
             (is (= 1 (count (:user/additions plan))))
             (is (= "to-be-added-1" (:username (first (:user/additions plan)))))
-            (testing "Apply plan with additions"
+            (testing "and applying plan with additions"
               (let [report (apply-users-plan! admin-client realm-name plan)
                     users  (utils/associate-by :username (user/get-users-beans admin-client realm-name))]
                 (is (= 7 (count users)))
-                (is (get users "to-be-added-1") user-in-addition)))
-            (testing "Plan application should makes an empty plan afterwards"
-              (let [empty-plan (users-plan admin-client realm-name (conj generated-users-3 user-in-addition))]
-                (facts
-                 (get empty-plan :users/additions) => empty?
-                 (get empty-plan :users/updates)   => empty?
-                 (get empty-plan :users/deletions) => empty?)))))
-        (testing "make plan with deletions"
+                (is (get users "to-be-added-1") user-in-addition))
+              (testing "then the plan application should makes an empty plan afterwards"
+                (let [empty-plan (users-plan admin-client realm-name (conj generated-users-3 user-in-addition))]
+                  (facts (get empty-plan :user/additions) => empty?
+                         (get empty-plan :user/updates)   => empty?
+                        (get empty-plan :user/deletions) => empty?))))))
+        (testing "when making plan with deletions"
           (let [plan (users-plan admin-client realm-name generated-users-2)]
             (is (= 3 (count (:user/deletions plan))))
-            (testing "Apply plan with deletions"
+            (testing "and applying plan with deletions"
               (let [report (apply-users-plan! admin-client realm-name plan {:apply-deletions? true})
                     users  (utils/associate-by :username (user/get-users-beans admin-client realm-name))]
                 (is (= 4 (count users)))
                 (is (nil? (get users "to-be-deleted-1")))
                 (is (nil? (get users "to-be-deleted-2")))
                 (is (nil? (get users "to-be-added-1"))))
-              (testing "Plan application should makes an empty plan afterwards"
+              (testing "then plan application should makes an empty plan afterwards"
                 (let [empty-plan (users-plan admin-client realm-name generated-users-2)]
                   (facts
-                   (get empty-plan :users/additions) => empty?
-                   (get empty-plan :users/updates)   => empty?
-                   (get empty-plan :users/deletions) => empty?))))))
-        (testing "make plan with updates"
+                   (get empty-plan :user/additions) => empty?
+                   (get empty-plan :user/updates)   => empty?
+                   (get empty-plan :user/deletions) => empty?))))))
+        (testing "when making plan with updates"
           (let [to-be-modified-1 (user/generate-user "to-be-modified-1")
                 to-be-modified-2 (user/generate-user "to-be-modified-2")
-                plan (users-plan admin-client realm-name (conj generated-users-1 to-be-modified-1 to-be-modified-2))]
+                plan             (users-plan admin-client realm-name (conj generated-users-1 to-be-modified-1 to-be-modified-2))]
             (is (= 2 (count (:user/updates plan))))
             (is (= "to-be-modified-1" (:username (first (:user/updates plan)))))
-            (testing "Apply plan with updates"
+            (testing "when applying plan with updates"
               (let [report (apply-users-plan! admin-client realm-name plan)
                     users  (utils/associate-by :username (conj generated-users-1 to-be-modified-1 to-be-modified-2))]
                 (is (= 4 (count users)))
                 (facts
                  (get users "to-be-modified-1") =in=> (select-keys to-be-modified-1 [:username :first-name :last-name :email])
-                 (get users "to-be-modified-2") =in=> (select-keys to-be-modified-2 [:username :first-name :last-name :email]))))
-            (testing "Plan application should makes an empty plan afterwards"
-                (let [empty-plan (users-plan admin-client realm-name generated-users-2)]
+                 (get users "to-be-modified-2") =in=> (select-keys to-be-modified-2 [:username :first-name :last-name :email])))
+              (testing "then issuing a new plan should make it empty"
+                (let [empty-plan (users-plan admin-client realm-name (conj generated-users-1 to-be-modified-1 to-be-modified-2))]
                   (facts
-                   (get empty-plan :users/additions) => empty?
-                   (get empty-plan :users/updates)   => empty?
-                   (get empty-plan :users/deletions) => empty?)))))
+                   (get empty-plan :user/additions) => empty?
+                   (get empty-plan :user/updates)   => empty?
+                   (get empty-plan :user/deletions) => empty?))))))
+        (testing "when making plan with user with a group addition on it"
+          (let [plan (users-plan admin-client realm-name (concat generated-users-1 (map (fn [user] (assoc user :groups [{:path "/group1"}])) to-be-modified-users)))]
+            (facts (count (get plan :user/updates)) => 2
+                   (-> (get plan :user/updates) first :groups) => [{:path "/group1"}])
+            (testing "applying this plan"
+              (let [report (apply-users-plan! admin-client realm-name plan)
+                    users  (utils/associate-by :username (user/get-users-beans admin-client realm-name))]
+                (testing "when making and applying plan with user group updates"
+                  (let [plan (users-plan admin-client realm-name (concat generated-users-1 (map (fn [user] (assoc user :groups [{:path "/group2"}])) to-be-modified-users)))]
+                    (facts (count (get plan :user/updates)) => 2
+                           (-> (get plan :user/updates) first :groups) => [{:path "/group2"}])))))))
         (testing "realm deletion"
           (admin/delete-realm! admin-client realm-name)
           (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))))
@@ -303,9 +329,18 @@
     (def roles           #{"role1" "role2" "role3" "role4"})
     (admin/create-roles! admin-client realm-name roles)
     (generate-and-create-users-with-usernames admin-client realm-name #{"role1" "role2"} #{"user1"})
+    (bean/UserRepresentation->map (first (-> admin-client (.realm "electre-localhost") (.users) (.search "" (Integer. 0) Integer/MAX_VALUE Boolean/TRUE))))
+
+    (-> (-> admin-client (.realm "electre-localhost") (.users) (.search "" (Integer. 0) Integer/MAX_VALUE false))
+        first
+        (.getGroups))
+
+    (map bean/GroupRepresentation->map (admin/get-user-groups admin-client "electre-localhost" (admin/get-user-id admin-client "electre-localhost" "adhahri")))
+
     )
 
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)]
     (user/create-or-update-user! admin-client "test-realm-214" {:username "fake-user-311" :first-name "Ashley" :last-name "Fernandez" :email "fake-user-311@me.com" :attributes {"test" ["yo"]} :password "password"} nil nil))
 
   )
+

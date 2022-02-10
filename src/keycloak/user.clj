@@ -373,3 +373,5 @@
   ([] (generate-user-representation (generate-username)))
   ([username]
    (user-for-update (generate-user username))))
+
+;(-> admin-client (.realm "electre-localhost") (.users) (.search "" 0 Integer/MAX_VALUE))
