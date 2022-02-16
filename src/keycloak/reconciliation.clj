@@ -2,7 +2,6 @@
   (:require
    [clojure.set :refer [difference]]
    [clojure.pprint :as pp]
-   [editscript.core :as e]
 
    [keycloak.utils :as utils]
    [keycloak.user :as user]
@@ -70,10 +69,6 @@
                                              (assoc user :groups (map (fn [subgroup] (str "/" (:group user) "/" subgroup))(:in-subgroups user)))
                                              user))))]
     (utils/pprint-to-file (str "/tmp/" realm-name "-current-users.edn") current-users)
-    ;; (println "current-users")
-    ;; (pp/pprint current-users)
-    ;; (println "desired-users")
-    ;; (pp/pprint filtered-desired-users)
     {:user/updates   (find-differents :username current-users filtered-desired-users [:username :first-name :last-name :email :attributes :groups])
      :user/deletions (find-deletions  :username current-users desired-users)
      :user/additions (find-additions  :username current-users desired-users)}))
@@ -209,9 +204,10 @@
                                                 :rollback-fn (fn rollback-subgroup-addition-step [subgroup]
                                                                (admin/delete-group! keycloak-client realm-name (admin/get-group-id keycloak-client realm-name (:name subgroup))))}
                           :groups/deletions    {:apply-fn    (fn apply-group-deletion-step [group]
-                                                               (let [deleted-group (admin/delete-group! keycloak-client realm-name (:id group))]
-                                                                 (println (format "Group \"%s\" with id \"%s\" deleted" (:name group) (:id group)))
-                                                                 deleted-group))
+                                                               (when apply-deletions?
+                                                                 (let [deleted-group (admin/delete-group! keycloak-client realm-name (:id group))]
+                                                                   (println (format "Group \"%s\" with id \"%s\" deleted" (:name group) (:id group)))
+                                                                   deleted-group)))
                                                 :rollback-fn (fn rollback-group-deletion-step [group]
                                                                (when apply-deletions?
                                                                  (admin/create-group! keycloak-client realm-name (:name group))))}
@@ -223,7 +219,7 @@
     (apply-plan keycloak-client realm-name config plan)))
 
 (defn reconciliate-users! [^org.keycloak.admin.client.Keycloak admin-client realm-name users & [opts]]
-  (println (format "Will reconciliate users of realm %s, dry-run? %s" realm-name (:dry-run? opts)))
+  (println (format "Will reconciliate users of realm %s, dry-run? %s" realm-name (boolean (:dry-run? opts))))
   (let [dry-run?     (or (:dry-run? opts) false)
         plan         (users-plan admin-client realm-name users)
         _            (do (println "Users reconciliation plan is:") (clojure.pprint/pprint plan)
@@ -236,7 +232,7 @@
       (clojure.pprint/pprint report))))
 
 (defn reconciliate-role-mappings! [^org.keycloak.admin.client.Keycloak admin-client realm-name roles users & [opts]]
-  (println (format "will reconciliate users roles mappings of realm %s, dry-run? %s" realm-name (:dry-run? opts)))
+  (println (format "will reconciliate users roles mappings of realm %s, dry-run? %s" realm-name (boolean (:dry-run? opts))))
   (let [dry-run?     (or (:dry-run? opts) false)
         users->roles (utils/associate-by :username users)
         plan         (role-mappings-plan admin-client realm-name roles users->roles)
@@ -250,7 +246,7 @@
       (clojure.pprint/pprint report))))
 
 (defn reconciliate-groups! [^org.keycloak.admin.client.Keycloak admin-client realm-name groups & [opts]]
-  (println (format "Will reconciliate Groups and Subgroups of realm %s, dry-run? %s" realm-name (:dry-run? opts)))
+  (println (format "Will reconciliate Groups and Subgroups of realm %s, dry-run? %s" realm-name (boolean (:dry-run? opts))))
   (let [dry-run? (or (:dry-run? opts) false)
         plan     (groups-plan admin-client realm-name groups)
         _        (do (println "Groups reconciliation plan is:") (clojure.pprint/pprint plan)
