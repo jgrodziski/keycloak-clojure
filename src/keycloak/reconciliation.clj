@@ -186,6 +186,7 @@
                                              (find-deletions :path current-subgroups (map (partial subgroup-path name) subgroups)))))) desired-groups)}))
 
 
+
 (defn apply-groups-plan! [keycloak-client realm-name plan & [opts]]
   (let [apply-deletions? (or (:apply-deletions? opts) false)
         config           {:groups/additions    {:apply-fn    (fn apply-group-addition-step [{:keys [name subgroups] :as group}]
