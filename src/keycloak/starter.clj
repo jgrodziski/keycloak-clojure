@@ -287,7 +287,7 @@
         ;(println "Keycloak configuration data resulting of script evaluation is:")
         ;(utils/pprint-to-stdout config-data)
         )
-      (println (format "Keycloak init script target %s in env %s with %s realm(s)" auth-server-url (or environment "localhost") (count config-data)))
+      (println (format "Keycloak-clojure-starter version %s targeting Keycloak at %s in env %s with %s realm(s)" meta/version auth-server-url (or environment "localhost") (count config-data)))
       (println (format "Login to %s realm, clientId %s with username %s" "master" "admin-cli" login))
       (if (map? config-data)
         (do
