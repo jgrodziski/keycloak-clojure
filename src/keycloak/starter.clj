@@ -107,14 +107,20 @@
        (catch javax.ws.rs.ClientErrorException cee
          (if (= (-> cee (.getResponse) (.getStatus)) 409)
            (do
-             (update-realm! admin-client name themes login tokens smtp)
-             (println (format "Realm \"%s\" updated" name)))
+             (try
+               (update-realm! admin-client name themes login tokens smtp)
+               (println (format "Realm \"%s\" updated" name))
+               (catch Throwable t
+                 (println (format "Can't update realm %s" name)))))
            (println "Can't create realm " name ", " cee))
          realm-data)
        (catch javax.ws.rs.InternalServerErrorException isee
          (println "Can't create realm " isee)
-         (update-realm! admin-client name themes login tokens smtp)
-         (println (format "Realm \"%s\" updated" name))
+         (try
+           (update-realm! admin-client name themes login tokens smtp)
+           (println (format "Realm \"%s\" updated" name))
+           (catch Throwable t
+             (println (format "Can't update realm %s" name))))
          realm-data)
        (catch Exception e
          (println (format "Can't create Realm, exception message %s and realm data:" (.getMessage e)))
