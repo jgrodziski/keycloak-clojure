@@ -1,6 +1,7 @@
 (ns keycloak.admin-test
   (:require
    [clojure.test :as t :refer [deftest testing is]]
+   [clojure.string :as str]
    [testit.core :refer :all]
    [bean-dip.core :as bean-dip]
    [camel-snake-kebab.core :as csk :refer [->kebab-case]]
@@ -170,7 +171,18 @@
         (fact (->> {:client-id "new-id" :name "new-name" :public? true}
                    admin/client
                    (admin/create-or-update-client! admin-client realm-name)
-                   (bean/ClientRepresentation->map)) =in=> {:client-id "new-id" :name "new-name" :public-client? true})))
+                   (bean/ClientRepresentation->map)) =in=> {:client-id "new-id" :name "new-name" :public-client? true})
+        (testing "regenerating the client secret"
+          (let [current-secret  (.getSecret client)
+                client-resource (admin/get-client-resource admin-client realm-name (.getId client))]
+            (fact (.getValue (.getSecret client-resource)) => nil);;a just created client has a secret value of nil (don't know why...)
+            (admin/regenerate-secret admin-client realm-name (.getId client))
+            (let [secret-value-1 (.getValue (.getSecret client-resource))
+                  _              (admin/regenerate-secret admin-client realm-name (.getId client))
+                  secret-value-2 (.getValue (.getSecret client-resource))]
+              (facts secret-value-1 => (comp not str/blank?)
+                     secret-value-2 => (comp not str/blank?)
+                     (not= secret-value-1 secret-value-2) => truthy))))))
     (testing "realm deletion"
       (admin/delete-realm! admin-client realm-name)
       (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))

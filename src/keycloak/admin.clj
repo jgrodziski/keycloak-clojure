@@ -419,10 +419,12 @@ public
   (info "Delete client" client-id " in realm" realm-name)
   (-> keycloak-client (.realm realm-name) (.clients) (.get client-id) (.remove)))
 
-(defn regenerate-secret [^Keycloak keycloak-client realm-name id]
+(defn regenerate-secret
+  "Regenerate a client secret, must be invoked once a client is created as the secret is null.. the id is obtained with `(.getId client)` from a ClientRepresentation"
+  [^Keycloak keycloak-client realm-name id]
   (let [client-resource (get-client-resource keycloak-client realm-name id)]
     (.generateNewSecret client-resource)
-    (info "Client secret regenerated for clientId " (.getClientId client) " in realm " realm-name )
+    (info "Client secret regenerated for client with Id " id " in realm " realm-name )
     client-resource))
 
 (defn create-client!
