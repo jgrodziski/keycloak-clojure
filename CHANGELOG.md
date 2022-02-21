@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.23.17]
+
+- [Issue #37](https://github.com/jgrodziski/keycloak-clojure/issues/37) Fix for `keycloak.admin/regenerate-secret` failure
+
+# [1.23.x] - 2022-01-21
+
+- First release of the reconciliation behavior and usage in the starter init process
+
 # [1.22.x] - 2022-01-19
 - Add a `dry-run` option to CLI to only ontput the data structure but not applying it
 - Fix a bug with hashicorp vault integration
