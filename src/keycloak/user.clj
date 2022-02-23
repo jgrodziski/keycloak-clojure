@@ -352,8 +352,32 @@
 (defn user-representation->person [user-rep]
   (bean/UserRepresentation->map user-rep))
 
+(defn rand-fn "execute with equal probability the functions given as arguments" [& fns]
+  (let [n (clojure.core/count fns)
+        c (rand-int n)]
+    ((nth fns c))))
+
 (defn rand-str [len]
   (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))
+
+(defn random-lowercase-letter []
+  (str (-> (rand-int 26) (+ 97) char)))
+
+(defn random-uppercase-letter []
+  (str (char (+ 65 (rand-int 26)))))
+
+(defn random-digit []
+  (rand-int 10))
+
+(defn random-alphanum []
+  (rand-fn (fn [] (str (random-digit)))
+           (fn [] (random-lowercase-letter))
+           (fn [] (random-uppercase-letter))))
+
+(defn random-password
+  "Return a random password of n length, if missing arg a random password of random length between 6 and 20 is generated"
+  ([] (random-password (+ (rand-int 14) 8)))
+  ([n] (apply str (repeatedly n random-alphanum))))
 
 (defn generate-username
   ([] (generate-username "fake-user-"))
