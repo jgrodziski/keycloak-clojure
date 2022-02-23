@@ -154,7 +154,7 @@
   (when roles
     (let [{:keys [user-resource]}      (get-user-resource keycloak-client realm-name username)
           roles-representations-to-add (memoized-get-realm-roles-representations keycloak-client realm-name roles)]
-      (println "user and roles" username user-resource roles-representations-to-add)
+      ;(println "user and roles" username user-resource roles-representations-to-add)
       (when user-resource
         (-> ^org.keycloak.admin.client.resource.UserResource user-resource
             (.roles)
