@@ -42,7 +42,7 @@ You can create all theses resources through the [Keycloak administration console
 
 ## Create a keycloak client
 
-In every interaction with keycloak-clojure you must provide a keycloak client object that holds the server reference, password, etc.
+In every interaction with keycloak-clojure you must provide a keycloak client object that holds the server reference, password, etc. (N.B.: not to be confused with the concept of client in Keycloak defined in the section below "Create clients")
 The keycloak client is created with:
 
 ``` clojure
@@ -59,14 +59,17 @@ The keycloak client is created with:
 
 ## Create a realm
 
+A realm manages a set of users, credentials, roles, and groups. A user belongs to and logs into a realm. Realms are isolated from one another and can only manage and authenticate the users that they control.
+
 ``` clojure
 (require '[keycloak.admin :as admin])
 (admin/create-realm! kc-client "example-realm")
 
 ``` 
 
-
 ## Create clients
+
+Clients are entities that can request Keycloak to authenticate a user. Most often, clients are applications and services that want to use Keycloak to secure themselves and provide a single sign-on solution. Clients can also be entities that just want to request identity information or an access token so that they can securely invoke other services on the network that are secured by Keycloak.
 
 ``` clojure
 (admin/create-client! kc-client "example-realm" (client "myfrontend" true))
@@ -75,12 +78,16 @@ The keycloak client is created with:
 
 ## Create realm roles
 
+Roles identify a type or category of user. Admin, user, manager, and employee are all typical roles that may exist in an organization. Applications often assign access and permissions to specific roles rather than individual users as dealing with users can be too fine grained and hard to manage.
+
 ``` clojure
 (admin/create-role! kc-client "example-realm" "employee")
 (admin/create-role! kc-client "example-realm" "manager")
 ```
 
 ## Create users
+
+Users are entities that are able to log into your system. They can have attributes associated with themselves like email, username, address, phone number, and birth day. They can be assigned group membership and have specific roles assigned to them.
 
 ``` clojure
 
@@ -94,6 +101,8 @@ The keycloak client is created with:
 
 ## Assign roles to user
 
+A user role mapping defines a mapping between a role and a user. A user can be associated with zero or more roles. This role mapping information can be encapsulated into tokens and assertions so that applications can decide access permissions on various resources they manage.
+
 ``` clojure
 (require '[keycloak.user :as user])
 
@@ -102,6 +111,8 @@ The keycloak client is created with:
 ```
 
 ## Create groups
+
+Groups manage groups of users. Attributes can be defined for a group. You can map roles to a group as well. Users that become members of a group inherit the attributes and role mappings that group defines.
 
 ```clojure
 
