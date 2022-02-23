@@ -130,9 +130,9 @@
 (defn create-mappers! [^org.keycloak.admin.client.Keycloak keycloak-client realm-name client-id mappers]
   (when (and mappers (not (empty? mappers)))
     (println "Create protocol mappers for client" client-id)
-    (for [{:keys [name type config] :as mapper} mappers]
-      (do (println (format "  Create protocol mapper for client%s: name %s type %s config %s" client-id name type config))
-          (create-protocol-mapper! keycloak-client realm-name client-id (admin/mapper name type config))))))
+    (doall (for [{:keys [name type config] :as mapper} mappers]
+             (do (println (format "  Create protocol mapper for client%s: name %s type %s config %s" client-id name type config))
+                 (create-protocol-mapper! keycloak-client realm-name client-id (admin/mapper name type config)))))))
 
 (defn init-clients! [^org.keycloak.admin.client.Keycloak admin-client realm-name clients-data infra-context]
   (doseq [{:keys [name public? redirect-uris web-origins mappers] :as client-data} clients-data]
