@@ -47,9 +47,9 @@
   ([auth-server-url realm-name client-id client-secret]
    (io/input-stream (.getBytes (json/encode (client-conf auth-server-url realm-name client-id client-secret))))))
 
-(def REST_CONNECTION_POOL_SIZE 4)
-(def REST_CONNECT_TIMEOUT_SECONDS 2)
-(def REST_READ_TIMEOUT_SECONDS 10)
+(def REST_CONNECTION_POOL_SIZE 8)
+(def REST_CONNECT_TIMEOUT_SECONDS 4)
+(def REST_READ_TIMEOUT_SECONDS 20)
 
 (defn- base-keycloak-builder
   "returns a org.keycloak.admin.client.KeycloakBuilder with a RestEasy http client (connection pool size of 4) given a [[client-conf]] param"
