@@ -46,7 +46,7 @@
                     (let [apply-fn (get-in config [steps-key :apply-fn])
                           steps    (get plan steps-key)]
                       [steps-key (doall (for [step steps]
-                                          (let [_      (println (format "Apply %s for step %s" steps-key step))
+                                          (let [;_      (println (format "Apply %s for step %s" steps-key step))
                                                 result (apply-fn step)]
                                             {:result result :success? (not (nil? result)) :error? (nil? result)})
                                           ))])) (keys config))))

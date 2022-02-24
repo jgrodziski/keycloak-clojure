@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.24.1] - 2022-02-24
+
+- Remove confusing output when applying a step from a reconciliation plan (particularly deletions that eventually are not applied...)
+
 # [1.24.0] - 2022-02-24
 
 - Add functions for generating passwords in ns `keycloak.user`
