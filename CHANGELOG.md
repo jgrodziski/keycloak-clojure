@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.24.2] - 2022-02-24
+
+- Change HTTP configuration: pool size increase to 8, connect timeout of 4 seconds and read timeout of 20 seconds
+
 # [1.24.1] - 2022-02-24
 
 - Remove confusing output when applying a step from a reconciliation plan (particularly deletions that eventually are not applied...)
