@@ -121,6 +121,8 @@
     (or username-exists? email-exists?)))
 
 (defn get-user-resource
+  "Return a map with two keys: `user-id` the user UUID (not its username) and `user-resource` an
+  (`org.keycloak.admin.client.resource.UserResource`)[https://github.com/keycloak/keycloak/blob/main/integration/admin-client/src/main/java/org/keycloak/admin/client/resource/UserResource.java] instance"
   [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username]
   (let [user-id     (user-id keycloak-client realm-name username)
         ^org.keycloak.admin.client.resource.UserResource user-resource (when user-id (-> keycloak-client (.realm realm-name) (.users) (.get user-id)))]
@@ -317,6 +319,19 @@
 (defn get-users-beans [^org.keycloak.admin.client.Keycloak keycloak-client realm-name]
   (map bean/ClientRepresentation->map (get-users keycloak-client realm-name)))
 
+(defn execute-actions-email
+  "Sends an email to the user with a link within it. If they click on the link they will be asked to perform some actions.
+   * Actions are: `\"VERIFY_EMAIL\"` `\"UPDATE_PROFILE\"` `\"CONFIGURE_TOTP\"` , `\"UPDATE_PASSWORD\"` , `\"TERMS_AND_CONDITIONS\"`
+   * The lifespan decides the number of seconds after which the generated token in the email link expires. The default value is 12 hours."
+  ([[^org.keycloak.admin.client.Keycloak keycloak-client realm-name username actions]]
+   (execute-actions-email keycloak-client realm-name username 12))
+  ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name username actions lifespan]
+   (let [{:keys [user-resource user-id]} (get-user-resource keycloak-client realm-name username)]
+     (.executeActionsEmail user-resource (java.util.ArrayList. actions) (Integer/valueOf lifespan)))))
+
+(defn send-verification-email [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username]
+  (execute-actions-email keycloak-client realm-name username ["VERIFY_EMAIL"]))
+
 (defn get-users-with-realm-role
   "return a list of users as UserRepresentation that have the `role-name` as role mapping"
   ^java.util.List [^org.keycloak.admin.client.Keycloak keycloak-client realm-name role-name]
@@ -399,3 +414,6 @@
    (user-for-update (generate-user username))))
 
 ;(-> admin-client (.realm "electre-localhost") (.users) (.search "" 0 Integer/MAX_VALUE))
+
+; (def integration-test-conf (keycloak.deployment/client-conf "http://localhost:8090/auth" "master" "admin-cli"))
+; (def admin-client (keycloak.deployment/keycloak-client integration-test-conf "admin" "secretadmin"))

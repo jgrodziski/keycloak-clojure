@@ -26,7 +26,7 @@
       (is (empty? (find-differents :id current current)))
       (is (empty? (find-differents :id [] desired)))
       (is (empty? (find-differents :id current [])))
-      (is (= [{:id 2 :content "ya"}] (find-differents :id current desired))))))
+      (is (= [{:id 2 :content "ya"}] (find-differents :id current desired [:content]))))))
 
 (deftest deletions-test
   (testing "find items in current coll missing from the desired coll"
@@ -255,7 +255,7 @@
             realm          (admin/create-realm! admin-client {:name realm-name})
             _              (do (log/info "realm created"))
             group-names    #{"group1" "group2" "group3" "group4"}
-            groups         (admin/create-groups! admin-client realm-name group-names)
+            groups         (doall (admin/create-groups! admin-client realm-name group-names))
             subgroup1a     (admin/create-subgroup! admin-client realm-name (admin/get-group-id admin-client realm-name "group1") "subgroup1a")
             subgroup2a     (admin/create-subgroup! admin-client realm-name (admin/get-group-id admin-client realm-name "group2") "subgroup2a")
             created-groups (map bean/GroupRepresentation->map (admin/list-groups admin-client realm-name))]

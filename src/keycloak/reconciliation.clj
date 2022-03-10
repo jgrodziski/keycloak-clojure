@@ -53,25 +53,29 @@
 
 
 
-(defn users-plan [keycloak-client realm-name desired-users]
-  (let [current-users          (->> (user/get-users keycloak-client realm-name);vector of UserRepresentation
-                                    (map bean/UserRepresentation->map)
-                                    ;;now retrieve the user groups in a separate call
-                                    (map (fn [user]
-                                           (when (:id user)
-                                             (let [groups (admin/get-user-groups keycloak-client realm-name (:id user))]
-                                               (when groups
-                                                 (assoc user :groups (map #(select-keys (bean/GroupRepresentation->map %) [:path]) groups)))))))
-                                    (map #(dissoc % :id)))
-        filtered-desired-users (->> desired-users
-                                    (map (fn [user]
-                                           (if (and (not (:groups user)) (:group user) (:in-subgroups user))
-                                             (assoc user :groups (map (fn [subgroup] (str "/" (:group user) "/" subgroup))(:in-subgroups user)))
-                                             user))))]
-    (utils/pprint-to-file (str "/tmp/" realm-name "-current-users.edn") current-users)
-    {:user/updates   (find-differents :username current-users filtered-desired-users [:username :first-name :last-name :email :attributes :groups])
-     :user/deletions (find-deletions  :username current-users desired-users)
-     :user/additions (find-additions  :username current-users desired-users)}))
+(defn users-plan [keycloak-client realm-name desired-users & [opts]]
+  ;;as getting all the users and their groups can take a long time, IF the desired-users are empty AND the apply-deletions is false we skip the whole plan
+  (let [skip-everything? (not (or (seq desired-users) (:apply-deletions? opts)))]
+    (if skip-everything?
+      {:user/updates nil :user/deletions nil :user/additions nil}
+      (let [current-users          (->> (user/get-users keycloak-client realm-name);vector of UserRepresentation
+                                        (map bean/UserRepresentation->map)
+                                        ;;now retrieve the user groups in a separate parallel calls
+                                        (pmap (fn [user]
+                                                (when (:id user)
+                                                  (let [groups (admin/get-user-groups keycloak-client realm-name (:id user))]
+                                                    (when groups
+                                                      (assoc user :groups (map #(select-keys (bean/GroupRepresentation->map %) [:path]) groups)))))))
+                                        (map #(dissoc % :id)))
+            filtered-desired-users (->> desired-users
+                                        (map (fn [user]
+                                               (if (and (not (:groups user)) (:group user) (:in-subgroups user))
+                                                 (assoc user :groups (map (fn [subgroup] (str "/" (:group user) "/" subgroup))(:in-subgroups user)))
+                                                 user))))]
+        (utils/pprint-to-file (str "/tmp/" realm-name "-current-users.edn") current-users)
+        {:user/updates   (find-differents :username current-users filtered-desired-users [:username :first-name :last-name :email :attributes :groups])
+         :user/deletions (find-deletions  :username current-users desired-users)
+         :user/additions (find-additions  :username current-users desired-users)}))))
 
 (defn apply-users-plan! [keycloak-client realm-name plan & [opts]]
   (let [apply-deletions? (or (:apply-deletions? opts) false)
@@ -222,7 +226,7 @@
 (defn reconciliate-users! [^org.keycloak.admin.client.Keycloak admin-client realm-name users & [opts]]
   (println (format "Will reconciliate users of realm %s, dry-run? %s" realm-name (boolean (:dry-run? opts))))
   (let [dry-run?     (or (:dry-run? opts) false)
-        plan         (users-plan admin-client realm-name users)
+        plan         (users-plan admin-client realm-name users opts)
         _            (do (println "Users reconciliation plan is:") (clojure.pprint/pprint plan)
                          (utils/pprint-to-temp-file (str realm-name "-users-reconciliation-plan-") plan))
         report       (when (not dry-run?)

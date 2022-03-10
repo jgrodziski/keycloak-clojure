@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.25.0] - 2022-03-10
+
+- Better performance for users reconciliation plan (avoid unnecessary process and add parallelization when groups are retrieved for every users in standalone requests) 
+- [Issue #38](https://github.com/jgrodziski/keycloak-clojure/issues/38) Add `send-verification-email` and `execute-actions-email` functions in `keycloak.user` ns.
+
 # [1.24.2] - 2022-02-24
 
 - Change HTTP configuration: pool size increase to 8, connect timeout of 4 seconds and read timeout of 20 seconds

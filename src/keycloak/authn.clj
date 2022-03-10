@@ -22,7 +22,8 @@
     :client_secret client-secret}))
 
 (defn authenticate
-  "return the bearer token decoded as a clojure data struct. (with :access_token and :refresh_token keys, beware 'underscore _' not 'hyphen -')"
+  "Return the bearer token decoded as a clojure map with `:access_token` and `:refresh_token` keys, beware underscore `_` not hyphen `-`.
+  The keycloak conf needs the `:auth-server-url`, `realm` and `client-id` keys"
   ([{:keys [auth-server-url realm client-id] :as conf} client-secret]
    (authenticate auth-server-url realm client-id client-secret))
   ([{:keys [auth-server-url realm client-id] :as conf} username password]
@@ -47,5 +48,7 @@
 (defn auth-cookie [bearer]
   {"X-Authorization-Token" {:discard true, :path "/", :value (:access_token bearer), :version 0}})
 
-(defn auth-header [bearer]
+(defn auth-header
+  "Return a map with \"authorization\" key and value the access token with \"Bearer \" prefix. Argument is the data structure returned by the `keycloak.authn/authenticate` function"
+  [bearer]
   {"authorization" (str "Bearer " (:access_token bearer))})
