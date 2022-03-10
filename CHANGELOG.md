@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.25.2] - 2022-03-10
+
+- Fix `keycloak.authn/authenticate` function by adding content-type 
+
 # [1.25.1] - 2022-03-10
 
 - Better reporting and logging when applying any reconciliation plan
