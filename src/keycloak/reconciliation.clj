@@ -41,16 +41,22 @@
   (let [missing-ids (difference (set (map k desired)) (set (map k current)))]
     (filter #(missing-ids (k %)) desired)))
 
+(defn- apply-step [apply-fn step]
+  (let [result (apply-fn step)]
+    (when (not= :not-applied result)
+      {:result result :success? (not (nil? result)) :error? (nil? result)})))
+
+(defn- apply-steps [apply-fn steps-key steps]
+  (doall (filter identity (for [step steps]
+                            (let [result (apply-step apply-fn step)]
+                              (println (format "Applied %s for step %s, result: %s" steps-key step result))
+                              result)))))
+
 (defn apply-plan [keycloak-client realm-name config plan]
   (into {} (map (fn [steps-key]
                     (let [apply-fn (get-in config [steps-key :apply-fn])
                           steps    (get plan steps-key)]
-                      [steps-key (doall (for [step steps]
-                                          (let [;_      (println (format "Apply %s for step %s" steps-key step))
-                                                result (apply-fn step)]
-                                            {:result result :success? (not (nil? result)) :error? (nil? result)})
-                                          ))])) (keys config))))
-
+                      [steps-key (apply-steps apply-fn steps-key steps)])) (keys config))))
 
 
 (defn users-plan [keycloak-client realm-name desired-users & [opts]]
@@ -95,10 +101,11 @@
                                                     (bean/UserRepresentation->map user))))
                                  :rollback-fn (fn [x] nil)}
                 :user/deletions {:apply-fn    (fn [x]
-                                                (when apply-deletions?
+                                                (if apply-deletions?
                                                   (let [user-id (user/delete-user! keycloak-client realm-name (:username x))]
                                                     (println (format "User with id \"%s\" and username \"%s\" deleted" user-id (:username x)))
-                                                    user-id)))
+                                                    user-id)
+                                                  :not-applied))
                                  :rollback-fn (fn [x] nil)}}]
     (apply-plan keycloak-client realm-name config plan)))
 
@@ -150,10 +157,11 @@
                                                 :rollback-fn (fn [{:keys [username realm-roles]}]
                                                                (user/remove-realm-roles! keycloak-client realm-name username realm-roles))}
                 :realm-role-mappings/deletions {:apply-fn    (fn [{:keys [username realm-roles]}]
-                                                               (when apply-deletions?
+                                                               (if apply-deletions?
                                                                  (let [roles-deleted (user/remove-realm-roles! keycloak-client realm-name username realm-roles)]
                                                                    (println (format "Roles \"%s\" deleted from user \"%s\"" realm-roles username))
-                                                                   {username roles-deleted})))
+                                                                   {username roles-deleted})
+                                                                 :not-applied))
                                                 :rollback-fn (fn [x] nil)}}]
     (apply-plan keycloak-client realm-name config plan)))
 
@@ -209,18 +217,20 @@
                                                 :rollback-fn (fn rollback-subgroup-addition-step [subgroup]
                                                                (admin/delete-group! keycloak-client realm-name (admin/get-group-id keycloak-client realm-name (:name subgroup))))}
                           :groups/deletions    {:apply-fn    (fn apply-group-deletion-step [group]
-                                                               (when apply-deletions?
+                                                               (if apply-deletions?
                                                                  (let [deleted-group (admin/delete-group! keycloak-client realm-name (:id group))]
                                                                    (println (format "Group \"%s\" with id \"%s\" deleted" (:name group) (:id group)))
-                                                                   deleted-group)))
+                                                                   deleted-group)
+                                                                 :not-applied))
                                                 :rollback-fn (fn rollback-group-deletion-step [group]
                                                                (when apply-deletions?
                                                                  (admin/create-group! keycloak-client realm-name (:name group))))}
                           :subgroups/deletions {:apply-fn (fn apply-subgroup-deletion-step [subgroup]
-                                                            (when apply-deletions?
+                                                            (if apply-deletions?
                                                               (let [deleted-subgroup (admin/delete-group! keycloak-client realm-name (:id subgroup))]
                                                                 (println (format "Subgroup \"%s\" of group \"%s\" deleted" (:name subgroup) (:parent-group-name subgroup)))
-                                                                deleted-subgroup)))}}]
+                                                                deleted-subgroup)
+                                                              :not-applied))}}]
     (apply-plan keycloak-client realm-name config plan)))
 
 (defn reconciliate-users! [^org.keycloak.admin.client.Keycloak admin-client realm-name users & [opts]]
