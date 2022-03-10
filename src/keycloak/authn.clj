@@ -31,13 +31,13 @@
   ([auth-server-url realm client-id client-secret]
    (info "Authenticate against" (oidc-connect-url auth-server-url realm) "for client-id"  client-id)
    (-> (http/post (oidc-connect-url auth-server-url realm)
-                  {:form-params (client-credentials client-id client-secret)})
+                  {:form-params (client-credentials client-id client-secret) :content-type "application/x-www-form-urlencoded"})
        :body
        (parse-string true)))
   ([auth-server-url realm client-id username password]
    (info "Authenticate against" (oidc-connect-url auth-server-url realm) "for client-id"  client-id "with user" username)
    (-> (http/post (oidc-connect-url auth-server-url realm)
-                  {:form-params (client-credentials client-id username password)})
+                  {:form-params (client-credentials client-id username password) :content-type "application/x-www-form-urlencoded"})
        :body
        (parse-string true))))
 
