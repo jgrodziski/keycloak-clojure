@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.25.3] - 2022-03-15
+
+- Upgrade SCI dependency org 
+- Add token store feature (for client using a token) and near-expiration? predicate in `keycloak.authn` ns
+
 # [1.25.2] - 2022-03-10
 
 - Fix `keycloak.authn/authenticate` function by adding content-type 
