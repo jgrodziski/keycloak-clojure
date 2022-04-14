@@ -1,7 +1,9 @@
 (ns keycloak.backoff
   (:require [clojure.core.async :as async]))
 
-(defn timeout [timeout-ms f]
+(defn timeout
+  "Return the result of the f function or the `:timed-out` keyword if the function takes more than `timeout-ms` time to execute"
+  [timeout-ms f]
      (let [fut (future (f))
            ret (deref fut timeout-ms :timed-out)]
        (when (= ret :timed-out)
@@ -12,12 +14,12 @@
 (defn exponential-backoff
   "Implements exponential backoff.
 
-  * f is a function which accepts 3 channels (f =success= =error= =retry=), and should do exactly one of the following operations without blocking:
-    - put a successful value in =success=
-    - put an error in =error= (will break the loop)
-    - put an error which causes a retry in =retry=.
-  * the exponential backoff loop can be configured with :get-delay-ms, a function which returns a (potentially infinite) seq of backoff intervals,
-   and :imprecision-ms, a maximum number of milliseconds with which to randomly blurr the backoff intervals.
+  * f is a function which accepts 3 channels `(f =success= =error= =retry=)`, and should do exactly one of the following operations without blocking:
+    - put a successful value in `=success=`
+    - put an error in `=error=` (will break the loop)
+    - put an error which causes a retry in `=retry=`
+  * the exponential backoff loop can be configured with `:get-delay-ms`, a function which returns a (potentially infinite) seq of backoff intervals,
+   and `:imprecision-ms`, a maximum number of milliseconds with which to randomly blurr the backoff intervals.
 
   Returns a channel which will receive either the completed result or an error."
   ([f]
