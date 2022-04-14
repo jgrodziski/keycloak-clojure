@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.26.0] - 2022-04-14
+
+- [Issue 40](https://github.com/jgrodziski/keycloak-clojure/issues/40) - Retry mechanism with exponential backoff
+- Bump Keycloak libs to version `16.1.1`
+
 # [1.25.3] - 2022-03-15
 
 - Upgrade SCI dependency org 
