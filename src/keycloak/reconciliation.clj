@@ -2,12 +2,14 @@
   (:require
    [clojure.set :refer [difference]]
    [clojure.pprint :as pp]
+   [clojure.core.async :as async]
 
    [keycloak.utils :as utils]
    [keycloak.user :as user]
    [keycloak.admin :as admin]
    [keycloak.bean :as bean]
    [keycloak.deployment :as deployment]
+   [keycloak.backoff :as backoff]
    ))
 
 (defn remove-blank-or-empty-value-entries [m]
@@ -41,6 +43,26 @@
   (let [missing-ids (difference (set (map k desired)) (set (map k current)))]
     (filter #(missing-ids (k %)) desired)))
 
+(defn- apply-step-with-exp-backoff
+  ([apply-fn step]
+   (apply-step-with-exp-backoff nil apply-fn step))
+  ([{:as opts :keys [get-delays-ms imprecision-ms timeout-ms] :or {get-delays-ms (constantly [1000 2000 4000 8000 16000]) imprecision-ms 1000 timeout-ms 12000}}
+    apply-fn step]
+   (let [result-chan (backoff/exponential-backoff (fn apply-fn-with-timeout [success retry error]
+                                                    (let [result (backoff/timeout timeout-ms (fn []
+                                                                                               (try
+                                                                                                 (let [result (apply-fn step)]
+                                                                                                   (case result
+                                                                                                     :not-applied (async/put! success {:result :not-applied :success? false :error? false})
+                                                                                                     (async/put! success {:result result :success? (not (nil? result)) :error? (nil? result)})))
+                                                                                                 (catch Throwable t
+                                                                                                   (async/put! error {:result t :error t :error? true :success? false})))))]
+                                                      (case result
+                                                        :timed-out (async/put! retry   {:result :timed-out :success? false :error? false})
+                                                        (async/put!  success {:result result :success? (not (nil? result)) :error? (nil? result)}))
+                                                      )) opts)]
+     (async/<!! result-chan))))
+
 (defn- apply-step [apply-fn step]
   (let [result (apply-fn step)]
     (when (not= :not-applied result)
@@ -48,7 +70,7 @@
 
 (defn- apply-steps [apply-fn steps-key steps]
   (doall (filter identity (for [step steps]
-                            (let [result (apply-step apply-fn step)]
+                            (let [result (apply-step-with-exp-backoff apply-fn step)]
                               (println (format "Applied %s for step %s, result: %s" steps-key step result))
                               result)))))
 
@@ -203,9 +225,9 @@
   (let [apply-deletions? (or (:apply-deletions? opts) false)
         config           {:groups/additions    {:apply-fn    (fn apply-group-addition-step [{:keys [name subgroups] :as group}]
                                                                (let [created-group (bean/GroupRepresentation->map (admin/create-group! keycloak-client realm-name name))]
-                                                                 (println (format "Group \"%s\" created" name))
                                                                  (doseq [subgroup subgroups]
                                                                    (admin/create-subgroup! keycloak-client realm-name (:id created-group) (:name subgroup)))
+                                                                 (println (format "Group \"%s\" created with %s subgroups" name (count subgroups)))
                                                                  created-group))
                                                 :rollback-fn (fn rollback-group-addition-step [group]
                                                                (let [deleted-group (admin/delete-group! keycloak-client realm-name (admin/get-group-id keycloak-client realm-name (:name group)))]

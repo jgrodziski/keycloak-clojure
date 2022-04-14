@@ -55,7 +55,7 @@
   {"authorization" (str "Bearer " (:access_token bearer))})
 
 (defn near-expiration?
-  "Does the token from the `token-store` map expires in less than 20 seconds?"
+  "Does the token from the `token-store` expires in less than 20 seconds?"
   [token-store username]
   (when (contains? token-store username)
     (let [elapsed-time (when (get-in token-store [username :issued-at])
