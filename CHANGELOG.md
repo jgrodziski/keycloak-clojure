@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.27.0] - 2022-05-11
+
+- [Issue 41](https://github.com/jgrodziski/keycloak-clojure/issues/41) - Bump to Keycloak 18.0.0
+
 # [1.26.0] - 2022-04-14
 
 - [Issue 40](https://github.com/jgrodziski/keycloak-clojure/issues/40) - Retry mechanism with exponential backoff
