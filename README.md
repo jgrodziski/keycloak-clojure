@@ -11,11 +11,11 @@ keycloak-clojure {:mvn/version "1.27.0"}
 
 The [reference documentation is available on cljdoc](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure).
 
-- **[Concepts](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/1.27.0/doc/security-concepts)**: Keycloak implements the concepts of the OAuth and OIDC protocols as well as its own concepts. This section explains these concepts and their purpose
-- **[Setup](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/1.27.0/doc/run-keycloak)**: this section exposes an easy way to install Keycloak on your development machine through Docker
-- **[Administration](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/1.27.0/doc/administrative-tasks)**: the administration tasks allows to create the different Keycloak resources used later when securing the application
-- **[Frontend](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/1.27.0/doc/securing-a-frontend)**: this section explains how to secure a typical SPA frontend
-- **[Backend](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/1.27.0/doc/securing-a-backend)**: this section explains how to secure an API backend
+- **[Concepts](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/1.27.0/doc/security-concepts)**: Keycloak implements the concepts of the OAuth and OIDC protocols as well as its own
+- **[Setup](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/1.27.0/doc/run-keycloak)**: Setup Keycloak on your development machine with Docker
+- **[Administration](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/1.27.0/doc/administrative-tasks)**: Administration tasks create the different Keycloak resources used later when securing the application
+- **[Frontend](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/1.27.0/doc/securing-a-frontend)**: How to secure a typical SPA frontend?
+- **[Backend](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/1.27.0/doc/securing-a-backend)**: How to secure an API backend?
 
 
 
