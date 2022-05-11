@@ -7,7 +7,13 @@ JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
 
 clj -X:uberjar
 
-docker buildx build --platform linux/amd64,linux/arm64 -t jgrodziski/keycloak-clojure-starter:latest --push .
+if [ $(uname -m) == 'arm64' ]; then
+    docker buildx build --platform linux/arm64/v8 -t jgrodziski/keycloak-clojure-starter:latest --push .
+fi
+if [ $(uname -m) == 'x86_64' ]; then
+    docker buildx build --platform linux/amd64 -t jgrodziski/keycloak-clojure-starter:latest --push .
+fi
+
 
 if [ $? -eq 0 ]; then
     echo "Successfully built \"keycloak-clojure\"'s docker image with JAR: jgrodziski/keycloak-clojure-starter:latest"
@@ -26,7 +32,12 @@ fi
 #    exit 1
 #fi
 
-docker buildx build --platform linux/amd64,linux/arm64 -t jgrodziski/keycloak-clojure-starter:$ARTIFACT_VERSION --push .
+if [ $(uname -m) == 'arm64' ]; then
+    docker buildx build --platform linux/arm64/v8 -t jgrodziski/keycloak-clojure-starter:$ARTIFACT_VERSION --push .
+fi
+if [ $(uname -m) == 'x86_64' ]; then
+    docker buildx build --platform linux/amd64 -t jgrodziski/keycloak-clojure-starter:$ARTIFACT_VERSION --push .
+fi
 
 if [ $? -eq 0 ]; then
     echo "Successfully built \"keycloak-clojure\"'s docker image with JAR: jgrodziski/keycloak-clojure-starter:$ARTIFACT_VERSION"
