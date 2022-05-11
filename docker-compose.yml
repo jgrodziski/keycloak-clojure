@@ -33,12 +33,12 @@ services:
       VAULT_DEV_ROOT_TOKEN_ID: myroot
 
   keycloak:
-    image: jgrodziski/keycloak:16.1.0
-    platform: linux/arm64
+    image: quay.io/keycloak/keycloak:18.0.0
+    entrypoint: ["/opt/keycloak/bin/kc.sh", "start-dev"]
     depends_on:
       - postgres
     healthcheck:
-      test: ["CMD", "curl", "--output", "/dev/null", "--silent", "--head", "--fail", "http://127.0.0.1:8080/auth"]
+      test: ["CMD", "curl", "--output", "/dev/null", "--silent", "--head", "--fail", "http://127.0.0.1:8080/"]
       interval: 20s
       timeout: 5s
       retries: 6
@@ -53,6 +53,10 @@ services:
       DB_DATABASE: keycloak
       DB_USER: keycloak
       DB_PASSWORD: password
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: secretadmin
-
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: password
+      KC_HOSTNAME: localhost
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: secretadmin

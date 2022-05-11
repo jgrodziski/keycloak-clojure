@@ -16,7 +16,7 @@
 
 (def LOGIN "admin")
 (def PWD "secretadmin")
-(def AUTH_SERVER_URL "http://localhost:8090/auth")
+(def AUTH_SERVER_URL "http://localhost:8090")
 ;(def AUTH_SERVER_URL "http://login.default.minikube.devmachine/auth")
 (def ADMIN_REALM "master")
 (def ADMIN_CLIENT_ID "admin-cli")

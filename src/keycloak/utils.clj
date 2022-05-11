@@ -79,7 +79,7 @@
   ([infra-config]
    (auth-server-url (get-in infra-config [:keycloak :protocol]) (get-in infra-config [:keycloak :host]) (get-in infra-config [:keycloak :port])))
   ([protocol host port]
-   (str protocol "://" host ":" port "/auth")))
+   (str protocol "://" host ":" port "/")))
 
 (defn parse-path "Given a file return a map with following keys: dir root base name ext, nil if file doesn't exist" [f]
   (if (fs/exists? f)

@@ -54,15 +54,16 @@
         com.google.cloud/google-cloud-secretmanager {:mvn/version "2.0.4"}
 
         ;; keycloak stuff
-        org.keycloak/keycloak-adapter-core   {:mvn/version "16.1.1"}
-        org.keycloak/keycloak-core           {:mvn/version "16.1.1"}
-        org.keycloak/keycloak-authz-client   {:mvn/version "16.1.1"}
-        org.keycloak/keycloak-adapter-spi    {:mvn/version "16.1.1"}
+        org.keycloak/keycloak-adapter-core   {:mvn/version "18.0.0"}
+        org.keycloak/keycloak-core           {:mvn/version "18.0.0"}
+        org.keycloak/keycloak-authz-client   {:mvn/version "18.0.0"}
+        org.keycloak/keycloak-adapter-spi    {:mvn/version "18.0.0"}
+        org.keycloak/keycloak-common         {:mvn/version "18.0.0"}
         org.jboss.logging/jboss-logging      {:mvn/version "3.4.1.Final"}
         org.apache.httpcomponents/httpclient {:mvn/version "4.5.13"}
 
         ;;all the deps below are for the admin client (don't know why the transitive deps didn't work)
-        org.keycloak/keycloak-admin-client                      {:mvn/version "16.1.1"}
+        org.keycloak/keycloak-admin-client                      {:mvn/version "18.0.0"}
         com.fasterxml.jackson.core/jackson-databind             {:mvn/version "2.12.1"}
         com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider {:mvn/version "2.12.1"}
         org.jboss.resteasy/resteasy-jackson2-provider       {:mvn/version "3.13.2.Final"}
@@ -73,7 +74,6 @@
         org.jboss.resteasy/resteasy-jaxb-provider           {:mvn/version "3.13.2.Final"}
 
         org.jboss.spec.javax.ws.rs/jboss-jaxrs-api_2.1_spec {:mvn/version "1.0.2.Final"}
-
 
         org.slf4j/slf4j-api            {:mvn/version "2.0.0-alpha1"}
         ch.qos.logback/logback-classic {:mvn/version "1.3.0-alpha5"}
