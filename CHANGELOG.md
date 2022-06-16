@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.28.2] - 2022-06-16
+
+- Fix the naming of the `keycloak.user/add-required-actions!` function
+
 # [1.28.1] - 2022-06-16
 
 - [Issue 44](https://github.com/jgrodziski/keycloak-clojure/issues/44) - Add a specific function to add required action(s) to a user

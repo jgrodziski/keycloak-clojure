@@ -332,7 +332,7 @@
 (defn send-verification-email [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username]
   (execute-actions-email keycloak-client realm-name username ["VERIFY_EMAIL"]))
 
-(defn add-required-actions
+(defn add-required-actions!
   "Add required user actions.
    Actions can be:  `\"VERIFY_EMAIL\"` `\"UPDATE_PROFILE\"` `\"CONFIGURE_TOTP\"` , `\"UPDATE_PASSWORD\"` , `\"TERMS_AND_CONDITIONS\"`  "
   [^Keycloak keycloak-client realm-name username actions]
