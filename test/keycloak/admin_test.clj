@@ -222,3 +222,36 @@
     (testing "realm deletion"
       (admin/delete-realm! admin-client realm-name)
       (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
+
+(deftest ^:integration test-add-roles-to-group
+  (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)
+        _            (assert (keycloak-running? admin-client))
+        realm-name   (str "keycloak-clojure-test-" (rand-int 1000))
+        realm        (admin/create-realm! admin-client realm-name)
+        group-name   (str "mygroup-" (rand-int 1000))
+        roles        ["role1" "role2" "role3"]
+        all-roles    (map #(.getName %) (admin/list-roles admin-client realm-name))]
+    (testing "Given a group and roles"
+      (let [group (admin/create-group! admin-client realm-name group-name)]
+        (admin/create-roles! admin-client realm-name roles)
+        (testing "when adding roles to the group"
+          (admin/add-realm-roles-to-group! admin-client realm-name group-name ["role1" "role2"])
+          (testing "then roles are added to the group"
+            (fact (set (admin/get-realm-roles-of-group admin-client realm-name group-name)) => #{"role1" "role2"})))
+        (testing "when removing roles of the group"
+          (admin/remove-realm-roles-of-group! admin-client realm-name group-name ["role1" "role2"])
+          (testing "then roles of the group are empty"
+            (fact (admin/get-realm-roles-of-group admin-client realm-name group-name) => [])))
+        (testing "when setting the roles of the group"
+          (admin/add-realm-roles-to-group! admin-client realm-name group-name ["role1"])
+          (admin/set-realm-roles-of-group! admin-client realm-name group-name ["role2" "role3"])
+          (testing "then roles of the group are role2 and role3"
+            (fact (set (admin/get-realm-roles-of-group admin-client realm-name group-name)) => #{"role2" "role3"})))
+        (testing "adding unknown roles should thrown an exception"
+          ;(ex-info (format "roles %s not found in realm %s" not-found realm-name) {:checked-roles roles :realm-name realm-name :existing-roles-in-realm existing-roles :roles-not-found not-found})
+          (fact (admin/add-realm-roles-to-group! admin-client realm-name group-name ["nimportequoi"]) =throws=> clojure.lang.ExceptionInfo))))
+    (testing "realm deletion"
+      (admin/delete-realm! admin-client realm-name)
+      (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
+
+

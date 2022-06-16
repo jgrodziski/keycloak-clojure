@@ -121,6 +121,18 @@ Groups manage groups of users. Attributes can be defined for a group. You can ma
 
 ```
 
+## Assign realm roles to a group
+
+Realm roles can be assigned to a group. There are also functions to remove (`remove-realm-roles-of-group!`), set (`set-realm-roles-of-group!`) and list the roles of a group (`get-realm-roles-of-group`), or you can get a GroupRepresentation and invoke `(.getRealmRoles (get-group kc-client "example-realm" (get-group-id kc-client "example-realm" "mygroup")))`.
+
+```clojure
+(require '[keycloak.admin :as admin])
+
+(admin/add-realm-roles-to-group! kc-client "example-realm" "mygroup" ["manager"])
+(admin/remove-realm-roles-of-group! kc-client "example-realm" "mygroup" ["manager"])
+(admin/get-realm-roles-of-group kc-client "example-realm" "mygroup")
+;=> []
+```
 
 ## Declarative creation of Keycloak objects
 

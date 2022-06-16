@@ -3,13 +3,13 @@
    [clojure.java.io :as io]
    [clojure.java.data :refer [from-java]]
    [clojure.string :as string :refer [last-index-of]]
-   [clojure.tools.logging :as log :refer [info]]
+   [clojure.tools.logging :as log :refer [info warn]]
    [cheshire.core :as json :refer [encode]]
    [keycloak.user :as user]
    [keycloak.utils :as utils :refer [setters set-attributes]])
   (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation GroupRepresentation UserRepresentation ProtocolMapperRepresentation]
            [org.keycloak.admin.client Keycloak]
-           [org.keycloak.admin.client.resource ClientResource]
+           [org.keycloak.admin.client.resource ClientResource UserResource GroupResource]
            [javax.ws.rs.core Response]))
 
 ;(set! *warn-on-reflection* true)
@@ -161,10 +161,19 @@
 (defn- group-name-match? [group-name ^GroupRepresentation group]
   (when (= group-name (.getName group)) group))
 
+(defn- group-path-match? [group-path ^GroupRepresentation group]
+  (when (= group-path (.getPath group)) group))
+
 (defn get-group-id
   [^Keycloak keycloak-client realm-name group-name]
   (some (fn [^GroupRepresentation group]
           (let [group (group-name-match? group-name group)]
+            (when group
+              (.getId group)))) (list-groups keycloak-client realm-name)))
+
+(defn get-group-id-by-path [^Keycloak keycloak-client realm-name path]
+  (some (fn [^GroupRepresentation group]
+          (let [group (group-path-match? path group)]
             (when group
               (.getId group)))) (list-groups keycloak-client realm-name)))
 
@@ -196,6 +205,73 @@
   (info "delete group [id=" group-id "] in realm" realm-name)
   (-> keycloak-client (.realm realm-name) (.groups) (.group group-id) (.remove))
   true)
+
+(defn get-group-resource [^Keycloak keycloak-client realm-name group-id]
+  (when group-id
+    (-> keycloak-client (.realm realm-name) (.groups) (.group group-id))))
+
+(defn- get-realm-roles-representations ^RoleRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name roles]
+  (doall (map (fn [role]
+                (try
+                  (-> keycloak-client
+                      (.realm realm-name)
+                      (.roles)
+                      (.get role)
+                      (.toRepresentation))
+                  (catch javax.ws.rs.NotFoundException nfe
+                    (warn "Realm role" role "not found in realm" realm-name)))) (map name roles))))
+
+(def memoized-get-realm-roles-representations (memoize get-realm-roles-representations))
+
+(defn- resource-and-roles [^Keycloak keycloak-client realm-name group-name-or-path roles]
+  (when (and group-name-or-path roles)
+    {:group-resource (get-group-resource keycloak-client realm-name (or (get-group-id keycloak-client realm-name group-name-or-path)
+                                                                        (get-group-id-by-path keycloak-client realm-name group-name-or-path)))
+     :roles          (memoized-get-realm-roles-representations keycloak-client realm-name roles)}))
+
+(defn assert-all-realm-roles-exists [^Keycloak keycloak-client realm-name roles]
+  (let [existing-roles (set (map (fn [role] (.getName role)) (-> keycloak-client (.realm realm-name) (.roles) (.list))))
+        not-found (clojure.set/difference (set roles) existing-roles)]
+    (when (seq not-found)
+      (warn "Realm roles" not-found "not found in realm" realm-name)
+      (throw (ex-info (format "roles %s not found in realm %s" not-found realm-name) {:checked-roles roles :realm-name realm-name :existing-roles-in-realm existing-roles :roles-not-found not-found})))))
+
+(defn add-realm-roles-to-group!
+  "Add roles to a group given its name or path"
+  [^Keycloak keycloak-client realm-name group-name-or-path roles-to-add]
+  (assert-all-realm-roles-exists keycloak-client realm-name roles-to-add)
+  (let [{:keys [group-resource roles]} (resource-and-roles keycloak-client realm-name group-name-or-path roles-to-add)]
+    (when group-resource
+      (-> ^GroupResource group-resource
+          (.roles)
+          (.realmLevel)
+          (.add (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles))))))
+    roles-to-add))
+
+(defn remove-realm-roles-of-group!
+  [^Keycloak keycloak-client realm-name group-name-or-path roles-to-remove]
+  (assert-all-realm-roles-exists keycloak-client realm-name roles-to-remove)
+  (let [{:keys [group-resource roles]} (resource-and-roles keycloak-client realm-name group-name-or-path roles-to-remove)]
+    (when group-resource
+      (-> ^GroupResource group-resource
+          (.roles)
+          (.realmLevel)
+          (.remove (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles))))))
+    roles-to-remove))
+
+(defn set-realm-roles-of-group!
+  [^org.keycloak.admin.client.Keycloak keycloak-client realm-name group-name-or-path roles-to-set]
+  (assert-all-realm-roles-exists keycloak-client realm-name roles-to-set)
+  (let [{:keys [group-resource roles]} (resource-and-roles keycloak-client realm-name group-name-or-path roles-to-set)
+        role-scope-resource            (-> ^GroupResource group-resource (.roles) (.realmLevel))]
+    (when role-scope-resource
+      (.remove role-scope-resource (.listEffective role-scope-resource))
+      (.add role-scope-resource (java.util.ArrayList. ^java.util.Collection (vec (filter some? roles))))
+      roles-to-set)))
+
+(defn get-realm-roles-of-group [^org.keycloak.admin.client.Keycloak keycloak-client realm-name group-name-or-path]
+  (.getRealmRoles (get-group keycloak-client realm-name (or (get-group-id keycloak-client realm-name group-name-or-path)
+                                                            (get-group-id-by-path keycloak-client realm-name group-name-or-path)))))
 
 (defn get-subgroup
   [^Keycloak keycloak-client realm-name group-id subgroup-id]
