@@ -323,14 +323,23 @@
   "Sends an email to the user with a link within it. If they click on the link they will be asked to perform some actions.
    * Actions are: `\"VERIFY_EMAIL\"` `\"UPDATE_PROFILE\"` `\"CONFIGURE_TOTP\"` , `\"UPDATE_PASSWORD\"` , `\"TERMS_AND_CONDITIONS\"`
    * The lifespan decides the number of seconds after which the generated token in the email link expires. The default value is 12 hours."
-  ([[^org.keycloak.admin.client.Keycloak keycloak-client realm-name username actions]]
+  ([[^Keycloak keycloak-client realm-name username actions]]
    (execute-actions-email keycloak-client realm-name username 12))
-  ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name username actions lifespan]
+  ([^Keycloak keycloak-client realm-name username actions lifespan]
    (let [{:keys [user-resource user-id]} (get-user-resource keycloak-client realm-name username)]
      (.executeActionsEmail user-resource (java.util.ArrayList. actions) (Integer/valueOf lifespan)))))
 
 (defn send-verification-email [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username]
   (execute-actions-email keycloak-client realm-name username ["VERIFY_EMAIL"]))
+
+(defn add-required-actions
+  "Add required user actions.
+   Actions can be:  `\"VERIFY_EMAIL\"` `\"UPDATE_PROFILE\"` `\"CONFIGURE_TOTP\"` , `\"UPDATE_PASSWORD\"` , `\"TERMS_AND_CONDITIONS\"`  "
+  [^Keycloak keycloak-client realm-name username actions]
+  (let [user-resource (:user-resource (get-user-resource keycloak-client realm-name username))
+        user-rep      (.toRepresentation user-resource)]
+    (.setRequiredActions user-rep (java.util.ArrayList. actions))
+    (.update user-resource user-rep)))
 
 (defn get-users-with-realm-role
   "return a list of users as UserRepresentation that have the `role-name` as role mapping"
