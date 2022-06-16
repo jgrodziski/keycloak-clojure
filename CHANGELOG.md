@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.28.1] - 2022-06-16
+
+- [Issue 44](https://github.com/jgrodziski/keycloak-clojure/issues/44) - Add a specific function to add required action(s) to a user
+
+# [1.28.0] - 2022-06-16
+
+- [Issue 42](https://github.com/jgrodziski/keycloak-clojure/issues/42) - Add group's realm role assignment
+- [Issue 43](https://github.com/jgrodziski/keycloak-clojure/issues/43) - Fix jackson-core dep missing in some setup
+
 # [1.27.0] - 2022-05-11
 
 - [Issue 41](https://github.com/jgrodziski/keycloak-clojure/issues/41) - Bump to Keycloak 18.0.0
