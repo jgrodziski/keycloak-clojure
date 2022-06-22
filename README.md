@@ -1,7 +1,7 @@
 
 ![Keycloak plus Clojure](keycloak-plus-clojure.png)
 
-__[Keycloak](http://www.keycloak.org) is an open source Identity and Access Management solution for easily securing modern applications and API. This library wrap the Keycloak Java Adapter and provide some utilities facilitating the integration.__
+__[Keycloak](http://www.keycloak.org) is an open source Identity and Access Management solution for easily securing modern applications and API. This library wraps the Keycloak Java Adapter and provide features easing the integration.__
 
 [![Clojars Project](https://img.shields.io/clojars/v/keycloak-clojure.svg)](https://clojars.org/keycloak-clojure)
 
