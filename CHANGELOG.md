@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.28.3] - 2022-06-22
+
+- [Issue 45](https://github.com/jgrodziski/keycloak-clojure/issues/45) - Add a path parameter for building the Keycloak URL during starter init
+
 # [1.28.2] - 2022-06-16
 
 - Fix the naming of the `keycloak.user/add-required-actions!` function

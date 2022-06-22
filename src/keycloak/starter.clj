@@ -210,8 +210,8 @@
      (println (format "Keycloak realm \"%s\" synchronized" realm-name)))
    data)))
 
-(defn keycloak-auth-server-url [protocol host port]
-  (str protocol "://" host ":" port "/auth"))
+(defn keycloak-auth-server-url [protocol host port path]
+  (str protocol "://" host ":" port (or path "/auth")))
 
 (defn- truthy? "Cli-matic value accepted as true" [s]
   (or (= s "Y") (= s "Yes") (= s "On") (= s "T") (= s "True") (= s "1")))
@@ -221,13 +221,13 @@
 
 (defn process-args [{:keys [realm-config infra-context] :as args}]
   (let [{:keys [environment color applications vault keycloak secret-file]} infra-context
-        {:keys [auth-server-url protocol host port]}                        (or keycloak args) ;either the params are in the keyclaok config file or each params is passed through a direct param
+        {:keys [auth-server-url protocol host port path]}                   (or keycloak args) ;either the params are in the keyclaok config file or each params is passed through a direct param
         login                                                               (or (:login keycloak)    (:login args)    (environ/env :login))
         password                                                            (or (:password keycloak) (:password args) (environ/env :password))
         auth-server-url                                                     (or (when (not-empty (:auth-server-url args)) (:auth-server-url args))
                                                                                 (:auth-server-url keycloak)
                                                                                 (environ/env :auth-server-url)
-                                                                                (keycloak-auth-server-url protocol host port))
+                                                                                (keycloak-auth-server-url protocol host port path))
         dry-run?                                                            (or (:dry-run args)         (truthy? (environ/env :dry-run)))
         apply-deletions?                                                    (or (:apply-deletions args) (truthy? (environ/env :apply-deletions)))
         processed-args                                                      {:auth-server-url               auth-server-url

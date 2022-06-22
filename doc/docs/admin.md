@@ -299,7 +299,7 @@ The `keycloak-clojure-starter` CLI executable has the following arguments:
     - `:environment`: a string of the target environment, no impact but is passed during evaluation of the realm config file
     - `:color`: a string of a \"color\" for discriminating the target (can be omitted), no impact but is passed during evaluation of the realm config file
     - `:applications`: a vector of map with `:name`, `:version` and `clients-uris` keys, `clients-uris` being a vector of map with `client-id`, `:redirects`, `:base`, `:origins`, `:root` keys no impact but is passed during evaluation of the realm config file
-    - `:keycloak`: a map with `:protocol`, `:host`, `:port`, `:login`, `:password`, `:base-domain`, `:secret-export-dir`
+    - `:keycloak`: a map with `:protocol`, `:host`, `:port`, `:path`, `:login`, `:password`, `:base-domain`, `:secret-export-dir`
     - `:vault`: a map with the following entries:
       - `:vendor`: with value being `:hashicorp` or `:gcp-sm`
       - `:protocol`, `:host`, `:port`, `:token`, `:mount`, `:path` are keys that must be present if vendor is `:hashicorp`
@@ -336,6 +336,7 @@ Example of an `infra-context.edn` file
  :keycloak    {:protocol "http"
                :host     "host.docker.internal"
                :port     8090
+               :path     "/auth"
                :login    "admin"
                :password "secretadmin"
                :secret-file-without-extension ".keycloak-secrets"}
@@ -378,7 +379,7 @@ docker run -d \
        --mount type=bind,source=/Users/yourusername/keycloak-clojure/resources/keycloak-config.edn,destination=/etc/keycloak/keycloak-config.edn \
        --mount type=bind,source=/Users/yourusername/keycloak-clojure/resources/realm-config.clj,destination=/etc/keycloak/realm-config.clj \
        --env DRY_RUN=Yes \
-       jgrodziski/keycloak-clojure-starter:1.22.1
+       jgrodziski/keycloak-clojure-starter:1.28.3
 
 ```
 
