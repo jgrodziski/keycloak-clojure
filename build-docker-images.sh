@@ -7,13 +7,11 @@ JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
 
 clj -X:uberjar
 
-if [ $(uname -m) == 'arm64' ]; then
-    docker buildx build --platform linux/arm64/v8 -t jgrodziski/keycloak-clojure-starter:latest --push .
-fi
-if [ $(uname -m) == 'x86_64' ]; then
-    docker buildx build --platform linux/amd64 -t jgrodziski/keycloak-clojure-starter:latest --push .
-fi
+docker buildx create --driver docker-container --name kc-clj-builder --node kc-clj-node --platform linux/amd64,linux/arm64
+docker buildx use kc-clj-builder
+docker buildx inspect --bootstrap
 
+docker buildx --builder kc-clj-builder build --platform linux/arm64,linux/amd64 -t jgrodziski/keycloak-clojure-starter:latest --push .
 
 if [ $? -eq 0 ]; then
     echo "Successfully built \"keycloak-clojure\"'s docker image with JAR: jgrodziski/keycloak-clojure-starter:latest"
@@ -22,22 +20,7 @@ else
     exit 1
 fi
 
-
-#docker build -f DockerfileNative -t jgrodziski/keycloak-clojure-starter-native:latest .
-
-#if [ $? -eq 0 ]; then
-#    echo "Successfully built \"keycloak-clojure\"'s docker image with native executable: jgrodziski/keycloak-clojure-starter:latest"
-#else
-#    echo "Fail to built \"keycloal-clojure\"'s docker image!"
-#    exit 1
-#fi
-
-if [ $(uname -m) == 'arm64' ]; then
-    docker buildx build --platform linux/arm64/v8 -t jgrodziski/keycloak-clojure-starter:$ARTIFACT_VERSION --push .
-fi
-if [ $(uname -m) == 'x86_64' ]; then
-    docker buildx build --platform linux/amd64 -t jgrodziski/keycloak-clojure-starter:$ARTIFACT_VERSION --push .
-fi
+docker buildx --builder kc-clj-builder build --platform linux/arm64,linux/amd64 -t jgrodziski/keycloak-clojure-starter:$ARTIFACT_VERSION --push .
 
 if [ $? -eq 0 ]; then
     echo "Successfully built \"keycloak-clojure\"'s docker image with JAR: jgrodziski/keycloak-clojure-starter:$ARTIFACT_VERSION"
@@ -45,14 +28,3 @@ else
     echo "Fail to built \"keycloal-clojure\"'s docker image!"
     exit 1
 fi
-
-
-#docker build -f DockerfileNative -t jgrodziski/keycloak-clojure-starter-native:$ARTIFACT_VERSION .
-
-#if [ $? -eq 0 ]; then
-#    echo "Successfully built \"keycloak-clojure\"'s docker image with native executable: jgrodziski/keycloak-clojure-starter:$ARTIFACT_VERSION"
-#else
-#    echo "Fail to built \"keycloal-clojure\"'s docker image!"
-#    exit 1
-#fi
-
