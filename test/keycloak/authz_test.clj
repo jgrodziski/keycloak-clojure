@@ -6,7 +6,7 @@
 
 (def admin-login "admin")
 (def admin-password "secretadmin")
-(def auth-server-url "http://localhost:8090/auth")
+(def auth-server-url "http://localhost:8090/")
 
 (def integration-test-conf
   (deploy/client-conf auth-server-url "master" "admin-cli"))

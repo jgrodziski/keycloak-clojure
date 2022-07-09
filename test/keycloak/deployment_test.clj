@@ -11,7 +11,7 @@
 
 (def admin-login "admin")
 (def admin-password "secretadmin")
-(def auth-server-url "http://localhost:8090/auth")
+(def auth-server-url "http://localhost:8090/")
 ;(def auth-server-url "http://login.default.minikube.devmachine")
 
 (def integration-test-conf (deployment/client-conf auth-server-url "master" "admin-cli"))
@@ -66,6 +66,7 @@
                   (let [token (authenticate auth-server-url realm-name client-id username password)
                         access-token (verify deployments realm-name (:access_token token))
                         extracted-token (extract access-token)]
+                    (clojure.pprint/pprint extracted-token)
                     (is (= username (:username extracted-token)))))))))
         (testing "realm deletion"
           (delete-realm! admin-client realm-name)

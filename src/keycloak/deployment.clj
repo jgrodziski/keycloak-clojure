@@ -116,14 +116,17 @@
 (defrecord ClojureAccessToken
     [username roles nonce auth-time session-state access-token-hash code-hash name given-name family-name middle-name
      nick-name preferred-username profile picture website email email-verified gender birthdate zoneinfo
-     locale phone-number phone-number-verified address updated-at claims-locales acr state-hash other-claims]
+     locale phone-number phone-number-verified address updated-at claims-locales acr state-hash other-claims
+     id exp nbf iat issuer audience subject type issued-for expired?
+     verify-caller? trusted-certificates allowed-origins scope ]
   Object
   (toString [access-token] (pr-str access-token)))
 
 (defn extract
   "Return a [[keycloak.deployment/ClojureAccessToken]] record with `:user` and `:roles` keys with values extracted from the Keycloak access token along with all the props of the AccessToken bean"
   ^keycloak.deployment.ClojureAccessToken [^org.keycloak.representations.AccessToken access-token]
-  (map->ClojureAccessToken {:username              (.getPreferredUsername access-token)
+  (map->ClojureAccessToken {;;from IDToken (https://github.com/keycloak/keycloak/blob/bfce612641a70e106b20b136431f0e4046b5c37f/core/src/main/java/org/keycloak/representations/IDToken.java)
+                            :username              (.getPreferredUsername access-token)
                             :roles                 (set (map keyword (.getRoles (.getRealmAccess access-token))))
                             :nonce                 (.getNonce access-token)
                             :auth-time             (.getAuthTime access-token)
@@ -152,8 +155,19 @@
                             :claims-locales        (.getClaimsLocales access-token)
                             :acr                   (.getAcr access-token)
                             :state-hash            (.getStateHash access-token)
-                            :other-claims          (into {} (map (fn [[k v]] [(keyword k) v]) (.getOtherClaims access-token)))}))
-
+                            :other-claims          (into {} (map (fn [[k v]] [(keyword k) v]) (.getOtherClaims access-token)))
+                            ;;From JsonWebToken (https://github.com/keycloak/keycloak/blob/bfce612641a70e106b20b136431f0e4046b5c37f/core/src/main/java/org/keycloak/representations/JsonWebToken.java)
+                            :id                    (.getId access-token)
+                            :exp                   (.getExp access-token)
+                            :nbf                   (.getNbf access-token)
+                            :iat                   (.getIat access-token)
+                            :issuer                (.getIssuer access-token)
+                            :audience              (.getAudience access-token)
+                            :subject               (.getSubject access-token)
+                            :type                  (.getType access-token)
+                            :issued-for            (.getIssuedFor access-token)
+                            :expired?              (.isExpired access-token)
+                            }))
 
 (defn access-token
   "Get an access token extracted in a [[ClojureAccessToken]] record with one additionnal attribute `:token` that hold the token as a string"

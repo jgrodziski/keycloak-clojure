@@ -25,6 +25,7 @@
                                    :version "1.4.12"}
                     :keycloak     {:protocol "http"
                                    :host     "localhost"
+                                   :path     ""
                                    :port     "8090"
                                    :login    "admin"
                                    :password "secretadmin"}})
