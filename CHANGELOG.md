@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.28.5] - 2022-07-12
+
+- Refactoring of documentation for better presentation in cljdoc, need a patch on clojar...
+
 # [1.28.4] - 2022-07-09
 
 - [Issue 46](https://github.com/jgrodziski/keycloak-clojure/issues/46) - Refactor the keycloak.deployment/extract to include all the properties from JsonWebToken and IDToken
