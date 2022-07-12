@@ -1,0 +1,6 @@
+{:cljdoc.doc/tree [["Introduction" {:file "README.md"}]
+                   ["Security Concepts" {:file "doc/docs/concepts/md"}]
+                   ["Setup and Run Keycloak" {:file "doc/docs/run.md"}]
+                   ["Administrative Tasks" {:file "doc/docs/admin.md"}]
+                   ["Securing your Application's Backend" {:file "doc/docs/backend.md"}]
+                   ["Securing your Applications's Frontend" {:file "doc/docs/frontend.md"}]]}
