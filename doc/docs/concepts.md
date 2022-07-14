@@ -41,14 +41,14 @@ Once the user is *identified* and *authenticated*, *authorization* mechanisms ar
 
 ## OAuth2 / OpenId Connect (OIDC) concepts
 
-The OAuth2 and OIDC concepts are defined below, with the specificities of an application composed of an SPA frontend and an API backend.
+The OAuth2 and OIDC concepts are defined below, I try to relate the concepts with more practical and concrete stuff of the developer writing an SPA frontend and an API backend.
 Caution: The names of -almost- the same concept are different between OAuth and OIDC, see the schema at the end of this section.
 
-* **Resource**: the thing you want to protect, your API if you develop a backend for instance.
-* **Resource Owner**: the owner of the identity, data and any actions that can be performed with the identity. if you develop an API, you'll typically include then extract the roles from the access token the backend will receive
-* **Client**: The application that wants to access data or perform actions on behalf of the Resource Owner. If you develop an application with an SPA as frontend and backend with an API, both your frontend and backend will be client
+* **Resource**: the thing you want to protect, your API route if you develop a backend for instance.
+* **Resource Owner**: the owner of the identity, data and any actions that can be performed with the identity. if you develop an API, your backend will receive and Access Token and in this token you can include the roles this identity has, then your backend can enforce the authorization checks based on these roles, the invoked route, the entities/data involved, etc. (if you follow an [RBAC authorization model](https://en.wikipedia.org/wiki/Role-based_access_control)).
+* **Client**: The application that wants to access data or perform actions on behalf of the Resource Owner. If you develop an application with an SPA as frontend and backend with an API, both your frontend and backend will be client.
 * **Authorization Server**: The system that knows the Resource Owner. Here we're talking about Keycloak.
-* **Resource Server**: The Application Programming Interface (API) or service the Client wants to use on behalf of the Resource Owner. The backend of your application
+* **Resource Server**: The Application Programming Interface (API) or service the Client wants to use on behalf of the Resource Owner. The backend of your application.
 *  **OpenID provider (OP)**: The OpenID provider is an OAuth 2.0 authorization server which offers authentication as a service. It ensures the end user is authenticated and provides claims about the end user and the authentication event to the relying party. The identity provider provides the relying party information about the end user through identity tokens.
 * **Redirect URI**: The URL the Authorization Server will redirect the Resource Owner back to after granting permission to the Client. This is sometimes referred to as the “Callback URL”. Once you have some permissions given by Keycloak as an Access Token (see below), Keycloak will redirect towards your frontend, so it's the URL where your frontend sits.
 * **Response Type**: The type of information the Client expects to receive. The most common Response Type is code, where the Client expects an Authorization Code.
