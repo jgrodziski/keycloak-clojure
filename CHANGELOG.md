@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.28.6] - 2022-09-02
+
+- Snakeyaml dependency had a CVE that they fixed, clj-yaml pulled it in with this newest release. https://nvd.nist.gov/vuln/detail/CVE-2022-25857
+
 # [1.28.5] - 2022-07-12
 
 - Refactoring of documentation for better presentation in cljdoc, need a patch on clojar...
