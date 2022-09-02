@@ -3,6 +3,6 @@
 
 (def module-name "keycloak-clojure")
 (def path ".")
-(def version "1.28.6")
-(def tag "v1.28.6")
-(def generated-at "2022-09-02T15:51:36Z")
+(def version "1.28.7")
+(def tag "v1.28.7")
+(def generated-at "2022-09-02T21:26:36Z")
