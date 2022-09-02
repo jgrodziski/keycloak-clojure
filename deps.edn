@@ -46,7 +46,7 @@
         ;; used when exporting secrets in json/yaml at init
 
         metosin/jsonista     {:mvn/version "0.3.6"}
-        clj-commons/clj-yaml {:mvn/version "0.7.0"}
+        clj-commons/clj-yaml {:mvn/version "0.7.109"}
 
         amperity/vault-clj {:mvn/version "1.0.0"}
         ;; used for the google secret manager Vault
