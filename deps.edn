@@ -19,107 +19,107 @@
         cli-matic/cli-matic {;:git/url "https://github.com/l3nz/cli-matic.git"
                                         ;:sha "3e072260e359be51bf6646e219042c319dd9f5f8"
                              :mvn/version "0.4.3"
-                             ;:exclusions  [expound/expound]
+                                        ;:exclusions  [expound/expound]
                              }
         ;;deps below are used by cli-matic, failure with cljdoc analysis job when not included here
-        ;org.clojure/clojurescript {:mvn/version "1.10.439"     :scope "provided"}
-        ;org.clojure/spec.alpha    {:mvn/version "0.1.143"      :scope "provided"}
-        ;org.clojure/tools.cli     {:mvn/version "1.0.194"      :scope "provided"}
-        ;orchestra/orchestra       {:mvn/version "2019.02.06-1" :scope "provided"}
-        ;io.forward/yaml           {:mvn/version "1.0.9"        :scope "provided"}
-        ;org.clojure/core.async    {:mvn/version "0.5.527"      :scope "provided"}
-        ;l3nz/planck               {:mvn/version "0.0.0"        :scope "provided"}
-        ;expound/expound           {:mvn/version "0.8.4"        :scope "provided"}
+                                        ;org.clojure/clojurescript {:mvn/version "1.10.439"     :scope "provided"}
+                                        ;org.clojure/spec.alpha    {:mvn/version "0.1.143"      :scope "provided"}
+                                        ;org.clojure/tools.cli     {:mvn/version "1.0.194"      :scope "provided"}
+                                        ;orchestra/orchestra       {:mvn/version "2019.02.06-1" :scope "provided"}
+                                        ;io.forward/yaml           {:mvn/version "1.0.9"        :scope "provided"}
+                                        ;org.clojure/core.async    {:mvn/version "0.5.527"      :scope "provided"}
+                                        ;l3nz/planck               {:mvn/version "0.0.0"        :scope "provided"}
+                                        ;expound/expound           {:mvn/version "0.8.4"        :scope "provided"}
 
         ;;used by cljs frontend
-        com.taoensso/timbre       {:mvn/version "5.1.2" :scope "provided"}
+        com.taoensso/timbre {:mvn/version "5.1.2" :scope "provided"}
 
         ;;diff library used by the reconciliation loop
-        juji/editscript     {:mvn/version "0.5.7"}
+        juji/editscript {:mvn/version "0.5.7"}
 
-        org.babashka/sci    {:mvn/version "0.3.2"}
-        camel-snake-kebab/camel-snake-kebab   {:mvn/version "0.4.2"}
+        org.babashka/sci                    {:mvn/version "0.3.2"}
+        camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
 
         ;;used by starter to extract reliably the env var
-        environ/environ     {:mvn/version "1.2.0"}
+        environ/environ {:mvn/version "1.2.0"}
 
         ;; used when exporting secrets in json/yaml at init
 
         metosin/jsonista     {:mvn/version "0.3.6"}
         clj-commons/clj-yaml {:mvn/version "1.0.26"}
 
-        amperity/vault-clj {:mvn/version "1.0.0"}
+        amperity/vault-clj                          {:mvn/version "1.0.0"}
         ;; used for the google secret manager Vault
-        ;com.google.cloud/libraries-bom              {:mvn/version "24.0.0"}
+                                        ;com.google.cloud/libraries-bom              {:mvn/version "24.0.0"}
         com.google.cloud/google-cloud-secretmanager {:mvn/version "2.0.7"}
 
         ;; keycloak stuff
-        org.keycloak/keycloak-adapter-core   {:mvn/version "18.0.0"}
-        org.keycloak/keycloak-core           {:mvn/version "18.0.0"}
-        org.keycloak/keycloak-authz-client   {:mvn/version "18.0.0"}
-        org.keycloak/keycloak-adapter-spi    {:mvn/version "18.0.0"}
-        org.keycloak/keycloak-common         {:mvn/version "18.0.0"}
+        org.keycloak/keycloak-common         {:mvn/version "20.0.3"}
+        org.keycloak/keycloak-core           {:mvn/version "20.0.3"}
+        org.keycloak/keycloak-adapter-core   {:mvn/version "20.0.3"}
+        org.keycloak/keycloak-authz-client   {:mvn/version "20.0.3"}
+        org.keycloak/keycloak-adapter-spi    {:mvn/version "20.0.3"}
         org.jboss.logging/jboss-logging      {:mvn/version "3.4.1.Final"}
         org.apache.httpcomponents/httpclient {:mvn/version "4.5.13"}
 
         ;;all the deps below are for the admin client (don't know why the transitive deps didn't work)
-        org.keycloak/keycloak-admin-client                      {:mvn/version "18.0.0"}
-        com.fasterxml.jackson.core/jackson-core                 {:mvn/version "2.13.2"}
-        com.fasterxml.jackson.core/jackson-databind             {:mvn/version "2.13.2"}
-        com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider {:mvn/version "2.13.2"}
-        org.jboss.resteasy/resteasy-jackson2-provider       {:mvn/version "3.15.3.Final"}
-        org.jboss.resteasy/resteasy-client                  {:mvn/version "3.15.3.Final"}
-        org.jboss.resteasy/resteasy-multipart-provider      {:mvn/version "3.15.3.Final"}
-        org.jboss.resteasy/resteasy-jaxrs                   {:mvn/version "3.15.3.Final"}
-        org.jboss.resteasy/resteasy-jettison-provider       {:mvn/version "3.15.3.Final"}
-        org.jboss.resteasy/resteasy-jaxb-provider           {:mvn/version "3.15.3.Final"}
-
-        org.jboss.spec.javax.ws.rs/jboss-jaxrs-api_2.1_spec {:mvn/version "1.0.2.Final"}
+        org.keycloak/keycloak-admin-client                      {:mvn/version "20.0.3"}
+        ;com.fasterxml.jackson.core/jackson-core                 {:mvn/version "2.13.4"}
+        ;com.fasterxml.jackson.core/jackson-databind             {:mvn/version "2.13.4.2"}
+        ;com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider {:mvn/version "2.13.4"}
+        ;com.fasterxml.jackson.core/jackson-annotations          {:mvn/version "2.13.4"}
+        ;org.jboss.resteasy/resteasy-client                      {:mvn/version "4.7.7.Final"}
+        ;org.jboss.resteasy/resteasy-multipart-provider          {:mvn/version "4.7.7.Final"}
+        ;org.jboss.resteasy/resteasy-jackson2-provider           {:mvn/version "4.7.7.Final"}
+        ;org.jboss.resteasy/resteasy-jaxb-provider               {:mvn/version "4.7.7.Final"}
+        ;org.jboss.resteasy/resteasy-jaxrs                       {:mvn/version "3.15.3.Final"}
+        ;org.jboss.resteasy/resteasy-jettison-provider           {:mvn/version "3.15.3.Final"}
+        ;org.jboss.spec.javax.ws.rs/jboss-jaxrs-api_2.1_spec {:mvn/version "1.0.2.Final"}
 
         org.slf4j/slf4j-api            {:mvn/version "2.0.0-alpha1"}
         ch.qos.logback/logback-classic {:mvn/version "1.3.0-alpha5"}
         ch.qos.logback/logback-core    {:mvn/version "1.3.0-alpha5"}}
 
- :aliases {:repl  {:extra-deps {com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
-                   :main-opts  ["-m" "figwheel.main" "-b" "dev" "-r"]}
-           :dev   {:extra-deps {vvvvalvalval/scope-capture {:mvn/version "0.3.2"}}}
-           :test  {:extra-paths ["test"]
-                   :extra-deps  {lambdaisland/kaocha {:mvn/version "0.0-554"}
-                                 metosin/testit      {:mvn/version "0.4.0"}
-                                 uwcpdx/bean-dip     {:mvn/version "0.7.6"}
-                                 ring/ring-mock      {:mvn/version "0.4.0"}
-                                 yada/yada           {:mvn/version "1.2.16"}
-                                 }}
+ :aliases {:repl     {:extra-deps {com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
+                      :main-opts  ["-m" "figwheel.main" "-b" "dev" "-r"]}
+           :dev      {:extra-deps {vvvvalvalval/scope-capture {:mvn/version "0.3.3"}}}
+           :test     {:extra-paths ["test"]
+                      :extra-deps  {lambdaisland/kaocha {:mvn/version "1.77.1236"}
+                                    metosin/testit      {:mvn/version "0.4.1"}
+                                    uwcpdx/bean-dip     {:mvn/version "0.7.6"}
+                                    ring/ring-mock      {:mvn/version "0.4.0"}
+                                    yada/yada           {:mvn/version "1.2.16"}
+                                    }}
            :thin-jar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.278"}}
-                        :exec-fn hf.depstar/jar
-                        :exec-args {:jar "target/keycloak-clojure.jar"
-                                    :sync-pom true
-                                    :paths-only true
-                                    :exclude [".*.edn" "realm-.*.clj" "logback.xml" "schema.png"]}}
-           :jar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.278"}}
-                 :exec-fn hf.depstar/jar
-                 :exec-args {:jar "target/keycloak-clojure-aot.jar"
-                             :compile-ns :all
-                             :sync-pom true
-                             :exclude ["clojure/core/.*" "clojure/test/.*" "clojure/java/.*" "clojure/data/.*"]}}
-           :uberjar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.278"}}
-                     :exec-fn hf.depstar/uberjar
-                     :exec-args {:jar "target/keycloak-clojure.jar" :aot true :main-class keycloak.starter}}
-           :deploy {:extra-deps {slipset/deps-deploy {:git/url "https://github.com/slipset/deps-deploy.git"
-                                                      :sha "b4359c5d67ca002d9ed0c4b41b710d7e5a82e3bf"}}
-                     :exec-fn deps-deploy.deps-deploy/deploy
-                     :exec-args {:installer :remote :sign-releases? true}}
+                      :exec-fn      hf.depstar/jar
+                      :exec-args    {:jar        "target/keycloak-clojure.jar"
+                                     :sync-pom   true
+                                     :paths-only true
+                                     :exclude    [".*.edn" "realm-.*.clj" "logback.xml" "schema.png"]}}
+           :jar      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.278"}}
+                      :exec-fn      hf.depstar/jar
+                      :exec-args    {:jar        "target/keycloak-clojure-aot.jar"
+                                     :compile-ns :all
+                                     :sync-pom   true
+                                     :exclude    ["clojure/core/.*" "clojure/test/.*" "clojure/java/.*" "clojure/data/.*"]}}
+           :uberjar  {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.278"}}
+                      :exec-fn      hf.depstar/uberjar
+                      :exec-args    {:jar "target/keycloak-clojure.jar" :aot true :main-class keycloak.starter}}
+           :deploy   {:extra-deps {slipset/deps-deploy {:git/url "https://github.com/slipset/deps-deploy.git"
+                                                        :sha     "b4359c5d67ca002d9ed0c4b41b710d7e5a82e3bf"}}
+                      :exec-fn    deps-deploy.deps-deploy/deploy
+                      :exec-args  {:installer :remote :sign-releases? true}}
 
            :doc {:extra-paths ["doc/src"]
                  :extra-deps  {codox/codox                         ; {:mvn/version "0.10.7"}
                                {:local/root "/Users/jeremiegrodziski/sandbox/codox/codox"}
                                codox-theme-rdash/codox-theme-rdash
                                {:local/root "/Users/jeremiegrodziski/sandbox/codox-theme-rdash"}
-                               com.novemberain/pantomime           {:mvn/version "2.11.0"}
-                               clj-commons/fs                      {:mvn/version "1.5.2"}
-                               com.cognitect.aws/api               {:mvn/version "0.8.484"},
-                               com.cognitect.aws/endpoints         {:mvn/version "1.1.11.926"}
-                               com.cognitect.aws/s3                {:mvn/version "810.2.817.0", :aws/serviceFullName "Amazon Simple Storage Service"}}
+                               com.novemberain/pantomime   {:mvn/version "2.11.0"}
+                               clj-commons/fs              {:mvn/version "1.5.2"}
+                               com.cognitect.aws/api       {:mvn/version "0.8.484"},
+                               com.cognitect.aws/endpoints {:mvn/version "1.1.11.926"}
+                               com.cognitect.aws/s3        {:mvn/version "810.2.817.0", :aws/serviceFullName "Amazon Simple Storage Service"}}
                                         ;:main-opts  ["-m" "keycloak.doc"]
                  }
 
@@ -135,10 +135,10 @@
                            :main-opts  ["-m" "uberdeps.uberjar" "--main-class" "keycloak.starter"]}
            :native-image  {:main-opts  ["-m clj.native-image keycloak.starter"
                                         "--initialize-at-build-time"
-                                       ;; optional native image name override
+                                        ;; optional native image name override
                                         "-H:Name=target/keycloak-clojure-starter"
                                         "-H:+ReportExceptionStackTraces"
-                                       ;;"-H:+TraceClassInitialization"
+                                        ;;"-H:+TraceClassInitialization"
                                         "--no-fallback"
                                         "--report-unsupported-elements-at-runtime"
                                         "--initialize-at-run-time=java.lang.Math\\$RandomNumberGeneratorHolder,org.keycloak.adapters.rotation.JWKPublicKeyLocator,org.keycloak.adapters.KeycloakDeployment,org.jboss.resteasy.client.jaxrs.engines.factory.ApacheHttpClient4EngineFactory,org.apache.http.impl.client.HttpClientBuilder"]

@@ -7,7 +7,7 @@
            [org.keycloak.adapters KeycloakDeployment KeycloakDeploymentBuilder]
            [org.keycloak.admin.client KeycloakBuilder]
            [org.keycloak RSATokenVerifier OAuth2Constants]
-           [org.jboss.resteasy.client.jaxrs ResteasyClientBuilder]))
+           [org.jboss.resteasy.client.jaxrs.internal ResteasyClientBuilderImpl]))
 
 ;(set! *warn-on-reflection* true)
 
@@ -58,7 +58,7 @@
       (.realm (:realm client-conf))
       (.serverUrl (:auth-server-url client-conf))
       (.clientId (:resource client-conf))
-      (.resteasyClient (-> (ResteasyClientBuilder.)
+      (.resteasyClient (-> (ResteasyClientBuilderImpl.)
                            (.connectionPoolSize REST_CONNECTION_POOL_SIZE)
                            (.connectTimeout REST_CONNECT_TIMEOUT_SECONDS TimeUnit/SECONDS)
                            (.readTimeout REST_READ_TIMEOUT_SECONDS TimeUnit/SECONDS)

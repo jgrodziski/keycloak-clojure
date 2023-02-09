@@ -218,7 +218,7 @@
                            (admin/create-or-update-client! admin-client realm-name)
                            (bean/ClientRepresentation->map))]
         (fact client =in=> {:client-id client-id :name client-id :public-client? false})
-        (fact (:attributes client) => {"access.token.lifespan" "300"})))
+        (fact (into {} (:attributes client)) =in=> {"access.token.lifespan" "300"})))
     (testing "realm deletion"
       (admin/delete-realm! admin-client realm-name)
       (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
