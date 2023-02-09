@@ -31,10 +31,32 @@
 
 (def admin-login "admin")
 (def admin-password "secretadmin")
-(def auth-server-url "http://localhost:8090/auth")
+(def auth-server-url "http://localhost:8090")
 
 (def integration-test-conf
   (deployment/client-conf auth-server-url "master" "admin-cli"))
+
+(def LOGIN {:bruteForceProtected true
+            :rememberMe true
+            :resetPasswordAllowed true})
+
+(def SMTP {:host "smtp.eu.mailgun.org"
+           :port 587
+           :from "admin@example.com"
+           :auth true
+           :starttls true
+           :replyTo "example"
+           :user "postmaster@mg.example.com"
+           :password "yo"
+           })
+
+(def THEMES {:internationalizationEnabled true
+             :supportedLocales #{"en" "fr"}
+             :defaultLocale "fr"
+             :loginTheme "mytheme"
+             :accountTheme "mytheme"
+             :adminTheme nil
+             :emailTheme "mytheme"} )
 
 (deftest ^:integration deployment-test
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)]
