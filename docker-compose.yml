@@ -33,7 +33,7 @@ services:
       VAULT_DEV_ROOT_TOKEN_ID: myroot
 
   keycloak:
-    image: quay.io/keycloak/keycloak:18.0.0
+    image: quay.io/keycloak/keycloak:20.0.3
     entrypoint: ["/opt/keycloak/bin/kc.sh", "start-dev"]
     depends_on:
       - postgres
