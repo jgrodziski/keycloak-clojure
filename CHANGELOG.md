@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.29.0] - 20223-02-09
+
+- This change resolves the following vulnerabilities: [CVE 2022-41854](https://nvd.nist.gov/vuln/detail/CVE-2022-41854)
+- Bump Keycloak client libs to Keycloak's version `20.0.3`
+
 # [1.28.7] - 2022-09-02
 
 - This change resolves the following vulnerabilities: CVE-2020-25633 and CVE-2020-25647
