@@ -6,7 +6,7 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 
 - this change resolves the following vulnerabilities: [CVE-2022-3171](https://nvd.nist.gov/vuln/detail/CVE-2022-3171)
 
-# [1.29.0] - 20223-02-09
+# [1.29.0] - 2023-02-09
 
 - This change resolves the following vulnerabilities: [CVE 2022-41854](https://nvd.nist.gov/vuln/detail/CVE-2022-41854)
 - Bump Keycloak client libs to Keycloak's version `20.0.3`
