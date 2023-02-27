@@ -63,6 +63,7 @@
      (.setRequiredActions (java.util.ArrayList. required-actions)))))
 
 (defn search-user
+  "Return a list of UserRepresentation given the various filters"
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name user-attribute]
    (try
      (-> keycloak-client (.realm realm-name) (.users) (.search user-attribute (int 0) (int 10)))
@@ -70,7 +71,30 @@
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name username first-name last-name email]
    (try
      (-> keycloak-client (.realm realm-name) (.users) (.search username first-name last-name email (int 0) (int 10)))
+     (catch javax.ws.rs.NotFoundException nfe nil)))
+  ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name username first-name last-name email first-result max-results]
+   (try
+     (-> keycloak-client (.realm realm-name) (.users) (.search username first-name last-name email first-result max-results ))
+     (catch javax.ws.rs.NotFoundException nfe nil)))
+  ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name username first-name last-name email email-verified first-result max-results enabled brief-representation]
+   (try
+     (-> keycloak-client (.realm realm-name) (.users) (.search username first-name last-name email email-verified first-result max-results enabled brief-representation))
+     (catch javax.ws.rs.NotFoundException nfe nil)))
+  ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name username first-name last-name email email-verified idp-alias idp-user-id first-result max-results enabled brief-representation]
+   (try
+     (-> keycloak-client (.realm realm-name) (.users) (.search username first-name last-name email email-verified idp-alias idp-user-id first-result max-results enabled brief-representation))
      (catch javax.ws.rs.NotFoundException nfe nil))))
+
+(defn search-user-by-attributes
+  "Return a list of UserRepresentation"
+  ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name search-query]
+   (try
+     (-> keycloak-client (.realm realm-name) (.users) (.searchByAttributes search-query))
+     (catch javax.ws.rs.NotFoundException nfe nil)))
+  ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name search-query first-result max-results enabled brief-representation]
+   (try
+     (-> keycloak-client (.realm realm-name) (.users) (.searchByAttributes first-result max-results enabled brief-representation search-query))
+     (catch javax.ws.rs.NotFoundException nfe nil))) )
 
 (defn- exact-match
   ([users attr]
@@ -313,8 +337,8 @@
 (defn get-users ^java.util.List
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name]
    (get-users keycloak-client realm-name (Integer/valueOf 0) (count keycloak-client realm-name)))
-  ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name first result]
-   (-> keycloak-client (.realm realm-name) (.users) (.list (Integer/valueOf first)  (Integer/valueOf result)))))
+  ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name first max-results]
+   (-> keycloak-client (.realm realm-name) (.users) (.list (Integer/valueOf first)  (Integer/valueOf max-results)))))
 
 (defn get-users-beans [^org.keycloak.admin.client.Keycloak keycloak-client realm-name]
   (map bean/ClientRepresentation->map (get-users keycloak-client realm-name)))
