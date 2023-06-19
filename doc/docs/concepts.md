@@ -23,7 +23,7 @@ The subject of security is very wide and here we only focus on identity, access 
 ### Identification and Authentication
 *Identification* means knowing who is interacting with your application and so you need a repository of identities (the persons or systems that interact with your application). Those identities can be handled by keycloak itself or it can delegates to another "storage" of identity, that's called [User Storage Federation](https://www.keycloak.org/docs/latest/server_admin/index.html#_user-storage-federation)
 
-So *Identification* deals with the way users of the application are identified: what’s the identifier? where are they stored? What’s the provisionning of the users?
+So *Identification* deals with the way users of the application are identified: what’s the identifier? where are they stored? What’s the provisioning of the users?
 Once a user is identified, *Authentication* mechanism assesses whether the person or system is really who’s she said to be. The mechanism to assess a user’s identity is called an authentication factor, we can combine several of them (multi-factor authentication). They are categorized with: 
 
 - what we know (password)
@@ -45,7 +45,7 @@ The OAuth2 and OIDC concepts are defined below, I try to relate the concepts wit
 Caution: The names of -almost- the same concept are different between OAuth and OIDC, see the schema at the end of this section.
 
 * **Resource**: the thing you want to protect, your API route if you develop a backend for instance.
-* **Resource Owner**: the owner of the identity, data and any actions that can be performed with the identity. if you develop an API, your backend will receive and Access Token and in this token you can include the roles this identity has, then your backend can enforce the authorization checks based on these roles, the invoked route, the entities/data involved, etc. (if you follow an [RBAC authorization model](https://en.wikipedia.org/wiki/Role-based_access_control)).
+* **Resource Owner**: the owner of the identity, data and any actions that can be performed with the identity. If you develop an API, your backend will receive and Access Token and in this token you can include the roles this identity has, then your backend can enforce the authorization checks based on these roles, the invoked route, the entities/data involved, etc. (if you follow an [RBAC authorization model](https://en.wikipedia.org/wiki/Role-based_access_control)).
 * **Client**: The application that wants to access data or perform actions on behalf of the Resource Owner. If you develop an application with an SPA as frontend and backend with an API, both your frontend and backend will be client.
 * **Authorization Server**: The system that knows the Resource Owner. Here we're talking about Keycloak.
 * **Resource Server**: The Application Programming Interface (API) or service the Client wants to use on behalf of the Resource Owner. The backend of your application.
@@ -55,7 +55,7 @@ Caution: The names of -almost- the same concept are different between OAuth and 
 * **Scope**: These are the granular permissions the Client wants, such as access to data or to perform actions.
 * **Consent**: The Authorization Server takes the Scopes the Client is requesting, and verifies with the Resource Owner whether or not they want to give the Client permission.
 * **Client ID**: This ID is used to identify the Client with the Authorization Server. When you ask for an access token, you'll give the `client-id` on behalf of which you ask permissions. Say you have api client, you can create a specific client in Keycloak for that particular use case.
-* **Client Secret**: This is a secret password that only the Client and Authorization Server know. This allows them to securely share information privately behind the scenes. This is typically for your backend that you materialize as a client. Keycloak expects your backend to be able to holds some confidentiality, therefore holding a secret to prove its identity with Keycloak. 
+* **Client Secret**: This is a secret password that only the Client and Authorization Server know. This allows them to securely share information privately behind the scenes. This is typically for your backend that you materialize as a client. Keycloak expects your backend to be able to hold some confidentiality, therefore holding a secret to prove its identity with Keycloak. 
 * **Authorization Code**: A short-lived temporary code the Client gives the Authorization Server in exchange for an Access Token used during authorization code grant.
 
 The following schema represents the related OAuth and OIDC concepts:
@@ -73,7 +73,7 @@ The following schema represents the related OAuth and OIDC concepts:
 *Access Token* can be acquired through different *Grant Types* (aka. methods): 
 
 - **Authorization code**: the client will go to the authorization server to get first an authorization code to exchange for an access token in a second time.
-- **Implicit**: the client get directly an access token only (no refresh token) because of the client being insecure.
+- **Implicit**: the client gets directly an access token only (no refresh token) because of the client being insecure.
 - **Resource owner credentials:** given a username and a password the authorization server returns an access token and a refresh token, for trusted client only. 
 - **Client credentials:** using a client secret to get an access token, suitable for machine-to-machine authentication.
 - **Refresh token:** Access tokens eventually expire; however some grants respond with a refresh token which enables the client to get a new access token without requiring the user to be redirected. Refresh Token is long lived and are stored on the authorization server (and so can be disabled) and are used to refresh the access token periodically. Of course the *Refresh Token* needs to be stored securely by the client as you can get new *Access Token* with it.
