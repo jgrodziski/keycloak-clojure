@@ -51,7 +51,7 @@
         amperity/vault-clj                          {:mvn/version "1.0.0"}
         ;; used for the google secret manager Vault
                                         ;com.google.cloud/libraries-bom              {:mvn/version "24.0.0"}
-        com.google.cloud/google-cloud-secretmanager {:mvn/version "2.10.0"}
+        com.google.cloud/google-cloud-secretmanager {:mvn/version "2.22.0"}
 
         ;; keycloak stuff
         org.keycloak/keycloak-common         {:mvn/version "20.0.3"}
