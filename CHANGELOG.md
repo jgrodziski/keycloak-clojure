@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.30.1] - 2023-08-03
+
+- this change resolves the following vulnerability: [CVE-2023-2976](https://github.com/advisories/GHSA-7g45-4rm6-3mm3)
+
+# [1.30.0] - 2023-02-27
+
+- [Issue 51](https://github.com/jgrodziski/keycloak-clojure/issues/51)
+
 # [1.29.1] - 2023-02-09
 
 - this change resolves the following vulnerabilities: [CVE-2022-3171](https://nvd.nist.gov/vuln/detail/CVE-2022-3171)
