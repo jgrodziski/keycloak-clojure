@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.30.2] - 2023-09-12
+
+- [CVE-2023-2976](https://github.com/advisories/GHSA-7g45-4rm6-3mm3)
+- [CVE-2022-1471](https://github.com/advisories/GHSA-mjmj-j48q-9wg2)
+
 # [1.30.1] - 2023-08-03
 
 - this change resolves the following vulnerability: [CVE-2023-2976](https://github.com/advisories/GHSA-7g45-4rm6-3mm3)
