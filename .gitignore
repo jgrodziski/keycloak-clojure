@@ -10,3 +10,4 @@ doc/site
 doc/codox
 *.asc
 resources/config-init-realm.edn
+.DS_Store
