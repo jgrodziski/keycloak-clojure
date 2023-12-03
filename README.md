@@ -17,4 +17,4 @@ The [reference documentation is available on cljdoc](https://cljdoc.org/d/keyclo
 - **[Setup](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/CURRENT/doc/setup-and-run-keycloak)**: Setup Keycloak on your development machine with Docker
 - **[Administration](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/CURRENT/doc/administrative-tasks)**: Administration tasks create the different Keycloak resources used later when securing the application
 - **[Backend](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/CURRENT/doc/securing-your-application-s-backend)**: How to secure an API backend?
-- **[Frontend](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/CURRENT/doc/securing-your-application-s-frontend)**: How to secure a typical SPA frontend?
+- **[Frontend](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/CURRENT/doc/securing-your-applications-s-frontend)**: How to secure a typical SPA frontend?
