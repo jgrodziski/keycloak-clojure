@@ -6,7 +6,11 @@
   (:import [java.util.concurrent TimeUnit]
            [org.keycloak.adapters KeycloakDeployment KeycloakDeploymentBuilder]
            [org.keycloak.admin.client KeycloakBuilder]
-           [org.keycloak RSATokenVerifier OAuth2Constants]
+           [org.keycloak OAuth2Constants
+                         TokenVerifier
+                         TokenVerifier$Predicate
+                         TokenVerifier$RealmUrlCheck
+                         TokenVerifier$TokenTypeCheck]
            [org.jboss.resteasy.client.jaxrs.internal ResteasyClientBuilderImpl]))
 
 ;(set! *warn-on-reflection* true)
@@ -98,14 +102,24 @@
                   [realm-name (deployment-for-realm keycloak-client auth-server-url client-id realm-name)]) realms-name)))
 
 (defn verify
-  "Verify an Access Token given a deployment to check against"
+  "Verify an Access Token given a deployment to check against.
+
+   Checks an Access Token for the following:
+     - `iss` (issuer) is defined and matches realm url from `deployment`
+     - `sub` is defined
+     - `typ` is \"Bearer\"
+     - token is active (both not expired and not used before its validity: `exp` and `nbf`)
+     - token signature, must be one of: `RS256` `RS384` `RS512`"
   (^org.keycloak.representations.AccessToken [^KeycloakDeployment deployment ^java.lang.String token]
-   (let [realm-info-url (.getRealmInfoUrl deployment)
-         ;;TODO replace RSATokenVerifier with TokenVerifier (see https://stackoverflow.com/questions/57881996/keycloak-core-deprecate-class-rsatokenverifier-then-what-is-the-replacement)
-         verifier       (-> token RSATokenVerifier/create (.realmUrl realm-info-url))
-         kid            (-> verifier (.getHeader) (.getKeyId))
-         public-key     (.getPublicKey (.getPublicKeyLocator deployment) kid deployment)]
-     (-> verifier (.publicKey public-key) (.verify) (.getToken))))
+   (let [verifier   (-> token (TokenVerifier/create org.keycloak.representations.AccessToken))
+         kid        (-> verifier (.getHeader) (.getKeyId))
+         public-key (.getPublicKey (.getPublicKeyLocator deployment) kid deployment)
+         checks     (-> TokenVerifier$Predicate
+                        (into-array [TokenVerifier/IS_ACTIVE
+                                     TokenVerifier/SUBJECT_EXISTS_CHECK
+                                     (TokenVerifier$RealmUrlCheck. (.getRealmInfoUrl deployment))
+                                     (TokenVerifier$TokenTypeCheck. "Bearer")]))]    ; change to (list "Bearer") with keycloak-core 23+
+     (-> verifier (.withChecks checks) (.publicKey public-key) (.verify) (.getToken))))
   (^org.keycloak.representations.AccessToken [^KeycloakDeployment deployments ^java.lang.String realm-name ^java.lang.String token]
    (when (not (coll? deployments))
      (throw (ex-info "deployments argument must be a coll of KeycloakDeployment object" {:deployments deployments})))
