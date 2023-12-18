@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.30.5] - 2023-12-18
+
+- [PR 56](https://github.com/jgrodziski/keycloak-clojure/pull/56) - Add ES256/384/512 & PS256/384/512 signature verification
+
+# [1.30.4] - 2023-12-18
+
+- [PR 55](https://github.com/jgrodziski/keycloak-clojure/pull/55) - Refactor deprecated RSATokenVerifier with TokenVerifier
+- Refactor the build process of the uberjar for the docker image of Keycloak starter (use now tools.build instead of depstar because of a [bug with reader macro in depstar fixed in tools.build](https://clojure.atlassian.net/browse/TBUILD-32))
+
 # [1.30.2] - 2023-09-12
 
 - [CVE-2023-2976](https://github.com/advisories/GHSA-7g45-4rm6-3mm3)
