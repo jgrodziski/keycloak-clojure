@@ -11,6 +11,8 @@
                          TokenVerifier$Predicate
                          TokenVerifier$RealmUrlCheck
                          TokenVerifier$TokenTypeCheck]
+           [org.keycloak.common.crypto CryptoIntegration]
+           [org.keycloak.crypto AsymmetricSignatureVerifierContext KeyWrapper]
            [org.jboss.resteasy.client.jaxrs.internal ResteasyClientBuilderImpl]))
 
 ;(set! *warn-on-reflection* true)
@@ -101,6 +103,21 @@
   (into {} (map (fn [realm-name]
                   [realm-name (deployment-for-realm keycloak-client auth-server-url client-id realm-name)]) realms-name)))
 
+(defn- ecdsa-verifier-context
+  "Create a keycloak ^SignatureVerifierContext for ECDSA signatures."
+  [alg public-key]
+  (let [ec-alg {"ES256" ["SHA256withECDSA" 64]
+                "ES384" ["SHA384withECDSA" 96]
+                "ES512" ["SHA512withECDSA" 132]}
+        ecdsa  (-> (CryptoIntegration/getProvider) (.getEcdsaCryptoProvider))]
+    (reify org.keycloak.crypto.SignatureVerifierContext
+      (verify [_this data sig]
+        (let [sig-verifier (doto (java.security.Signature/getInstance (nth (ec-alg alg) 0))
+                                 (.initVerify ^java.security.PublicKey public-key)
+                                 (.update data))
+              signature    (-> ecdsa (.concatenatedRSToASN1DER sig (nth (ec-alg alg) 1)))]
+          (.verify sig-verifier signature))))))
+
 (defn verify
   "Verify an Access Token given a deployment to check against.
 
@@ -109,16 +126,25 @@
      - `sub` is defined
      - `typ` is \"Bearer\"
      - token is active (both not expired and not used before its validity: `exp` and `nbf`)
-     - token signature, must be one of: `RS256` `RS384` `RS512`"
+     - token signature: `ES256` `ES384` `ES512` `PS256` `PS384` `PS512` `RS256` `RS384` `RS512`"
   (^org.keycloak.representations.AccessToken [^KeycloakDeployment deployment ^java.lang.String token]
    (let [verifier   (-> token (TokenVerifier/create org.keycloak.representations.AccessToken))
-         kid        (-> verifier (.getHeader) (.getKeyId))
+         header     (-> verifier (.getHeader))
+         alg        (.getRawAlgorithm header)
+         kid        (.getKeyId header)
          public-key (.getPublicKey (.getPublicKeyLocator deployment) kid deployment)
          checks     (-> TokenVerifier$Predicate
                         (into-array [TokenVerifier/IS_ACTIVE
                                      TokenVerifier/SUBJECT_EXISTS_CHECK
                                      (TokenVerifier$RealmUrlCheck. (.getRealmInfoUrl deployment))
                                      (TokenVerifier$TokenTypeCheck. "Bearer")]))]    ; change to (list "Bearer") with keycloak-core 23+
+     (case (subs alg 0 2)
+       "ES" (-> verifier (.verifierContext (ecdsa-verifier-context alg public-key)))
+       "PS" (-> verifier (.verifierContext (AsymmetricSignatureVerifierContext. (doto (KeyWrapper.)
+                                                                                      (.setAlgorithm alg)
+                                                                                      (.setKid kid)
+                                                                                      (.setPublicKey public-key)))))
+       :default)
      (-> verifier (.withChecks checks) (.publicKey public-key) (.verify) (.getToken))))
   (^org.keycloak.representations.AccessToken [^KeycloakDeployment deployments ^java.lang.String realm-name ^java.lang.String token]
    (when (not (coll? deployments))
