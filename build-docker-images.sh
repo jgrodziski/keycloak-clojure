@@ -5,7 +5,7 @@ ARTIFACT_ID=$(echo "$ARTIFACT_NAME" | cut -f1)
 ARTIFACT_VERSION=$(echo "$ARTIFACT_NAME" | cut -f2)
 JAR_FILENAME="$ARTIFACT_ID-$ARTIFACT_VERSION.jar"
 
-clj -X:uberjar
+clj -T:build uber
 
 docker buildx create --driver docker-container --name kc-clj-builder --node kc-clj-node --platform linux/amd64,linux/arm64
 docker buildx use kc-clj-builder

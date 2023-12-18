@@ -7,7 +7,7 @@
         org.clojure/tools.logging {:mvn/version "1.1.0"}
         org.clojure/java.data     {:mvn/version "1.0.86"}
 
-        talltale/talltale {:mvn/version "0.5.8"}
+        talltale/talltale {:mvn/version "0.5.14"}
 
         clj-commons/fs {:mvn/version "1.6.309"}
 
@@ -78,7 +78,9 @@
 
         org.slf4j/slf4j-api            {:mvn/version "2.0.0-alpha1"}
         ch.qos.logback/logback-classic {:mvn/version "1.3.0-alpha5"}
-        ch.qos.logback/logback-core    {:mvn/version "1.3.0-alpha5"}}
+        ch.qos.logback/logback-core    {:mvn/version "1.3.0-alpha5"}
+
+        }
 
  :aliases {:repl     {:extra-deps {com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
                       :main-opts  ["-m" "figwheel.main" "-b" "dev" "-r"]}
@@ -90,21 +92,23 @@
                                     ring/ring-mock      {:mvn/version "0.4.0"}
                                     yada/yada           {:mvn/version "1.2.16"}
                                     }}
-           :thin-jar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.278"}}
+           :build {:deps {io.github.clojure/tools.build {:mvn/version "0.9.6"}}
+                   :ns-default build}
+           :thin-jar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.303"}}
                       :exec-fn      hf.depstar/jar
                       :exec-args    {:jar        "target/keycloak-clojure.jar"
                                      :sync-pom   true
                                      :paths-only true
                                      :exclude    [".*.edn" "realm-.*.clj" "logback.xml" "schema.png"]}}
-           :jar      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.278"}}
+           :jar      {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.303"}}
                       :exec-fn      hf.depstar/jar
                       :exec-args    {:jar        "target/keycloak-clojure-aot.jar"
                                      :compile-ns :all
                                      :sync-pom   true
                                      :exclude    ["clojure/core/.*" "clojure/test/.*" "clojure/java/.*" "clojure/data/.*"]}}
-           :uberjar  {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.278"}}
-                      :exec-fn      hf.depstar/uberjar
-                      :exec-args    {:jar "target/keycloak-clojure.jar" :aot true :main-class keycloak.starter}}
+           ;:uberjar  {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.303"}}
+           ;           :exec-fn      hf.depstar/uberjar
+           ;           :exec-args    {:jar "target/keycloak-clojure.jar" :aot true :verbose true :main-class keycloak.starter}}
            :deploy   {:extra-deps {slipset/deps-deploy {:git/url "https://github.com/slipset/deps-deploy.git"
                                                         :sha     "b4359c5d67ca002d9ed0c4b41b710d7e5a82e3bf"}}
                       :exec-fn    deps-deploy.deps-deploy/deploy
