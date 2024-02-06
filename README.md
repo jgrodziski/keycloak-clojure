@@ -8,7 +8,7 @@ __[Keycloak](http://www.keycloak.org) is an open source Identity and Access Mana
 
 
 ```clojure
-keycloak-clojure/keycloak-clojure {:mvn/version "1.30.5"}
+keycloak-clojure/keycloak-clojure {:mvn/version "1.30.6"}
 ```
 
 The [reference documentation is available on cljdoc](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure).
@@ -18,3 +18,10 @@ The [reference documentation is available on cljdoc](https://cljdoc.org/d/keyclo
 - **[Administration](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/CURRENT/doc/administrative-tasks)**: Administration tasks create the different Keycloak resources used later when securing the application
 - **[Backend](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/CURRENT/doc/securing-your-application-s-backend)**: How to secure an API backend?
 - **[Frontend](https://cljdoc.org/d/keycloak-clojure/keycloak-clojure/CURRENT/doc/securing-your-applications-s-frontend)**: How to secure a typical SPA frontend?
+
+<!-- LICENSE -->
+## License
+
+Distributed under the MIT License. See `LICENSE.txt` for more information.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>

@@ -1,6 +1,5 @@
 adixe-1168-fe1fc6bddbbf.json
 .cpcache
-pom.xml
 .nrepl-port
 target
 .idea
@@ -11,3 +10,5 @@ doc/codox
 *.asc
 resources/config-init-realm.edn
 .DS_Store
+sample/com.example.admin/pom.xml
+

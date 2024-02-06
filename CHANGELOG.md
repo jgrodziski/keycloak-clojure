@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.30.6] - 2024-02-06
+
+- [PR 57](https://github.com/jgrodziski/keycloak-clojure/pull/57) - Moves to newer versions of logging libraries  [CVE-2023-6378](https://github.com/advisories/GHSA-vmq6-5m68-f53m)
+
 # [1.30.5] - 2023-12-18
 
 - [PR 56](https://github.com/jgrodziski/keycloak-clojure/pull/56) - Add ES256/384/512 & PS256/384/512 signature verification
