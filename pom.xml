@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>keycloak-clojure</groupId>
   <artifactId>keycloak-clojure</artifactId>
-  <version>1.30.6</version>
+  <version>1.30.7</version>
   <name>keycloak-clojure</name>
   <url>https://www.github.com/jgrodziski/keycloak-clojure</url>
   <description>A clojure wrapper of Keycloak</description>
