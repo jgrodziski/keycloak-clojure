@@ -3,16 +3,16 @@
              "clojars"   {:url "https://repo.clojars.org/"}
              "confluent" {:url "https://packages.confluent.io/maven/"}}
 
- :deps {org.clojure/clojure       {:mvn/version "1.11.1"}
-        org.clojure/tools.logging {:mvn/version "1.2.4"}
+ :deps {org.clojure/clojure       {:mvn/version "1.11.2"}
+        org.clojure/tools.logging {:mvn/version "1.3.0"}
         org.clojure/java.data     {:mvn/version "1.0.86"}
 
         talltale/talltale {:mvn/version "0.5.14"}
 
         clj-commons/fs {:mvn/version "1.6.309"}
 
-        cheshire/cheshire {:mvn/version "5.10.0"}
-        clj-http/clj-http {:mvn/version "3.10.3"}
+        cheshire/cheshire {:mvn/version "5.13.0"}
+        clj-http/clj-http {:mvn/version "3.12.3"}
 
         uwcpdx/bean-dip {:mvn/version "0.7.6"}
 
@@ -48,33 +48,34 @@
         metosin/jsonista     {:mvn/version "0.3.6"}
         clj-commons/clj-yaml {:mvn/version "1.0.27"}
 
-        amperity/vault-clj                          {:mvn/version "1.0.0"}
+        com.amperity/vault-clj                          {:mvn/version "2.2.586"}
         ;; used for the google secret manager Vault
                                         ;com.google.cloud/libraries-bom              {:mvn/version "24.0.0"}
         com.google.cloud/google-cloud-secretmanager {:mvn/version "2.23.0"}
 
         ;; keycloak stuff
-        org.keycloak/keycloak-common         {:mvn/version "20.0.3"}
-        org.keycloak/keycloak-core           {:mvn/version "20.0.3"}
-        org.keycloak/keycloak-adapter-core   {:mvn/version "20.0.3"}
-        org.keycloak/keycloak-authz-client   {:mvn/version "20.0.3"}
-        org.keycloak/keycloak-adapter-spi    {:mvn/version "20.0.3"}
-        org.jboss.logging/jboss-logging      {:mvn/version "3.4.1.Final"}
-        org.apache.httpcomponents/httpclient {:mvn/version "4.5.13"}
+        org.keycloak/keycloak-common         {:mvn/version "24.0.2"}
+        org.keycloak/keycloak-core           {:mvn/version "24.0.2"}
+        org.keycloak/keycloak-authz-client   {:mvn/version "24.0.2"}
+        org.keycloak/keycloak-policy-enforcer{:mvn/version "24.0.2"}
+        org.keycloak/keycloak-adapter-core   {:mvn/version "24.0.2"}
+        org.keycloak/keycloak-adapter-spi    {:mvn/version "24.0.2"}
+        org.jboss.logging/jboss-logging      {:mvn/version "3.5.3.Final"}
+        org.apache.httpcomponents/httpclient {:mvn/version "4.5.14"}
 
         ;;all the deps below are for the admin client (don't know why the transitive deps didn't work)
-        org.keycloak/keycloak-admin-client                      {:mvn/version "20.0.3"}
-        ;com.fasterxml.jackson.core/jackson-core                 {:mvn/version "2.13.4"}
-        ;com.fasterxml.jackson.core/jackson-databind             {:mvn/version "2.13.4.2"}
-        ;com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider {:mvn/version "2.13.4"}
-        ;com.fasterxml.jackson.core/jackson-annotations          {:mvn/version "2.13.4"}
-        ;org.jboss.resteasy/resteasy-client                      {:mvn/version "4.7.7.Final"}
-        ;org.jboss.resteasy/resteasy-multipart-provider          {:mvn/version "4.7.7.Final"}
-        ;org.jboss.resteasy/resteasy-jackson2-provider           {:mvn/version "4.7.7.Final"}
-        ;org.jboss.resteasy/resteasy-jaxb-provider               {:mvn/version "4.7.7.Final"}
-        ;org.jboss.resteasy/resteasy-jaxrs                       {:mvn/version "3.15.3.Final"}
-        ;org.jboss.resteasy/resteasy-jettison-provider           {:mvn/version "3.15.3.Final"}
-        ;org.jboss.spec.javax.ws.rs/jboss-jaxrs-api_2.1_spec {:mvn/version "1.0.2.Final"}
+        org.keycloak/keycloak-admin-client                      {:mvn/version "24.0.2"}
+        ;com.fasterxml.jackson.core/jackson-core                 {:mvn/version "2.17.0"}
+        ;com.fasterxml.jackson.core/jackson-databind             {:mvn/version "2.17.0"}
+        ;com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider {:mvn/version "2.17.0"}
+        ;com.fasterxml.jackson.core/jackson-annotations          {:mvn/version "2.17.0"}
+        ;org.jboss.resteasy/resteasy-client                      {:mvn/version "6.2.7.Final"}
+        ;org.jboss.resteasy/resteasy-multipart-provider          {:mvn/version "6.2.7.Final"}
+        ;org.jboss.resteasy/resteasy-jackson2-provider           {:mvn/version "6.2.7.Final"}
+        ;org.jboss.resteasy/resteasy-jaxb-provider               {:mvn/version "6.2.7.Final"}
+        ;org.jboss.resteasy/resteasy-jaxrs                       {:mvn/version "3.15.6.Final"}
+        ;org.jboss.resteasy/resteasy-jettison-provider           {:mvn/version "3.15.6.Final"}
+        jakarta.ws.rs/jakarta.ws.rs-api {:mvn/version "3.1.0"}
 
         org.slf4j/slf4j-api            {:mvn/version "2.0.11"}
         ch.qos.logback/logback-classic {:mvn/version "1.3.14"}
@@ -88,7 +89,7 @@
                                     metosin/testit      {:mvn/version "0.4.1"}
                                     uwcpdx/bean-dip     {:mvn/version "0.7.6"}
                                     ring/ring-mock      {:mvn/version "0.4.0"}
-                                    yada/yada           {:mvn/version "1.2.16"}
+                                    org.clj-commons/byte-streams {:mvn/version "0.3.4"}
                                     }}
            :build {:deps {io.github.clojure/tools.build {:mvn/version "0.9.6"}}
                    :ns-default build}

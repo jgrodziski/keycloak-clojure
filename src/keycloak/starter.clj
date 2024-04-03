@@ -104,7 +104,7 @@
          (do
            (println (format "Will create the admin users %s with data as %s" (:username user-admin) user-admin))
            (user/create-user! admin-client "master" user-admin)))
-       (catch javax.ws.rs.ClientErrorException cee
+       (catch jakarta.ws.rs.ClientErrorException cee
          (if (= (-> cee (.getResponse) (.getStatus)) 409)
            (do
              (try
@@ -114,7 +114,7 @@
                  (println (format "Can't update realm %s" name)))))
            (println "Can't create realm " name ", " cee))
          realm-data)
-       (catch javax.ws.rs.InternalServerErrorException isee
+       (catch jakarta.ws.rs.InternalServerErrorException isee
          (println "Can't create realm " isee)
          (try
            (update-realm! admin-client name themes login tokens smtp)

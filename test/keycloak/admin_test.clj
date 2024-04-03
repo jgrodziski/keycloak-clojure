@@ -14,8 +14,8 @@
 
 
 (def admin-login "admin")
-(def admin-password "secretadmin")
-(def auth-server-url "http://localhost:8090/")
+(def admin-password "password")
+(def auth-server-url "http://localhost:8080/")
 
 (def integration-test-conf (deployment/client-conf auth-server-url "master" "admin-cli"))
 (def admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password))
@@ -91,7 +91,7 @@
                     (user/delete-user! admin-client realm-name (.getId user))))))))
         (testing "realm deletion"
           (admin/delete-realm! admin-client realm-name)
-          (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))))
+          (is (thrown? jakarta.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))))
 
 (deftest ^:integration test-creation-user-with-client-roles
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)
@@ -106,7 +106,7 @@
         (fact (.getUsername user-rep) => user-name)))
     (testing "realm deletion"
       (admin/delete-realm! admin-client realm-name)
-      (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
+      (is (thrown? jakarta.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
 
 
 (deftest test-realm-representation []
@@ -148,7 +148,7 @@
                                                                 :default-locale                       "fr"})
         (testing "realm deletion"
           (admin/delete-realm! admin-client name)
-          (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client name))))))))
+          (is (thrown? jakarta.ws.rs.NotFoundException (admin/get-realm admin-client name))))))))
 
 (deftest ^:integration test-update-client
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)
@@ -185,7 +185,7 @@
                      (not= secret-value-1 secret-value-2) => truthy))))))
     (testing "realm deletion"
       (admin/delete-realm! admin-client realm-name)
-      (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
+      (is (thrown? jakarta.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
 
 (deftest ^:integration test-create-or-update-client
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)
@@ -203,7 +203,7 @@
       )
     (testing "realm deletion"
       (admin/delete-realm! admin-client realm-name)
-      (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
+      (is (thrown? jakarta.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
 
 
 (deftest ^:integration test-create-or-update-client-access-token-lifespan
@@ -221,7 +221,7 @@
         (fact (into {} (:attributes client)) =in=> {"access.token.lifespan" "300"})))
     (testing "realm deletion"
       (admin/delete-realm! admin-client realm-name)
-      (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
+      (is (thrown? jakarta.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
 
 (deftest ^:integration test-add-roles-to-group
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)
@@ -252,6 +252,4 @@
           (fact (admin/add-realm-roles-to-group! admin-client realm-name group-name ["nimportequoi"]) =throws=> clojure.lang.ExceptionInfo))))
     (testing "realm deletion"
       (admin/delete-realm! admin-client realm-name)
-      (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))
-
-
+      (is (thrown? jakarta.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))

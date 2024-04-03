@@ -2,16 +2,13 @@
   (:refer-clojure :exclude [count])
   (:require [clojure.tools.logging :as log :refer [info warn]]
             [clojure.string :as string :refer [last-index-of]]
-            [clojure.java.data :refer [from-java]]
-            [clojure.java.io :as io]
-            [cheshire.core :as json :refer [encode]]
             [talltale.core :as talltale]
             [keycloak.bean :as bean]
             [keycloak.utils :as utils :refer [hint-typed-doto set-attributes]])
   (:import [org.keycloak.representations.idm CredentialRepresentation UserRepresentation RoleRepresentation]
            [org.keycloak.admin.client.resource ClientResource]
            [org.keycloak.admin.client Keycloak]
-           [javax.ws.rs.core Response]))
+           [jakarta.ws.rs.core Response]))
 
 ;(set! *warn-on-reflection* true)
 
@@ -67,34 +64,34 @@
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name user-attribute]
    (try
      (-> keycloak-client (.realm realm-name) (.users) (.search user-attribute (int 0) (int 10)))
-     (catch javax.ws.rs.NotFoundException nfe nil)))
+     (catch jakarta.ws.rs.NotFoundException nfe nil)))
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name username first-name last-name email]
    (try
      (-> keycloak-client (.realm realm-name) (.users) (.search username first-name last-name email (int 0) (int 10)))
-     (catch javax.ws.rs.NotFoundException nfe nil)))
+     (catch jakarta.ws.rs.NotFoundException nfe nil)))
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name username first-name last-name email first-result max-results]
    (try
      (-> keycloak-client (.realm realm-name) (.users) (.search username first-name last-name email first-result max-results ))
-     (catch javax.ws.rs.NotFoundException nfe nil)))
+     (catch jakarta.ws.rs.NotFoundException nfe nil)))
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name username first-name last-name email email-verified first-result max-results enabled brief-representation]
    (try
      (-> keycloak-client (.realm realm-name) (.users) (.search username first-name last-name email email-verified first-result max-results enabled brief-representation))
-     (catch javax.ws.rs.NotFoundException nfe nil)))
+     (catch jakarta.ws.rs.NotFoundException nfe nil)))
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name username first-name last-name email email-verified idp-alias idp-user-id first-result max-results enabled brief-representation]
    (try
      (-> keycloak-client (.realm realm-name) (.users) (.search username first-name last-name email email-verified idp-alias idp-user-id first-result max-results enabled brief-representation))
-     (catch javax.ws.rs.NotFoundException nfe nil))))
+     (catch jakarta.ws.rs.NotFoundException nfe nil))))
 
 (defn search-user-by-attributes
   "Return a list of UserRepresentation"
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name search-query]
    (try
      (-> keycloak-client (.realm realm-name) (.users) (.searchByAttributes search-query))
-     (catch javax.ws.rs.NotFoundException nfe nil)))
+     (catch jakarta.ws.rs.NotFoundException nfe nil)))
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name search-query first-result max-results enabled brief-representation]
    (try
      (-> keycloak-client (.realm realm-name) (.users) (.searchByAttributes first-result max-results enabled brief-representation search-query))
-     (catch javax.ws.rs.NotFoundException nfe nil))) )
+     (catch jakarta.ws.rs.NotFoundException nfe nil))) )
 
 (defn- exact-match
   ([users attr]
@@ -170,7 +167,7 @@
                       (.roles)
                       (.get role)
                       (.toRepresentation))
-                  (catch javax.ws.rs.NotFoundException nfe
+                  (catch jakarta.ws.rs.NotFoundException nfe
                     (warn "Realm role" role "not found in realm" realm-name)))) (map name roles))))
 
 (def memoized-get-realm-roles-representations (memoize get-realm-roles-representations))
@@ -229,7 +226,7 @@
                                                       (.roles)
                                                       (.get role)
                                                       (.toRepresentation))
-                                                  (catch javax.ws.rs.NotFoundException nfe
+                                                  (catch jakarta.ws.rs.NotFoundException nfe
                                                     (log/error "Client role" role "not found in realm" realm-name"for client" client-id)))) (map name roles)))]
         (-> ^org.keycloak.admin.client.resource.UserResource user-resource
             (.roles)
@@ -328,7 +325,7 @@
         (set-realm-roles! keycloak-client realm-name username realm-roles)
         (add-client-roles! keycloak-client realm-name username client-roles)
         user)
-      (catch javax.ws.rs.ClientErrorException cee
+      (catch jakarta.ws.rs.ClientErrorException cee
         (warn "Exception while creating or updating " person (.getMessage cee))))))
 
 (defn count [^org.keycloak.admin.client.Keycloak keycloak-client realm-name]

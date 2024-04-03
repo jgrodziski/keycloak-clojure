@@ -8,8 +8,9 @@
 (defn keycloak-running? [keycloak-client]
   (try
     (-> keycloak-client (.realm "master") (.toRepresentation) bean)
-    (catch javax.ws.rs.ProcessingException pe false)
-    (catch java.net.ConnectException ce false)))
+   ; (catch javax.ws.rs.ProcessingException pe false)
+   ; (catch java.net.ConnectException ce false)
+    ))
 
 
 (defn ns-clean

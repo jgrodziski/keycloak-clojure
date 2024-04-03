@@ -13,7 +13,8 @@
                          TokenVerifier$TokenTypeCheck]
            [org.keycloak.common.crypto CryptoIntegration]
            [org.keycloak.crypto AsymmetricSignatureVerifierContext KeyWrapper]
-           [org.jboss.resteasy.client.jaxrs.internal ResteasyClientBuilderImpl]))
+           [org.jboss.resteasy.client.jaxrs ResteasyClientBuilder]
+           ))
 
 ;(set! *warn-on-reflection* true)
 
@@ -64,7 +65,8 @@
       (.realm (:realm client-conf))
       (.serverUrl (:auth-server-url client-conf))
       (.clientId (:resource client-conf))
-      (.resteasyClient (-> (ResteasyClientBuilderImpl.)
+      (.resteasyClient (-> ;(ResteasyClientBuilderImpl.)
+                           (ResteasyClientBuilder/newBuilder)
                            (.connectionPoolSize REST_CONNECTION_POOL_SIZE)
                            (.connectTimeout REST_CONNECT_TIMEOUT_SECONDS TimeUnit/SECONDS)
                            (.readTimeout REST_READ_TIMEOUT_SECONDS TimeUnit/SECONDS)
@@ -93,7 +95,7 @@
   (try
     (let [client-secret (get-client-secret keycloak-client realm-name client-id)]
       (deployment (client-conf auth-server-url realm-name client-id client-secret)))
-    (catch javax.ws.rs.NotFoundException nfe
+    (catch jakarta.ws.rs.NotFoundException nfe
       (error (str "The client '"client-id "' was not found in realm '" realm-name "', maybe you should create it at the repl with: (fill! \""realm-name"\")"))
       nil)))
 

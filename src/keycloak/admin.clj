@@ -1,16 +1,14 @@
 (ns keycloak.admin
   (:require
-   [clojure.java.io :as io]
-   [clojure.java.data :refer [from-java]]
    [clojure.string :as string :refer [last-index-of]]
    [clojure.tools.logging :as log :refer [info warn]]
-   [cheshire.core :as json :refer [encode]]
    [keycloak.user :as user]
    [keycloak.utils :as utils :refer [setters set-attributes]])
   (:import [org.keycloak.representations.idm CredentialRepresentation RealmRepresentation ClientRepresentation RoleRepresentation GroupRepresentation UserRepresentation ProtocolMapperRepresentation]
            [org.keycloak.admin.client Keycloak]
-           [org.keycloak.admin.client.resource ClientResource UserResource GroupResource]
-           [javax.ws.rs.core Response]))
+           [org.keycloak.admin.client.resource ClientResource GroupResource]
+           [jakarta.ws.rs.core Response]
+           ))
 
 ;(set! *warn-on-reflection* true)
 
@@ -218,7 +216,7 @@
                       (.roles)
                       (.get role)
                       (.toRepresentation))
-                  (catch javax.ws.rs.NotFoundException nfe
+                  (catch jakarta.ws.rs.NotFoundException nfe
                     (warn "Realm role" role "not found in realm" realm-name)))) (map name roles))))
 
 (def memoized-get-realm-roles-representations (memoize get-realm-roles-representations))

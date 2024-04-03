@@ -16,7 +16,7 @@
 
 
 (def admin-login "admin")
-(def admin-password "secretadmin")
+(def admin-password "password")
 ;(def auth-server-url "http://login.default.minikube.devmachine")
 
 (def auth-server-url (minikube-keycloak-service-or-localhost))
@@ -70,7 +70,7 @@
             (is (= nil user-id))))
         (testing "realm deletion"
           (delete-realm! admin-client realm-name)
-          (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name)))
+          (is (thrown? jakarta.ws.rs.NotFoundException (get-realm admin-client realm-name)))
           )))))
 
 (deftest ^:integration user-test
@@ -125,5 +125,5 @@
                     (fact updated-user => truthy)))))))
         (testing "realm deletion"
           (delete-realm! admin-client realm-name)
-          (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name)))
+          (is (thrown? jakarta.ws.rs.NotFoundException (get-realm admin-client realm-name)))
           )))))
