@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.31.0] - 2024-04-03
+
+- [Bump Keycloak client libs to 24.0.2](https://github.com/jgrodziski/keycloak-clojure/issues/59)
+
 # [1.30.7] - 2024-02-06
 
 - Fix the LICENSE metadata in pom.xml that prevented uploading the JAR to clojars (see https://github.com/clojars/clojars-web/wiki/Pushing#licenses)
