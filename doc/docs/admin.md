@@ -88,6 +88,7 @@ Roles identify a type or category of user. Admin, user, manager, and employee ar
 ## Create users
 
 Users are entities that are able to log into your system. They can have attributes associated with themselves like email, username, address, phone number, and birth day. They can be assigned group membership and have specific roles assigned to them.
+Starting from at least version `24.x`, Keycloak now has a default policy in the realm that makes the email, first name and last name mandatory for the user, otherwise an `invalid grant, account is not fully set up` error may be throwed.
 
 ``` clojure
 
