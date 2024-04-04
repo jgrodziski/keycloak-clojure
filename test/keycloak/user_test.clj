@@ -97,7 +97,7 @@
             (testing "user creation in the realm then join to group"
               (let [username (str "user-" (rand-int 1000))
                     password (str "pass"  (rand-int 100))
-                    user     (delete-and-create-user! admin-client realm-name {:username username :password password})]
+                    user     (delete-and-create-user! admin-client realm-name {:username username :password password  :first-name "test" :last-name "test" :email "test1@gmail.com"})]
                 (is (= username (.getUsername user)))
                 (testing "authentication and token verification and extraction"
                   (let [token           (authenticate auth-server-url realm-name client-id username password)
@@ -107,11 +107,16 @@
                 (testing "get user-id by exact match"
                   (let [username2 (str (rand-int 1000) "-user")
                         password2 (str "pass" (rand-int 100))
-                        user2     (delete-and-create-user! admin-client realm-name {:username username2 :password password2})
-                        user2-id  (user/user-id admin-client realm-name username2)]
+                        user2     (delete-and-create-user! admin-client realm-name {:username username2 :password password2 :first-name "test" :last-name "test" :email "test2@gmail.com"})
+                        user2-id  (user/user-id admin-client realm-name username2)
+                        user2-retrieved (user/get-user-by-username admin-client realm-name username2)]
                     ;(sc/spy)
                     )
                   )
+                (testing "get-user-by-username should return the UserRepresentation"
+                  (let [user-rep (user/get-user-by-username admin-client realm-name username)]
+                    (fact (instance? org.keycloak.representations.idm.UserRepresentation user-rep) => true)
+                    ))
                 (testing "disable user then re-enable it"
                   (fact (.isEnabled (user/disable-user! admin-client realm-name username)) => false)
                   (fact (.isEnabled (user/enable-user! admin-client realm-name username)) => true))
