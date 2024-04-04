@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.31.1] - 2024-04-05
+
+- Fix the `get-user-by-username` function in both `keycloak.admin` and `keycloak.user` ns, fix the failing tests in `keycloak.user-test` ns
+
 # [1.31.0] - 2024-04-03
 
 - [Bump Keycloak client libs to 24.0.2](https://github.com/jgrodziski/keycloak-clojure/issues/59)
