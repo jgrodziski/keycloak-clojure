@@ -97,7 +97,7 @@
                                                :token-url :pkce? :cors-exposed-headers :token-minimum-time-to-live :register-node-at-startup?
                                                :relative-urls :ssl-required :class :not-before :resource-credentials})
 
-(bean-dip/def-translation UserRepresentation #{:email :credentials  :username :first-name :client-roles :realm-roles :id
+(bean-dip/def-translation UserRepresentation #{:email :credentials  :username :first-name :client-roles :realm-roles :id :email-verified
                                                :last-name :origin :social-links :client-consents :groups :attributes :application-roles})
 
 (bean-dip/def-translation RoleRepresentation #{:description :composite? :name :containerId :clientRole :composites :id :attributes :scopeParamRequired?})

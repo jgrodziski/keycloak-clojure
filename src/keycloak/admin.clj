@@ -317,7 +317,7 @@
 
 (defn get-user-by-username
   ^UserRepresentation [^Keycloak keycloak-client realm-name username]
-  (some (fn [^UserRepresentation user] (= username (.getUsername user))) (find-users keycloak-client realm-name username)))
+  (first (filter (fn [^UserRepresentation user] (= username (.getUsername user))) (find-users keycloak-client realm-name username))))
 
 (defn add-user-to-group!
   "Make the user join group, return the group"

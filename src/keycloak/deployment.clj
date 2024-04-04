@@ -139,7 +139,7 @@
                         (into-array [TokenVerifier/IS_ACTIVE
                                      TokenVerifier/SUBJECT_EXISTS_CHECK
                                      (TokenVerifier$RealmUrlCheck. (.getRealmInfoUrl deployment))
-                                     (TokenVerifier$TokenTypeCheck. "Bearer")]))]    ; change to (list "Bearer") with keycloak-core 23+
+                                     (TokenVerifier$TokenTypeCheck. (list "Bearer"))]))]    ; change to (list "Bearer") with keycloak-core 23+
      (case (subs alg 0 2)
        "ES" (-> verifier (.verifierContext (ecdsa-verifier-context alg public-key)))
        "PS" (-> verifier (.verifierContext (AsymmetricSignatureVerifierContext. (doto (KeyWrapper.)

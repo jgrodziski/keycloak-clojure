@@ -57,7 +57,7 @@
    (user-for-update person))
   ([{:keys [username first-name last-name email password attributes] :as person} ^java.util.Collection required-actions]
    (doto (user-for-update person)
-     (.setRequiredActions (java.util.ArrayList. required-actions)))))
+     (when required-actions (.setRequiredActions (java.util.ArrayList. required-actions))))))
 
 (defn search-user
   "Return a list of UserRepresentation given the various filters"
@@ -255,7 +255,7 @@
 
 (defn get-user-by-username
   ^org.keycloak.representations.idm.UserRepresentation [^org.keycloak.admin.client.Keycloak keycloak-client realm-name username]
-  (first (find-users keycloak-client realm-name username)))
+  (first (filter (fn [^UserRepresentation user] (= username (.getUsername user))) (find-users keycloak-client realm-name username))))
 
 (defn delete-and-create-user!
   ([^org.keycloak.admin.client.Keycloak keycloak-client realm-name person]
