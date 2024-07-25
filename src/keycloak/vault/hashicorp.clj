@@ -1,7 +1,7 @@
 (ns keycloak.vault.hashicorp
-  (:require [vault.core :as vault]
+  (:require [vault.client :as vault]
             [vault.client.http]
-            [vault.secrets.kvv2 :as vault-kvv2]
+            [vault.secret.kv.v2 :as vault-kvv2]
             [keycloak.vault.protocol :as vault-protocol :refer [Vault]]))
 
 (defn vault-url
@@ -20,7 +20,7 @@
    (vault/new-client vault-url)))
 
 (defn authenticate!  [client token]
-  (vault/authenticate! client :token token))
+  (vault/authenticate! client token))
 
 (defn- write-secret! [client token mount path payload]
   (let [authenticated-client (authenticate! client token)]
