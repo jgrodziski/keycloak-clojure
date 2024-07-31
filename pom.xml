@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>keycloak-clojure</groupId>
   <artifactId>keycloak-clojure</artifactId>
-  <version>1.31.1</version>
+  <version>1.31.2</version>
   <name>keycloak-clojure</name>
   <url>https://www.github.com/jgrodziski/keycloak-clojure</url>
   <description>A clojure wrapper of Keycloak</description>
@@ -78,7 +78,7 @@
     <dependency>
       <groupId>clj-commons</groupId>
       <artifactId>fs</artifactId>
-      <version>1.6.309</version>
+      <version>1.6.311</version>
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>

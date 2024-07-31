@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.31.2] - 2024-07-31
+
+- Bumps clj-common/fs to address CVE-2024-26308 (https://www.cve.org/CVERecord?id=CVE-2024-26308)
+- Fixes import of Vault libraries.
+
 # [1.31.1] - 2024-04-05
 
 - Fix the `get-user-by-username` function in both `keycloak.admin` and `keycloak.user` ns, fix the failing tests in `keycloak.user-test` ns

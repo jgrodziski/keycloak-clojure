@@ -8,7 +8,7 @@ __[Keycloak](http://www.keycloak.org) is an open source Identity and Access Mana
 
 
 ```clojure
-keycloak-clojure/keycloak-clojure {:mvn/version "1.31.1"}
+keycloak-clojure/keycloak-clojure {:mvn/version "1.31.2"}
 ```
 The versions `1.31` and higher of keycloak-clojure are compatible with Keycloak version `24.x` and higher.
 
