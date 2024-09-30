@@ -105,7 +105,7 @@
             (is (= "to-be-modified-1" (:username (first (:user/updates plan)))))))
         (testing "realm deletion"
           (admin/delete-realm! admin-client realm-name)
-          (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name)))))))
+          (is (thrown? jakarta.ws.rs.NotFoundException (admin/get-realm admin-client realm-name)))))))
   (testing "Fetch the existing users and diff the one that need update or creation"
     (let [])))
 
@@ -189,7 +189,7 @@
                            (-> (get plan :user/updates) first :groups) => [{:path "/group2"}])))))))
         (testing "realm deletion"
           (admin/delete-realm! admin-client realm-name)
-          (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))))
+          (is (thrown? jakarta.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))))
 
 (defn- get-roles->users [admin-client realm-name roles]
   (into {} (map (fn [[role users]] [role (into [] (map bean/UserRepresentation->map users))]) (user/get-users-aggregated-by-realm-roles admin-client realm-name roles))))
@@ -246,7 +246,7 @@
                    (get empty-plan :realm-role-mappings/deletions) => empty?)))))
         (testing " finally realm is deleted"
           (admin/delete-realm! admin-client realm-name)
-          (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))))
+          (is (thrown? jakarta.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))))
 
 (deftest ^:integration groups-test
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)]
@@ -313,7 +313,7 @@
                    (get empty-plan :groups/deletions) => empty?)))))
         (testing " finally realm is deleted"
           (admin/delete-realm! admin-client realm-name)
-          (is (thrown? javax.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))))
+          (is (thrown? jakarta.ws.rs.NotFoundException (admin/get-realm admin-client realm-name))))))))
 
 
 (comment

@@ -47,9 +47,6 @@
                     headers
                     (kc-authn/auth-cookie token))}))
 
-(defn yada-test-context [token]
-  {:request (request-for :get "/protected" (headers-with-token-as-header {} token))})
-
 (def EXPIRED_TOKEN_BAD_REALM {:access_token
  "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJxYnIwakNmanZXRXJfV0tkT1FSVzdkTkNiZmZHeXZQaVROTVA2ZjdYSVpZIn0.eyJleHAiOjE2MTM3NTk5MTAsImlhdCI6MTYxMzc1OTYxMCwianRpIjoiNTdmZjFmNjktNDk2ZC00MTA5LWI1ZTctZGFlYTk1NDY4Mzg0IiwiaXNzIjoiaHR0cDovL2xvZ2luLmRlZmF1bHQubWluaWt1YmUuZGV2bWFjaGluZS9hdXRoL3JlYWxtcy9lbGVjdHJlIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6ImRkMTdlODkzLTFmYWYtNDBjMi04MzA0LTFiZjI1NjMxOTkxOCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImRpZmZ1c2lvbi1mcm9udGVuZCIsInNlc3Npb25fc3RhdGUiOiI3MzgzMGM1Mi03YWE2LTRmMWYtOTFmZS0xMWQ1NzllMDZkZmEiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbImh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib3JnLWFkbWluIiwiYXBpLXJlY2hlcmNoZS1saWJyZSIsIm1hbmFnZXIiLCJncm91cC1hZG1pbiIsImVsZWN0cmUtYWRtaW4iLCJvZmZsaW5lX2FjY2VzcyIsImFwaS1hbGltZW50YXRpb24tdW5pdGFpcmUiLCJhcGktYWxpbWVudGF0aW9uIiwiYXBpLWFsaW1lbnRhdGlvbi1pbml0IiwidW1hX2F1dGhvcml6YXRpb24iLCJlbXBsb3llZSIsImFwaS1yZWNoZXJjaGUtY2libGVlIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJvcmctcmVmIjoiZWxlY3RyZU5HIiwibmFtZSI6IkrDqXLDqW1pZSBHUk9EWklTS0kiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJqZ3JvZHppc2tpIiwiZ2l2ZW5fbmFtZSI6IkrDqXLDqW1pZSIsImZhbWlseV9uYW1lIjoiR1JPRFpJU0tJIiwiZW1haWwiOiJqZ3JvZHppc2tpQGVsZWN0cmUuY29tIiwiZ3JvdXAiOlsiL2VsZWN0cmVORy9pdCJdfQ.by7EFdx2TSVg7Zmd2EtAUD0eUKIgQvCoDvETNqN-qrbWCLVEc1wpCOhXp1DPa8W14p6xTIhgkCxt000hSeKE9YobG8W9GdxBZTWHtbG8L6YtCePW4pW9MF-YxAcsclOhAXlCukTXAlozz6RXV6byZqgL9HVvfVSxQskdoJd2zXGQZWCgpvSnWcpMkVrrXIXD-9EfkpwMCr9OHYKe50YRax5RjH72fY7m2WIpZyeaS6ZNi_Ud5nxTRFJHBhhRARLltjaUpB_Guv-6TGYDI46jNCozgJMlYiJkaTOy1o3s10jVowqXNxxaCNQP1zOX7Swri6UCkleuhiG4AOxA1XjRcg",
  :expires_in 300,
@@ -77,6 +74,9 @@
      (cond-> options
              (:body options) (update :body b/to-byte-buffers)
              true (update :headers #(merge {"host" "localhost"} %))))))
+
+(defn yada-test-context [token]
+  {:request (request-for :get "/protected" (headers-with-token-as-header {} token))})
 
 (defn yada-test-context-missing-token []
   {:request (request-for :get "/protected" {:headers {"content-type" "application/transit+json"
