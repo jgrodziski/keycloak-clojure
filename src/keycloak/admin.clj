@@ -441,9 +441,9 @@ public
      (-> ((setters {:client-id                      (or client-id name)
                     :name                           name
                     :public-client                  (or public? public-client)
-                    :standard-flow-enabled          (or standard-flow-enabled true)
-                    :direct-access-grants-enabled   (or direct-access-grants-enabled true)
-                    :service-accounts-enabled       (or service-accounts-enabled (not (or public? public-client)))
+                    :standard-flow-enabled          (if (contains? client :standard-flow-enabled) standard-flow-enabled true)
+                    :direct-access-grants-enabled   (if (contains? client :direct-access-grants-enabled) direct-access-grants-enabled true)
+                    :service-accounts-enabled       (if (contains? client :service-accounts-enabled) service-accounts-enabled (not (or public? public-client)))
                     :authorization-services-enabled (or authorization-services-enabled false)
                     :redirect-uris                  redirect-uris
                     :root-url                       root-url

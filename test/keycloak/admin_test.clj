@@ -150,6 +150,41 @@
           (admin/delete-realm! admin-client name)
           (is (thrown? jakarta.ws.rs.NotFoundException (admin/get-realm admin-client name))))))))
 
+(deftest test-client-representation
+  (testing "default client-id is name for the client"
+    (let [client-without-client-id (admin/client {:name "test-client-representation-client"})]
+      (is (= "test-client-representation-client" (.getName client-without-client-id) (.getClientId client-without-client-id)))))
+  (testing "standard flow can be disabled"
+    (let [client-with-standard-flow-defaulted (admin/client {:name "test-client-representation-client"})
+          client-with-standard-flow-enabled   (admin/client {:name                  "test-client-representation-client"
+                                                             :standard-flow-enabled true})
+          client-with-standard-flow-disabled  (admin/client {:name                  "test-client-representation-client"
+                                                             :standard-flow-enabled false})]
+      (is (.isStandardFlowEnabled client-with-standard-flow-defaulted))
+      (is (.isStandardFlowEnabled client-with-standard-flow-enabled))
+      (is (not (.isStandardFlowEnabled client-with-standard-flow-disabled)))))
+  (testing "direct access grants can be disabled"
+    (let [client-with-direct-access-grants-defaulted (admin/client {:name "test-client-representation-client"})
+          client-with-direct-access-grants-enabled   (admin/client {:name                         "test-client-representation-client"
+                                                                    :direct-access-grants-enabled true})
+          client-with-direct-access-grants-disabled  (admin/client {:name                         "test-client-representation-client"
+                                                                    :direct-access-grants-enabled false})]
+      (is (.isDirectAccessGrantsEnabled client-with-direct-access-grants-defaulted))
+      (is (.isDirectAccessGrantsEnabled client-with-direct-access-grants-enabled))
+      (is (not (.isDirectAccessGrantsEnabled client-with-direct-access-grants-disabled)))))
+  (testing "service accounts can be disabled"
+    (let [client-with-service-accounts-defaulted (admin/client {:name          "test-client-representation-client"
+                                                                :public-client false})
+          client-with-service-accounts-enabled   (admin/client {:name                     "test-client-representation-client"
+                                                                :public-client            false
+                                                                :service-accounts-enabled true})
+          client-with-service-accounts-disabled  (admin/client {:name                     "test-client-representation-client"
+                                                                :public-client            false
+                                                                :service-accounts-enabled false})]
+      (is (.isServiceAccountsEnabled client-with-service-accounts-defaulted))
+      (is (.isServiceAccountsEnabled client-with-service-accounts-enabled))
+      (is (not (.isServiceAccountsEnabled client-with-service-accounts-disabled))))))
+
 (deftest ^:integration test-update-client
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)
         _            (assert (keycloak-running? admin-client))
