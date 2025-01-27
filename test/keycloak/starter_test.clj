@@ -112,7 +112,7 @@
                 (fact secret-value => (comp not str/blank?)))))))
       (testing "realm deletion"
         (delete-realm! admin-client realm-name)
-        (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name)))
+        (is (thrown? jakarta.ws.rs.NotFoundException (get-realm admin-client realm-name)))
         ))))
 
 (deftest ^:integration starter-reconciliation-test
@@ -137,7 +137,7 @@
         (starter/init! admin-client (assoc-in config [:realm :name] realm-name) infra-context {:dry-run? true :apply-deletions? true}))
       (testing "realm deletion"
         (delete-realm! admin-client realm-name)
-        (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name)))))))
+        (is (thrown? jakarta.ws.rs.NotFoundException (get-realm admin-client realm-name)))))))
 
 (deftest config-test
   (let [environment  (sci/new-var 'environment  "staging")

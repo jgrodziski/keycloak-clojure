@@ -92,7 +92,7 @@
                     (is (= username (:username extracted-token)))))))))
         (testing "realm deletion"
           (delete-realm! admin-client realm-name)
-          (is (thrown? javax.ws.rs.NotFoundException (get-realm admin-client realm-name))))))))
+          (is (thrown? jakarta.ws.rs.NotFoundException (get-realm admin-client realm-name))))))))
 
 (defn delete-realms-except [realms-to-keep]
   (let [admin-client (deployment/keycloak-client integration-test-conf admin-login admin-password)
