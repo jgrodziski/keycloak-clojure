@@ -13,7 +13,7 @@
   (b/copy-dir {:src-dirs ["src" "resources"]
                :target-dir class-dir})
   (b/compile-clj {:basis basis
-                  :ns-compilte ' [keycloak.starter]
+                  :ns-compile ' [keycloak.starter]
                   :class-dir class-dir})
   (b/uber {:class-dir class-dir
            :uber-file uber-file
