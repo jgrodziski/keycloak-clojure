@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file. 
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+# [1.31.5] - 2025-01-27
+
+- [PR #63 - Moves to Keycloak 24.0.5](https://github.com/jgrodziski/keycloak-clojure/pull/63)
+
 # [1.31.4] - 2025-01-27
 
 - [Issue #65 - Cannot create ClientRepresentation with standard flow, direct access, or service accounts disabled][https://github.com/jgrodziski/keycloak-clojure/issues/65]
